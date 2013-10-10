@@ -1,2 +1,3 @@
-Sandbox programming language for plt
+slang programming language for plt
+
 
