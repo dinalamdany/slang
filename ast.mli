@@ -1,8 +1,10 @@
-type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq
+type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq |
+And | Or | Not | Neg
 
 type expr =
     Literal of int
   | Id of string
+  | Unop of op * expr
   | Binop of expr * op * expr
   | Assign of string * expr
   | Noexpr
@@ -21,6 +23,5 @@ type func_decl = {
     locals : string list;
     body : stmt list;
 }
-
 
 type program = func_decl list

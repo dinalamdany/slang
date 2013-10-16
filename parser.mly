@@ -2,19 +2,24 @@
 
 %token SEMI LPAREN RPAREN LBRACE RBRACE COMMA
 %token PLUS MINUS TIMES DIVIDE ASSIGN
-%token EQ NEQ LT LEQ GT GEQ
+%token NOT 
+%token EQ NEQ LT LEQ GT GEQ OR AND
 %token RETURN IF ELSE FOR WHILE INT FUNC
 %token <int> LITERAL
 %token <string> ID
 %token EOF
+%token DELAY
 
 %nonassoc NOELSE
 %nonassoc ELSE
 %right ASSIGN
 %left EQ NEQ
 %left LT GT LEQ GEQ
+%left AND OR
 %left PLUS MINUS
 %left TIMES DIVIDE
+%right UMINUS
+%right NOT
 
 %start program
 %type <Ast.program> program
@@ -24,7 +29,7 @@
 program:
     /* nothing */ {[]}
     | program fdecl { $2 :: $1 } 
-        
+
 fdecl:
     FUNC ID LPAREN formals_opt RPAREN LBRACE vdecl_list stmt_list RBRACE
     { { fname = $2;
@@ -64,6 +69,7 @@ stmt:
 expr_opt:
     /* nothing */ { Noexpr }
     | expr {$1}
+
 expr:
     LITERAL          { Literal($1) }
   | ID               { Id($1) }
@@ -79,4 +85,6 @@ expr:
   | expr GEQ    expr { Binop($1, Geq,   $3) }
   | ID ASSIGN expr   { Assign($1, $3) }
   | LPAREN expr RPAREN { $2 }
-
+  | MINUS expr %prec UMINUS { Unop(Neg, $2) }
+  | expr AND expr {Binop($1, And, $3)}
+  | expr OR expr {Binop($1, Or, $3)}
