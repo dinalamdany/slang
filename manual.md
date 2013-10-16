@@ -112,6 +112,9 @@ function doStuff(Object person){
              # 10 line.remove(person);
 }
 
+## Delays
+In Slang, you can delay a block of code for a designated number of simulation time units by doing #time, where time is a float or a variable. This will delay only the current init or always block, and the other blocks will execute as they would have before.
+
 ## Return 
 
 The return keyword accepts an expression, function call, or nothing, and exists out of the smallest containing function or calling block. 
@@ -120,4 +123,5 @@ The return keyword accepts an expression, function call, or nothing, and exists 
 Scoping rules
 by value/reference
 objects
-
+data structures
+ADD IN code for FLOATS
