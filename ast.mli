@@ -23,4 +23,4 @@ type func_decl = {
 }
 
 
-type program = string list * func_decl list
+type program = func_decl list
