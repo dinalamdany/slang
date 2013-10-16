@@ -15,6 +15,7 @@ type stmt =
     | Return of expr
     | If of expr * stmt * stmt
     | For of expr * expr * expr * stmt
+    | Delay of expr * stmt
     | While of expr * stmt
 
 type func_decl = {

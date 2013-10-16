@@ -56,8 +56,13 @@ stmt_list:
     /* nothing */ {[]}
     | stmt_list stmt { $2 :: $1 }
 
+delay:
+    LITERAL { Literal($1)}
+    | ID { Id($1)}
+
 stmt:
     expr SEMI { Expr($1)}
+    | DELAY delay stmt { Delay($2,$3)}
     | RETURN expr SEMI { Return($2)}
     | LBRACE stmt_list RBRACE { Block(List.rev $2) }
     | IF LPAREN expr RPAREN stmt %prec NOELSE { If($3, $5, Block([])) }

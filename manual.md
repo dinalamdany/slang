@@ -68,7 +68,7 @@ Integers are automatically cast to floats when necessary. If an arithmetic opera
 * <= less than or equal to
 
 ### Logical 
-* ! unary and logical not
+* ! unary not
 * & logical and
 * | logical or
 
