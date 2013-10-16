@@ -4,7 +4,10 @@
 Slang is a discrete event simulation language. It allows for a programmer to schedule events at discrete times, and have those events executed based on an event queue ordered by start time. 
 
 ## Program
-A program is a single file consisting of functions, defined and written above the main block, and a main block. The main block consists of at least one (or more) of an init block and/or an always block. An init block consists of statements that are to be executed sequentially from time 0. An always block consists of code to be continually run until program termination.
+A program is a single file consisting of functions, defined and written above the main function, and main function. The main block consists of at least one (or more) of an init block and/or an always block. An init block consists of statements that are to be executed sequentially from time 0. An always block consists of code to be continually run until program termination.
+
+## Scoping
+Variables can exist within any function, and exist within functions that are called within the outer function. Local variables take precedent over variables defined outside the function. 
 
 ## Execution 
 The simulator processes events in the event queue by removing all the events for the current time and processing them. During the processing, more events may be created (such as by functions) and placed in the proper place in the queue for later processing. When all the events of the current time have been processed, the simulator advances time and processes the next events at the front of the queue.
