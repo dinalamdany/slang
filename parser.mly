@@ -5,7 +5,8 @@
 %token NOT 
 %token EQ NEQ LT LEQ GT GEQ OR AND
 %token RETURN IF ELSE FOR WHILE INT FUNC
-%token <int> LITERAL
+%token <int> INT_LITERAL
+%token <float> FLOAT_LITERAL
 %token <string> ID
 %token EOF
 %token DELAY
@@ -57,7 +58,8 @@ stmt_list:
     | stmt_list stmt { $2 :: $1 }
 
 delay:
-    LITERAL { Literal($1)}
+    INT_LITERAL {IntLit($1)}
+    | FLOAT_LITERAL { FloatLit($1)}
     | ID { Id($1)}
 
 stmt:
@@ -76,7 +78,8 @@ expr_opt:
     | expr {$1}
 
 expr:
-    LITERAL          { Literal($1) }
+  INT_LITERAL { IntLit($1)}
+  | FLOAT_LITERAL { FloatLit($1)}
   | ID               { Id($1) }
   | expr PLUS   expr { Binop($1, Add,   $3) }
   | expr MINUS  expr { Binop($1, Sub,   $3) }

@@ -2,7 +2,8 @@ type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq |
 And | Or | Not | Neg
 
 type expr =
-    Literal of int
+  IntLit of int
+  | FloatLit of float
   | Id of string
   | Unop of op * expr
   | Binop of expr * op * expr
