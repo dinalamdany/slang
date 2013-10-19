@@ -1,10 +1,14 @@
 type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq |
-And | Or | Not | Neg
+And | Or | Not | Neg | Inc | Dec | Mod
+
+type ident = 
+  Ident of string
 
 type expr =
   IntLit of int
   | FloatLit of float
-  | Id of string
+  | StringLit of string
+  | Variable of ident 
   | Unop of op * expr
   | Binop of expr * op * expr
   | Assign of string * expr
@@ -19,10 +23,18 @@ type stmt =
     | Delay of expr * stmt
     | While of expr * stmt
 
+type datatype = 
+    Datatype of string
+
+type decl = 
+    Vdecl of datatype * ident 
+    | VarAssignDecl of datatype * ident * expr
+    
 type func_decl = {
+    return: string;
     fname : string;
-    formals : string list;
-    locals : string list;
+    formals : decl list;
+    locals : decl list;
     body : stmt list;
 }
 

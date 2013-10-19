@@ -1,13 +1,13 @@
 %{ open Ast %}
 
-%token SEMI LPAREN RPAREN LBRACE RBRACE COMMA
-%token PLUS MINUS TIMES DIVIDE ASSIGN
-%token NOT 
-%token EQ NEQ LT LEQ GT GEQ OR AND
+%token SEMI LPAREN RPAREN LBRACE RBRACE COMMA RBRAC LBRAC
+%token PLUS MINUS TIMES DIVIDE ASSIGN 
+%token NOT INC DEC
+%token EQ NEQ LT LEQ GT GEQ OR AND MOD
 %token RETURN IF ELSE FOR WHILE INT FUNC
 %token <int> INT_LITERAL
 %token <float> FLOAT_LITERAL
-%token <string> ID
+%token <string> STRING_LITERAL TYPE ID
 %token EOF
 %token DELAY
 
@@ -18,9 +18,9 @@
 %left LT GT LEQ GEQ
 %left AND OR
 %left PLUS MINUS
-%left TIMES DIVIDE
-%right UMINUS
+%left TIMES DIVIDE MOD
 %right NOT
+%right UMINUS DEC INC
 
 %start program
 %type <Ast.program> program
@@ -32,26 +32,20 @@ program:
     | program fdecl { $2 :: $1 } 
 
 fdecl:
-    FUNC ID LPAREN formals_opt RPAREN LBRACE vdecl_list stmt_list RBRACE
-    { { fname = $2;
-    formals = $4;
-    locals = List.rev $7;
-    body = List.rev $8 }} 
+    FUNC TYPE ID LPAREN formals_opt RPAREN LBRACE vdecl_list stmt_list RBRACE
+    { { return = $2;
+    fname = $3;
+    formals = $5;
+    locals = List.rev $8;
+    body = List.rev $9 }} 
 
 formals_opt:
     /* nothing */ {[]}
     | formal_list { List.rev $1}
 
 formal_list:
-    ID  { [$1] }
-    | formal_list COMMA ID { $3 :: $1}
-
-vdecl_list:
-    /* nothing */ { [] }
-    | vdecl_list vdecl {$2 :: $1}
-
-vdecl:
-    INT ID SEMI { $2}
+    vdecl { [$1] }
+    | formal_list COMMA vdecl { $3 :: $1}
 
 stmt_list: 
     /* nothing */ {[]}
@@ -60,7 +54,15 @@ stmt_list:
 delay:
     INT_LITERAL {IntLit($1)}
     | FLOAT_LITERAL { FloatLit($1)}
-    | ID { Id($1)}
+    | ID { Variable(Ident($1))}
+
+vdecl:
+    TYPE ID SEMI { Vdecl(Datatype($1),Ident($2)) }
+    | TYPE ID ASSIGN expr SEMI { VarAssignDecl(Datatype($1),Ident($2),$4) }
+
+vdecl_list:
+    /* nothing */ { [] }
+    | vdecl_list vdecl {$2 :: $1}
 
 stmt:
     expr SEMI { Expr($1)}
@@ -80,7 +82,8 @@ expr_opt:
 expr:
   INT_LITERAL { IntLit($1)}
   | FLOAT_LITERAL { FloatLit($1)}
-  | ID               { Id($1) }
+  | STRING_LITERAL { StringLit($1)}
+  | ID { Variable(Ident($1)) }
   | expr PLUS   expr { Binop($1, Add,   $3) }
   | expr MINUS  expr { Binop($1, Sub,   $3) }
   | expr TIMES  expr { Binop($1, Mult,  $3) }
@@ -91,8 +94,11 @@ expr:
   | expr LEQ    expr { Binop($1, Leq,   $3) }
   | expr GT     expr { Binop($1, Greater,  $3) }
   | expr GEQ    expr { Binop($1, Geq,   $3) }
+  | expr MOD    expr { Binop($1, Mod, $3)}
   | ID ASSIGN expr   { Assign($1, $3) }
   | LPAREN expr RPAREN { $2 }
   | MINUS expr %prec UMINUS { Unop(Neg, $2) }
+  | expr INC {Unop(Inc, $1)}
+  | expr DEC {Unop(Dec, $1)}
   | expr AND expr {Binop($1, And, $3)}
   | expr OR expr {Binop($1, Or, $3)}

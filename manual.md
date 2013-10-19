@@ -72,10 +72,21 @@ Integers are automatically cast to floats when necessary. If an arithmetic opera
 * & logical and
 * | logical or
 
+## Declarations
+
+### Variable
+Variables may be declared and then defined, or done both at the same time.
+Declaration:
+int a;
+Definition & Declaration:
+int a = 5;
+
 ## Blocks and Control Flow 
 
 ### Blocks 
-A block is defined inside curly braces, which can include a possibly-empty list of statements.
+A block is defined inside curly braces, which can include a possibly-empty list of variable declarations and statements. A block is structured as:
+variable declarations
+statements
 
 ### If-else 
 
@@ -101,16 +112,19 @@ A while loop is:
     }
 
 ## Functions
-func func_name(type var1, type var2, …) {
+func returntype func_name(type var1, type var2, …) {
             body
 }
 Functions are defined only by identifying the block of code with func, giving the function a name, optionally supplying parameters, and defining a function body. A function does not need to return a value.
 
+}
+
 Example:
-function doStuff(Object person){
+func void Stuff(Object person){
              line.add(person);
              # 10 line.remove(person);
 }
+
 
 ## Delays
 In Slang, you can delay a block of code for a designated number of simulation time units by doing #time, where time is a float or a variable. This will delay only the current init or always block, and the other blocks will execute as they would have before.
@@ -120,8 +134,6 @@ In Slang, you can delay a block of code for a designated number of simulation ti
 The return keyword accepts an expression, function call, or nothing, and exists out of the smallest containing function or calling block. 
 
 ## TO ADD 
-Scoping rules
 by value/reference
 objects
-data structures
-ADD IN code for FLOATS
+arrays

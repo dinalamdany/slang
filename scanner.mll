@@ -5,6 +5,8 @@ rule token = parse
 | "/*"     { comment lexbuf }           (* Comments *)
 | '('      { LPAREN }
 | ')'      { RPAREN }
+| '['      { LBRAC }
+| ']'      { RBRAC }
 | '{'      { LBRACE }
 | '}'      { RBRACE }
 | ';'      { SEMI }
@@ -25,6 +27,9 @@ rule token = parse
 | "&"      { AND }
 | "|"      { OR }
 | "#"      { DELAY }
+| "++"     { INC }
+| "--"     { DEC }
+| "%"      { MOD }
 | "else"   { ELSE }
 | "for"    { FOR }
 | "while"  { WHILE }
@@ -36,7 +41,9 @@ rule token = parse
     as lxm { FLOAT_LITERAL(float_of_string lxm) }
 | ['a'-'z' 'A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_']* as lxm { ID(lxm) }
 | eof { EOF }
+| "\"['a'-'z' 'A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_']*\"" as lxm { STRING_LITERAL(lxm) }
 | _ as char { raise (Failure("illegal character " ^ Char.escaped char)) }
+| "String" | "int" | "float" | "void" as prim {TYPE(prim)}
 
 and comment = parse
   "*/" { token lexbuf }
