@@ -77,12 +77,14 @@ vdecl:
         ArrAssignDecl(Datatype($1),Ident($2),$7)}
     | OBJECT ID SEMI { ObjDecl(Ident($2))}
     | OBJECT ID SEMI ASSIGN OBJECT LPAREN property_list RPAREN { ObjAssignDecl(Ident($2), $7)}
+    | ID DOT ID ASSIGN expr {PropertyAssign(Ident($1),Ident($3), $5)}
 
 property_list:
     /* nothing */ {[]}
     | property COMMA property_list { $1 :: $3}
 
 property:
+    
     TYPE ID COLON expr {VarAssignDecl(Datatype($1),Ident($2), $4)}
     | TYPE ID LBRAC RBRAC ASSIGN LBRAC expr_list RBRAC SEMI {ArrAssignDecl(Datatype($1),Ident($2),$7)}
 
