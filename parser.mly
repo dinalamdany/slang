@@ -70,10 +70,14 @@ delay:
 vdecl:
     TYPE ID SEMI { Vdecl(Datatype($1),Ident($2)) }
     | TYPE ID ASSIGN expr SEMI { VarAssignDecl(Datatype($1),Ident($2),$4) }
-    | TYPE ID LBRACE INT_LITERAL RBRACE SEMI {
-        ArrDecl(Datatype($1),Ident($2),$4) }
+    | TYPE ID LBRAC RBRAC SEMI {
+        ArrDecl(Datatype($1),Ident($2))}
+    | TYPE ID LBRAC RBRAC ASSIGN LBRAC expr_list RBRAC SEMI {
+        ArrAssignDecl(Datatype($1),Ident($2),$7)}
 
-
+expr_list:
+    /* nothing */ { [] }
+    | expr COMMA expr_list { $1 :: $3 }
 stmt:
     expr SEMI { Expr($1)}
     | DELAY delay stmt { Delay($2,$3)}
@@ -108,7 +112,7 @@ expr:
   | expr MOD    expr { Binop($1, Mod, $3)}
   | ID ASSIGN expr   { Assign(Ident($1), $3) }
   | ID LBRAC INT_LITERAL RBRAC ASSIGN expr { ArrAssign(Ident($1), $3 ,$6)}
-  | ID LBRAC INT_LITERAL RBRAC { ArrVal(Ident($1), $3)}
+  | ID LBRAC INT_LITERAL RBRAC { ArrElem(Ident($1), $3)}
   | LPAREN expr RPAREN { $2 }
   | MINUS expr %prec UMINUS { Unop(Neg, $2) }
   | expr INC {Unop(Inc, $1)}

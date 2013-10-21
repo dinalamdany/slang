@@ -112,6 +112,14 @@ A while loop is:
         block
     }
 
+## Arrays
+In Slang, you can have arrays of any type. You declare an array as follow:
+type name []; 
+You can also create an array and fill it with values, as in:
+type name[] = [5,6,7]
+
+Arrays are dynamically sized.
+
 ## Functions
 func returntype func_name(type var1, type var2, …) {
             body
@@ -137,4 +145,3 @@ The return keyword accepts an expression, function call, or nothing, and exists 
 ## TO ADD 
 by value/reference
 objects
-arrays

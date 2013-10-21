@@ -13,7 +13,7 @@ type expr =
   | Binop of expr * op * expr
   | Assign of ident * expr
   | ArrAssign of ident * int * expr
-  | ArrVal of ident * int 
+  | ArrElem of ident * int 
   | Noexpr
 
 type datatype = 
@@ -22,7 +22,8 @@ type datatype =
 type decl = 
     Vdecl of datatype * ident 
     | VarAssignDecl of datatype * ident * expr
-    | ArrDecl of datatype * ident * int
+    | ArrDecl of datatype * ident 
+    | ArrAssignDecl of datatype * ident * expr list
 
 type stmt = 
       Block of stmt list
