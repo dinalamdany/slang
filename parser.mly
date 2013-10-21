@@ -71,7 +71,8 @@ vdecl:
     TYPE ID SEMI { Vdecl(Datatype($1),Ident($2)) }
     | TYPE ID ASSIGN expr SEMI { VarAssignDecl(Datatype($1),Ident($2),$4) }
     | TYPE ID LBRACE INT_LITERAL RBRACE SEMI {
-        ArrDecl(Datatype($1),Ident($2),IntLit($4)) }
+        ArrDecl(Datatype($1),Ident($2),$4) }
+
 
 stmt:
     expr SEMI { Expr($1)}
@@ -105,7 +106,9 @@ expr:
   | expr GT     expr { Binop($1, Greater,  $3) }
   | expr GEQ    expr { Binop($1, Geq,   $3) }
   | expr MOD    expr { Binop($1, Mod, $3)}
-  | ID ASSIGN expr   { Assign($1, $3) }
+  | ID ASSIGN expr   { Assign(Ident($1), $3) }
+  | ID LBRAC INT_LITERAL RBRAC ASSIGN expr { ArrAssign(Ident($1), $3 ,$6)}
+  | ID LBRAC INT_LITERAL RBRAC { ArrVal(Ident($1), $3)}
   | LPAREN expr RPAREN { $2 }
   | MINUS expr %prec UMINUS { Unop(Neg, $2) }
   | expr INC {Unop(Inc, $1)}
