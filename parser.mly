@@ -1,6 +1,6 @@
 %{ open Ast %}
 
-%token SEMI LPAREN RPAREN LBRACE RBRACE COMMA RBRAC LBRAC
+%token SEMI LPAREN RPAREN LBRACE RBRACE COMMA RBRAC LBRAC COLON DOT
 %token PLUS MINUS TIMES DIVIDE ASSIGN 
 %token NOT INC DEC
 %token EQ NEQ LT LEQ GT GEQ OR AND MOD
@@ -10,6 +10,7 @@
 %token <string> STRING_LITERAL TYPE ID
 %token EOF
 %token DELAY MAIN INIT ALWAYS
+%token OBJECT
 
 %nonassoc NOELSE
 %nonassoc ELSE
@@ -74,6 +75,16 @@ vdecl:
         ArrDecl(Datatype($1),Ident($2))}
     | TYPE ID LBRAC RBRAC ASSIGN LBRAC expr_list RBRAC SEMI {
         ArrAssignDecl(Datatype($1),Ident($2),$7)}
+    | OBJECT ID SEMI { ObjDecl(Ident($2))}
+    | OBJECT ID SEMI ASSIGN OBJECT LPAREN property_list RPAREN { ObjAssignDecl(Ident($2), $7)}
+
+property_list:
+    /* nothing */ {[]}
+    | property COMMA property_list { $1 :: $3}
+
+property:
+    TYPE ID COLON expr {VarAssignDecl(Datatype($1),Ident($2), $4)}
+    | TYPE ID LBRAC RBRAC ASSIGN LBRAC expr_list RBRAC SEMI {ArrAssignDecl(Datatype($1),Ident($2),$7)}
 
 expr_list:
     /* nothing */ { [] }

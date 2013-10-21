@@ -10,8 +10,10 @@ rule token = parse
 | '{'      { LBRACE }
 | '}'      { RBRACE }
 | ';'      { SEMI }
+| ':'      { COLON }
 | ','      { COMMA }
-| '.'      { DOT}
+| '.'      { DOT }
+| "object" { OBJECT } 
 | '+'      { PLUS }
 | '-'      { MINUS }
 | '*'      { TIMES }

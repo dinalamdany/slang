@@ -24,6 +24,8 @@ type decl =
     | VarAssignDecl of datatype * ident * expr
     | ArrDecl of datatype * ident 
     | ArrAssignDecl of datatype * ident * expr list
+    | ObjDecl of ident
+    | ObjAssignDecl of ident * decl list
 
 type stmt = 
       Block of stmt list
