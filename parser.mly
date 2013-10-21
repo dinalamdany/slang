@@ -66,9 +66,12 @@ delay:
     | FLOAT_LITERAL { FloatLit($1)}
     | ID { Variable(Ident($1))}
 
+
 vdecl:
     TYPE ID SEMI { Vdecl(Datatype($1),Ident($2)) }
     | TYPE ID ASSIGN expr SEMI { VarAssignDecl(Datatype($1),Ident($2),$4) }
+    | TYPE ID LBRACE INT_LITERAL RBRACE SEMI {
+        ArrDecl(Datatype($1),Ident($2),IntLit($4)) }
 
 stmt:
     expr SEMI { Expr($1)}

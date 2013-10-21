@@ -20,6 +20,7 @@ type datatype =
 type decl = 
     Vdecl of datatype * ident 
     | VarAssignDecl of datatype * ident * expr
+    | ArrDecl of datatype * ident * expr
 
 type stmt = 
       Block of stmt list
