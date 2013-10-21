@@ -147,4 +147,9 @@ by value/reference
 objects
 precedence
 keywords
+scope (threads)
 unit tests
+
+dina: not a decl, change object declarations (dont hvae to set values),
+can declare variables in main
+terminate
