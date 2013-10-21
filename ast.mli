@@ -14,6 +14,13 @@ type expr =
   | Assign of string * expr
   | Noexpr
 
+type datatype = 
+    Datatype of string
+
+type decl = 
+    Vdecl of datatype * ident 
+    | VarAssignDecl of datatype * ident * expr
+
 type stmt = 
       Block of stmt list
     | Expr of expr
@@ -22,20 +29,18 @@ type stmt =
     | For of expr * expr * expr * stmt
     | Delay of expr * stmt
     | While of expr * stmt
+    | Declaration of decl 
 
-type datatype = 
-    Datatype of string
-
-type decl = 
-    Vdecl of datatype * ident 
-    | VarAssignDecl of datatype * ident * expr
-    
 type func_decl = {
     return: string;
     fname : string;
     formals : decl list;
-    locals : decl list;
     body : stmt list;
 }
 
-type program = func_decl list
+type thread = 
+    Init of stmt list
+    | Always of stmt list
+
+type program = 
+    func_decl list * thread list

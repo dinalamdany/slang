@@ -9,7 +9,7 @@
 %token <float> FLOAT_LITERAL
 %token <string> STRING_LITERAL TYPE ID
 %token EOF
-%token DELAY
+%token DELAY MAIN INIT ALWAYS
 
 %nonassoc NOELSE
 %nonassoc ELSE
@@ -28,16 +28,26 @@
 %%
 
 program:
+    main {[],$1}
+    | fdecl program { ($1 :: fst $2), snd $2 }
+
+main:
+    MAIN LPAREN RPAREN LBRACE timeblock_list RBRACE {$5}
+    
+timeblock_list:
     /* nothing */ {[]}
-    | program fdecl { $2 :: $1 } 
+    | timeblock_list timeblock { $2 :: $1 }
+
+timeblock:
+    INIT LBRACE stmt_list RBRACE {Init($3)}
+    | ALWAYS LBRACE stmt_list RBRACE {Always($3)}
 
 fdecl:
-    FUNC TYPE ID LPAREN formals_opt RPAREN LBRACE vdecl_list stmt_list RBRACE
+    FUNC TYPE ID LPAREN formals_opt RPAREN LBRACE stmt_list RBRACE
     { { return = $2;
     fname = $3;
     formals = $5;
-    locals = List.rev $8;
-    body = List.rev $9 }} 
+    body = List.rev $8 }} 
 
 formals_opt:
     /* nothing */ {[]}
@@ -60,10 +70,6 @@ vdecl:
     TYPE ID SEMI { Vdecl(Datatype($1),Ident($2)) }
     | TYPE ID ASSIGN expr SEMI { VarAssignDecl(Datatype($1),Ident($2),$4) }
 
-vdecl_list:
-    /* nothing */ { [] }
-    | vdecl_list vdecl {$2 :: $1}
-
 stmt:
     expr SEMI { Expr($1)}
     | DELAY delay stmt { Delay($2,$3)}
@@ -74,6 +80,7 @@ stmt:
     | FOR LPAREN expr_opt SEMI expr_opt SEMI expr_opt RPAREN stmt    
         { For($3, $5, $7, $9) }
     | WHILE LPAREN expr RPAREN stmt { While($3, $5) }
+    | vdecl { Declaration($1) }
 
 expr_opt:
     /* nothing */ { Noexpr }

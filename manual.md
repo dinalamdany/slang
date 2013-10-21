@@ -4,7 +4,7 @@
 Slang is a discrete event simulation language. It allows for a programmer to schedule events at discrete times, and have those events executed based on an event queue ordered by start time. 
 
 ## Program
-A program is a single file consisting of functions, defined and written above the main function, and main function. The main block consists of at least one (or more) of an init block and/or an always block. An init block consists of statements that are to be executed sequentially from time 0. An always block consists of code to be continually run until program termination. init and always blocks can only exist within the main function, not within any other function.
+A program is a single file consisting of functions, defined and written above the main function, and main function. The main block consists of zero, or at least one (or more) of an init block and/or an always block. An init block consists of statements that are to be executed sequentially from time 0. An always block consists of code to be continually run until program termination. init and always blocks can only exist within the main function, not within any other function.
 
 ## Scoping
 Variables can exist within any function, and exist within functions that are called within the outer function. Local variables take precedent over variables defined outside the function. 
@@ -75,6 +75,7 @@ Integers are automatically cast to floats when necessary. If an arithmetic opera
 ## Declarations
 
 ### Variable
+Variables can be defined within the main function, within individual functions, or within an init/always block.
 Variables may be declared and then defined, or done both at the same time.
 Declaration:
 int a;
