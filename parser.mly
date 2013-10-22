@@ -10,7 +10,7 @@
 %token <string> STRING_LITERAL TYPE ID
 %token EOF
 %token DELAY MAIN INIT ALWAYS
-%token OBJECT
+%token OBJECT TERMINATE
 
 %nonassoc NOELSE
 %nonassoc ELSE
@@ -33,7 +33,7 @@ program:
     | fdecl program { ($1 :: fst $2), snd $2 }
 
 main:
-    MAIN LPAREN RPAREN LBRACE timeblock_list RBRACE {$5}
+    MAIN LPAREN RPAREN LBRACE vdecl_list timeblock_list RBRACE { $5, $6}
     
 timeblock_list:
     /* nothing */ {[]}
@@ -67,6 +67,9 @@ delay:
     | FLOAT_LITERAL { FloatLit($1)}
     | ID { Variable(Ident($1))}
 
+vdecl_list:
+    /* nothing */ {[]}
+    | vdecl_list vdecl { $2 :: $1 }
 
 vdecl:
     TYPE ID SEMI { Vdecl(Datatype($1),Ident($2)) }
@@ -76,24 +79,26 @@ vdecl:
     | TYPE ID LBRAC RBRAC ASSIGN LBRAC expr_list RBRAC SEMI {
         ArrAssignDecl(Datatype($1),Ident($2),$7)}
     | OBJECT ID SEMI { ObjDecl(Ident($2))}
-    | OBJECT ID SEMI ASSIGN OBJECT LPAREN property_list RPAREN { ObjAssignDecl(Ident($2), $7)}
-    | ID DOT ID ASSIGN expr {PropertyAssign(Ident($1),Ident($3), $5)}
+    | OBJECT ID ASSIGN OBJECT LPAREN property_list RPAREN SEMI { ObjAssignDecl(Ident($2), $6)}
 
 property_list:
     /* nothing */ {[]}
     | property COMMA property_list { $1 :: $3}
 
 property:
-    
-    TYPE ID COLON expr {VarAssignDecl(Datatype($1),Ident($2), $4)}
-    | TYPE ID LBRAC RBRAC ASSIGN LBRAC expr_list RBRAC SEMI {ArrAssignDecl(Datatype($1),Ident($2),$7)}
+    TYPE ID {Vdecl(Datatype($1),Ident($2))}
+    | TYPE ID LBRAC RBRAC { ArrDecl(Datatype($1),Ident($2))} 
+    | TYPE ID COLON expr {VarAssignDecl(Datatype($1),Ident($2), $4)}
+    | TYPE ID LBRAC RBRAC ASSIGN LBRAC expr_list RBRAC {ArrAssignDecl(Datatype($1),Ident($2),$7)}
 
 expr_list:
     /* nothing */ { [] }
     | expr COMMA expr_list { $1 :: $3 }
+ 
 stmt:
     expr SEMI { Expr($1)}
     | DELAY delay stmt { Delay($2,$3)}
+    | TERMINATE { Terminate }
     | RETURN expr SEMI { Return($2)}
     | LBRACE stmt_list RBRACE { Block(List.rev $2) }
     | IF LPAREN expr RPAREN stmt %prec NOELSE { If($3, $5, Block([])) }
@@ -102,6 +107,7 @@ stmt:
         { For($3, $5, $7, $9) }
     | WHILE LPAREN expr RPAREN stmt { While($3, $5) }
     | vdecl { Declaration($1) }
+    | ID DOT ID ASSIGN expr SEMI {PropertyAssign(Ident($1),Ident($3), $5)}
 
 expr_opt:
     /* nothing */ { Noexpr }
