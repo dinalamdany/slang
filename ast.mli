@@ -37,6 +37,7 @@ type stmt =
     | While of expr * stmt
     | Declaration of decl 
     | PropertyAssign of ident * ident * expr
+    | Terminate
 
 type func_decl = {
     return: string;

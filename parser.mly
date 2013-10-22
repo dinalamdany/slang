@@ -10,7 +10,7 @@
 %token <string> STRING_LITERAL TYPE ID
 %token EOF
 %token DELAY MAIN INIT ALWAYS
-%token OBJECT
+%token OBJECT TERMINATE
 
 %nonassoc NOELSE
 %nonassoc ELSE
@@ -98,6 +98,7 @@ expr_list:
 stmt:
     expr SEMI { Expr($1)}
     | DELAY delay stmt { Delay($2,$3)}
+    | TERMINATE { Terminate }
     | RETURN expr SEMI { Return($2)}
     | LBRACE stmt_list RBRACE { Block(List.rev $2) }
     | IF LPAREN expr RPAREN stmt %prec NOELSE { If($3, $5, Block([])) }
