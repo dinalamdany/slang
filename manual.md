@@ -167,13 +167,18 @@ These words have special meanings and are reserved, so the user may not use them
 A slang program consists of threads, specified by the init and always keywords. An init thread is:
 
 init{
-            body
+
+        body
+        
 }
 And an always thread is:
 
 always{
-            body
+
+        body
+
 }
+
 An init block of code is executed a single time at the beginning of the program, setting up any conditions necessary for execution. The body of an init thread can be empty. An always thread executes once per time unit, looping consistently until the program terminates. Always blocks run as separate threads, and therefore it is possible to run multiple always threads concurrently.
 
 
