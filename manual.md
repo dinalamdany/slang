@@ -72,6 +72,20 @@ Integers are automatically cast to floats when necessary. If an arithmetic opera
 * & logical and
 * | logical or
 
+###Precedence Order
+Operators within the same row share the same precedence. Higher rows indicate higher precedence.
+
+| Operator    | Associativity |
+| ----------- |:-------------:|
+| --, ++, -   | right         |
+| !           | right         |
+| *, -, %     | left          |
+| +, -        | left          |
+| &, \|       | left          |
+| <, >, <=, >=| left          |
+| ==, !=      | left          |
+| =           | right         |
+
 ## Declarations
 
 ### Variable
