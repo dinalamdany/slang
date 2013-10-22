@@ -37,7 +37,6 @@ rule token = parse
 | "for"    { FOR }
 | "while"  { WHILE }
 | "return" { RETURN }
-| "int"    { INT }
 | "func"   { FUNC }
 | "main"   { MAIN }
 | "init"   { INIT }
@@ -49,7 +48,7 @@ rule token = parse
 | ['a'-'z' 'A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_']* as lxm { ID(lxm) }
 | eof { EOF }
 | "\"['a'-'z' 'A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_']*\"" as lxm { STRING_LITERAL(lxm) }
-| "String" | "int" | "float" | "void" as prim {TYPE(prim)}
+| "bool" | "String" | "int" | "float" | "void" as prim {TYPE(prim)}
 | _ as char { raise (Failure("illegal character " ^ Char.escaped char)) }
 
 and comment = parse

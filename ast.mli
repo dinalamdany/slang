@@ -6,6 +6,7 @@ type ident =
 
 type expr =
   IntLit of int
+  | BoolLit of bool
   | FloatLit of float
   | StringLit of string
   | Variable of ident 

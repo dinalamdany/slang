@@ -126,7 +126,7 @@ func returntype func_name(type var1, type var2, …) {
 }
 Functions are defined only by identifying the block of code with func, giving the function a name, optionally supplying parameters, and defining a function body. A function does not need to return a value.
 
-}
+return types are any data type, or void for no value 
 
 Example:
 func void Stuff(Object person){

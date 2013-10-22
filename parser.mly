@@ -7,6 +7,7 @@
 %token RETURN IF ELSE FOR WHILE INT FUNC
 %token <int> INT_LITERAL
 %token <float> FLOAT_LITERAL
+%token <bool> BOOL
 %token <string> STRING_LITERAL TYPE ID
 %token EOF
 %token DELAY MAIN INIT ALWAYS
