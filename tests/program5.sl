@@ -1,3 +1,4 @@
+/*should not be accepted*/
 main() {
   init {
      always{}
