@@ -26,7 +26,6 @@ type decl =
     | ArrAssignDecl of datatype * ident * expr list
     | ObjDecl of ident
     | ObjAssignDecl of ident * decl list
-    | PropertyAssign of ident * ident * expr
 
 type stmt = 
       Block of stmt list
@@ -37,6 +36,7 @@ type stmt =
     | Delay of expr * stmt
     | While of expr * stmt
     | Declaration of decl 
+    | PropertyAssign of ident * ident * expr
 
 type func_decl = {
     return: string;
@@ -50,4 +50,4 @@ type thread =
     | Always of stmt list
 
 type program = 
-    func_decl list * thread list
+    func_decl list * (decl list * thread list)
