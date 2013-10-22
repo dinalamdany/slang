@@ -119,6 +119,7 @@ expr:
   | FLOAT_LITERAL { FloatLit($1)}
   | STRING_LITERAL { StringLit($1)}
   | BOOL_LITERAL {BoolLit($1)}
+  | TYPE LPAREN expr RPAREN { Cast(Datatype($1),$3)}
   | ID { Variable(Ident($1)) }
   | expr PLUS   expr { Binop($1, Add,   $3) }
   | expr MINUS  expr { Binop($1, Sub,   $3) }

@@ -4,6 +4,10 @@ And | Or | Not | Neg | Inc | Dec | Mod
 type ident = 
   Ident of string
 
+type datatype = 
+    Datatype of string
+
+
 type expr =
   IntLit of int
   | BoolLit of bool
@@ -16,10 +20,7 @@ type expr =
   | ArrAssign of ident * int * expr
   | ArrElem of ident * int 
   | Noexpr
-
-type datatype = 
-    Datatype of string
-
+  | Cast of datatype * expr
 type decl = 
     Vdecl of datatype * ident 
     | VarAssignDecl of datatype * ident * expr
