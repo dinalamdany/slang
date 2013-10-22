@@ -149,7 +149,11 @@ Slang passes arguments by value. The argument sent to a function is in fact a co
 In Slang, an object is an encapsulation of a set of user defined properties. An object can be declared and not defined as:
 Object person;
 Alternatively, an object can be defined as:
+
+
 Object person = new Object(name="Bob", age=25);
+
+
 The user also has the option to not initialize the values of the properties (such as name and age) but is required to list out all of the properties of the Object on definition.
 
 ##Keywords
@@ -161,10 +165,12 @@ These words have special meanings and are reserved, so the user may not use them
 
 ##Threads
 A slang program consists of threads, specified by the init and always keywords. An init thread is:
+
 init{
             body
 }
 And an always thread is:
+
 always{
             body
 }
@@ -173,7 +179,10 @@ An init block of code is executed a single time at the beginning of the program,
 
 ## TO ADD 
 precedence - precedence of individual operators is already defined. I do not think that we need to explicitly add a precedence section (I checked the C LRM and others)
+
 scope (threads) - I defined threads but I am unclear on the exact scope. Any feedback on this would be appreciated
+
 Sample program - I do not think this goes in an LRM (I looked over a few examples) but correct me if I am wrong and I will do it
+
 unit tests
 
