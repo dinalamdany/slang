@@ -1,0 +1,7 @@
+main() {
+  init {
+     init{}
+  }
+  always {
+  }
+}
