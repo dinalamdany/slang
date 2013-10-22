@@ -92,10 +92,13 @@ Operators within the same row share the same precedence. Higher rows indicate hi
 Variables can be defined within the main function, within individual functions, or within an init/always block.
 Variables may be declared and then defined, or done both at the same time.
 Declaration:
+'''
 int a;
+'''
 Definition & Declaration:
+'''
 int a = 5;
-
+'''
 ## Blocks and Control Flow 
 
 ### Blocks 
@@ -122,10 +125,11 @@ A for loop can be:
 }, which is infinite
 
 A while loop is:
+'''
     while condition {
         block
     }
-
+'''
 ## Arrays
 In Slang, you can have arrays of any type. You declare an array as follow:
 type name []; 
@@ -135,19 +139,22 @@ type name[] = [5,6,7]
 Arrays are dynamically sized.
 
 ## Functions
+'''
 func returntype func_name(type var1, type var2, …) {
             body
 }
+'''
 Functions are defined only by identifying the block of code with func, giving the function a name, optionally supplying parameters, and defining a function body. A function does not need to return a value.
 
 return types are any data type, or void for no value 
 
 Example:
+'''
 func void Stuff(Object person){
              line.add(person);
              # 10 line.remove(person);
 }
-
+'''
 
 ## Delays
 In Slang, you can delay a block of code for a designated number of simulation time units by doing #time, where time is a float or a variable. This will delay only the current init or always block, and the other blocks will execute as they would have before.
@@ -164,35 +171,36 @@ In Slang, an object is an encapsulation of a set of user defined properties. An 
 Object person;
 Alternatively, an object can be defined as:
 
-
+'''
 Object person = new Object(name="Bob", age=25);
-
+'''
 
 The user also has the option to not initialize the values of the properties (such as name and age) but is required to list out all of the properties of the Object on definition.
 
 ##Keywords
 Our keywords are:
-
+'''
 else for while return int func main init always Terminate
-
+'''
 These words have special meanings and are reserved, so the user may not use them as an identifier.
 
 ##Threads
 A slang program consists of threads, specified by the init and always keywords. An init thread is:
-
+'''
 init{
 
         body
         
 }
+'''
 And an always thread is:
-
+'''
 always{
 
         body
 
 }
-
+'''
 An init block of code is executed a single time at the beginning of the program, setting up any conditions necessary for execution. The body of an init thread can be empty. An always thread executes once per time unit, looping consistently until the program terminates. Always blocks run as separate threads, and therefore it is possible to run multiple always threads concurrently.
 
 
