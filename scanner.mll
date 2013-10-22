@@ -48,7 +48,7 @@ rule token = parse
     as lxm { FLOAT_LITERAL(float_of_string lxm) }
 | ['a'-'z' 'A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_']* as lxm { ID(lxm) }
 | eof { EOF }
-| "\"['a'-'z' 'A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_']*\"" as lxm { STRING_LITERAL(lxm) }
+| "\"['a'-'z' 'A'-'Z' '0'-'9' '_']*\"" as lxm { STRING_LITERAL(lxm) }
 | "bool" | "String" | "int" | "float" | "void" as prim {TYPE(prim)}
 | _ as char { raise (Failure("illegal character " ^ Char.escaped char)) }
 
