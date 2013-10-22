@@ -81,7 +81,7 @@ Operators within the same row share the same precedence. Higher rows indicate hi
 | !           | right         |
 | *, -, %     | left          |
 | +, -        | left          |
-| &, \|       | left          |
+| &,  &#124;  | left          |
 | <, >, <=, >=| left          |
 | ==, !=      | left          |
 | =           | right         |
