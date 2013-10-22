@@ -40,7 +40,7 @@ A float is a 64-bit signed floating-point number.
 
 ### Boolean  
 A boolean value defined using the keywords true or false. 
-
+    bool x = true;
 ### String 
 A string is a sequence of characters. String literals are placed between double quotes.
 
