@@ -7,7 +7,7 @@
 %token RETURN IF ELSE FOR WHILE INT FUNC
 %token <int> INT_LITERAL
 %token <float> FLOAT_LITERAL
-%token <bool> BOOL
+%token <bool> BOOL_LITERAL
 %token <string> STRING_LITERAL TYPE ID
 %token EOF
 %token DELAY MAIN INIT ALWAYS
@@ -118,6 +118,7 @@ expr:
   INT_LITERAL { IntLit($1)}
   | FLOAT_LITERAL { FloatLit($1)}
   | STRING_LITERAL { StringLit($1)}
+  | BOOL_LITERAL {BoolLit($1)}
   | ID { Variable(Ident($1)) }
   | expr PLUS   expr { Binop($1, Add,   $3) }
   | expr MINUS  expr { Binop($1, Sub,   $3) }
