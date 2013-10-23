@@ -350,12 +350,12 @@ The program consists of function declarations followed by a main, which contains
 ```
 	1 	function foo(object x){
 	2		#2
-	3		stuff.add(x);
+	3		2+2;
 	4 	}
 	5
 	6 	function bar(){
 	7		#5
-	8		stuff.pop();
+	8		1+1;
 	9 	}
 	10
 	11 	main(){
@@ -366,7 +366,7 @@ The program consists of function declarations followed by a main, which contains
 	16
 	17		always { //always_1
 	18			#3 //sleeps the thread for 3 time units
-	19			foo(object(type properties[])); //since there is a delay of 2 within foo, a call to foo will sleep the thread for another 2 time units
+	19			foo(); //since there is a delay of 2 within foo, a call to foo will sleep the thread for another 2 time units
 	20		}
 	21
 	22		always { //always_2
@@ -381,18 +381,16 @@ On an absolute time scale from the beginning of the execution of main:
 | ---- | -------------- | -------------------------------------------------------------------------------------	|
 | 00:  | 13, 18, 23 	| //sleep each thread for the time units specified										| 
 | 03:  | 19, 2  		| //foo() is called in always_1, which sleeps the the thread for another 2 time units	| 
-| 05:  | 3, 18  		| //stuff.add() is called in always_1, thread sleeps for another 3 time units			| 
+| 05:  | 3, 18  		| //2+2 is evaluated in always_1, thread sleeps for another 3 time units			| 
 | 08:  | 19, 2  		| //foo() is called in always_1, which sleeps the the thread for another 2 time units	| 
-| 10:  | 3, 18  		| //stuff.add() is called in always_1, thread sleeps for another 3 time units			| 
+| 10:  | 3, 18  		| //2+2 is evaluated in always_1, thread sleeps for another 3 time units			| 
 | 10:  | 24, 7  		| //bar() is called in always_2, thread sleeps for 5 time units							| 
 | 13:  | 19, 2  		| //foo() is called in always_1, which sleeps the the thread for another 2 time units	| 
-| 15:  | 3, 18  		| //stuff.add() is called in always_1, thread sleeps for another 3 time units			| 
-| 15:  | 8, 23  		| //stuff.pop() is called in always_2, thread sleeps for another 10 time units			| 
+| 15:  | 3, 18  		| //2+2 is called in always_1, thread sleeps for another 3 time units			| 
+| 15:  | 8, 23  		| //1+1 is evaluated in always_2, thread sleeps for another 10 time units			| 
 | 15:  | 14     		| //program terminates																	| 
 
 Because threads can wake and access data structures at the same time, there are race condition concerns. However, because this is a simulation language, randomness in process execution at the same time is acceptable (i.e. in a real life situation at an amusement park, at exactly time 10, a person may leave the line for a roller coaster just before the roller coaster arrives, or the roller coaster may arrive just before the person leaves the line).
-
-Because there is the danger of calling stuff.pop() before any objects are added to the stuff array, if the array is empty, pop() will recover from its error and allow the program execution to continue.
 
 ## TO ADD 
 precedence - precedence of individual operators is already defined. I do not think that we need to explicitly add a precedence section (I checked the C LRM and others) -- resolved? precedence table added, but unsure if accurate, proper
