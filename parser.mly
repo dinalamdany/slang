@@ -70,17 +70,17 @@ delay:
 
 vdecl_list:
     /* nothing */ {[]}
-    | vdecl_list vdecl { $2 :: $1 }
+    | vdecl SEMI vdecl_list { $1 :: $3 }
 
 vdecl:
-    TYPE ID SEMI { Vdecl(Datatype($1),Ident($2)) }
-    | TYPE ID ASSIGN expr SEMI { VarAssignDecl(Datatype($1),Ident($2),$4) }
-    | TYPE ID LBRAC RBRAC SEMI {
+    TYPE ID { Vdecl(Datatype($1),Ident($2)) }
+    | TYPE ID ASSIGN expr { VarAssignDecl(Datatype($1),Ident($2),$4) }
+    | TYPE ID LBRAC RBRAC {
         ArrDecl(Datatype($1),Ident($2))}
-    | TYPE ID LBRAC RBRAC ASSIGN LBRAC expr_list RBRAC SEMI {
+    | TYPE ID LBRAC RBRAC ASSIGN LBRAC expr_list RBRAC {
         ArrAssignDecl(Datatype($1),Ident($2),$7)}
-    | OBJECT ID SEMI { ObjDecl(Ident($2))}
-    | OBJECT ID ASSIGN OBJECT LPAREN property_list RPAREN SEMI { ObjAssignDecl(Ident($2), $6)}
+    | OBJECT ID { ObjDecl(Ident($2))}
+    | OBJECT ID ASSIGN OBJECT LPAREN property_list RPAREN { ObjAssignDecl(Ident($2), $6)}
 
 property_list:
     /* nothing */ {[]}
@@ -107,7 +107,7 @@ stmt:
     | FOR LPAREN expr_opt SEMI expr_opt SEMI expr_opt RPAREN stmt    
         { For($3, $5, $7, $9) }
     | WHILE LPAREN expr RPAREN stmt { While($3, $5) }
-    | vdecl { Declaration($1) }
+    | vdecl SEMI { Declaration($1) }
     | ID DOT ID ASSIGN expr SEMI {PropertyAssign(Ident($1),Ident($3), $5)}
 
 expr_opt:
