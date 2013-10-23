@@ -28,6 +28,9 @@ Braces indicate a statement in blocks.
 ### Semicolon
 Used to separate statement and expression in a for loop. Used at the end of every statement.
 
+### Colon
+Colons are used specificially for property lists when declaring an object.
+
 ## Comments 
 Multiline comments in Slang start with /* and terminate with the next */. Multiline comments do not nest.
 
@@ -143,7 +146,7 @@ Object person;
 Alternatively, an object can be defined as:
 
 ```
-Object person = Object(string name="Bob", int age=25);
+Object person = Object(string name="Bob", int age=25, string nicknames[] = ["Bobby", "Lil' B"]);
 ```
 
 The user also has the option to not initialize the values of the properties (such as name and age) but is required to list out all of the properties of the Object on definition.
@@ -158,15 +161,19 @@ Statements are used to get the program to do something. Statements are used for 
 	if (5<6) {
 		string name = "Pete";
 	}
-		Terminate;
+	Terminate;
 }
 ```
 ## Blocks and Control Flow 
 
 ### Blocks 
 A block is defined inside curly braces, which can include a possibly-empty list of variable declarations and statements. A block is structured as:
-variable declarations
-statements
+```
+{
+	variable declarations
+	statements
+}
+```
 
 ### If-else 
 
@@ -177,9 +184,9 @@ where expression evaluates to a boolean value. The else keyword is tied to the n
 ```
 if (5>10) { /*if statement one*/
 	if (4>5){ /*if statement two*/
-
+		
 		block
-  
+  		
 	}
 	else { /*tied to if statement two*/
 	}
@@ -207,7 +214,7 @@ for (int i = 0; i < 10; i++) {
 
 ```
 for;; {
-
+	block
 }
 ```
 
@@ -218,7 +225,37 @@ A while loop is:
     }
 ```
 
+## Typecasting
+Typecasting can be used to change the type of value to another type. 
 
+### Casting to numbers
+Casting a float to an integer truncates the fraction part, while casting an integer to an integer. Casting a bool to an int or a float would result in either 1 or 0. Casting a string to a float or integer is allowed if the string contains numerical values that would be found in an integer or float.
+```
+float a = 42.3;
+
+int b = int(a); /*b now holds value 42*/
+a = float(b); /*a now holds value 42.0*/
+
+a = float(true); /*a now holds value 1.0*/
+b = int(false); /*b now holds value 0*/
+
+a = float("52.34"); /*a now holds value 52.34*/
+b = int("23"); /*b now holds value 23*/
+```
+### Casting to Strings and Booleans
+Casting an integer or float to a string converts the number into a string, while casting a bool into a string creates either "true" or "false." Converting any number above 0 or non-empty string to a bool leads to true, while 0 and a string whose value is "false" or is empty leads to false.
+```
+float c = 20.3;
+bool d = false;
+
+string number = string(c); /*string now holds value "20.3"*/
+string boolean = string(d); /*string now holds value "false"*/
+
+d = bool(20); /*d is now true*/
+d = bool("false"); /*d is now false, same as if d = bool(boolean)*/
+d = bool("Mike"); /*d is now true*/
+d = bool(""); /*d is now false*/
+```
 ## Terminate
 When the Terminate keyword statement is found within the program, the program ends.
 ```
