@@ -5,6 +5,7 @@ Slang is a discrete event simulation language. It allows for a programmer to sch
 
 ## Program
 A program is a single file consisting of functions, defined and written above the main function, and main function. The main block consists of zero, or at least one (or more) of an init block and/or an always block. An init block consists of statements that are to be executed sequentially from time 0. An always block consists of code to be continually run until program termination. init and always blocks can only exist within the main function, not within any other function.
+The program ends when the Terminate keyword is used.
 
 ## Scoping
 Variables can exist within any function, and exist within functions that are called within the outer function. Local variables take precedent over variables defined outside the function. 
@@ -88,7 +89,7 @@ Operators within the same row share the same precedence. Higher rows indicate hi
 
 ## Declarations
 
-### Variable
+### Variables
 Variables can be defined within the main function, within individual functions, or within an init/always block.
 Variables may be declared and then defined, or done both at the same time.
 Declaration:
@@ -156,8 +157,30 @@ func void Stuff(Object person){
 }
 ```
 
+## Terminate
+When the Terminate keyword statment is found within the program, the program ends.
+```
+main() {
+  init{
+    int a = 5;
+  }
+  always{
+    Terminate;
+    a = 2; /*program ends before this statement is executed*/
+  }
+}
+```
+
 ## Delays
 In Slang, you can delay a block of code for a designated number of simulation time units by doing #time, where time is a float or a variable. This will delay only the current init or always block, and the other blocks will execute as they would have before.
+```
+main() {
+  init{
+    #12
+    Terminate;  
+  }
+}
+```
 
 ## Return 
 
