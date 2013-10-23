@@ -185,7 +185,6 @@ Statements are used to get the program to do something. Statements are used for 
 A block is defined inside curly braces, which can include a possibly-empty list of variable declarations and statements. A block is structured as:
 ```
 {
-	variable declarations
 	statements
 }
 ```
@@ -242,7 +241,7 @@ for;; {
 
 A while loop is:
 ```
-    while condition {
+    while (condition) {
         block
     }
 ```
