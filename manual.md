@@ -100,6 +100,7 @@ Definition & Declaration:
 ```
 int a = 5;
 ```
+
 ## Blocks and Control Flow 
 
 ### Blocks 
@@ -110,20 +111,44 @@ statements
 ### If-else 
 
 Slang accepts:
-    *if expression block
-    *if expression block else block
-where expression evaluates to a boolean value
+* if expression block
+* if expression block else block
+where expression evaluates to a boolean value. The else keyword is tied to the nearest previous if. Example:
+```
+if (5>10) { /*if statement one*/
+   if (4>5){ /*if statement two*/
+
+        block
+  
+   }
+   else { /*tied to if statement two*/
+   }
+}
+```
 
 ### Iteration 
 Slang has for-loops and while loops. 
 A for loop can be:
-    *starting assignment; boolean loop condition expression; assignment for advancing to next iteration {
+* starting assignment; boolean loop condition expression; assignment for advancing to next iteration {
         block
     }
+```
+for (int i = 0; i < 10; i++) {
 
-*or an empty for;; {
+	block
+
+}
+```
+
+* or an empty for;; {
     block
 }, which is infinite
+
+```
+for;; {
+
+}
+```
 
 A while loop is:
 ```
@@ -158,7 +183,7 @@ func void Stuff(Object person){
 ```
 
 ## Terminate
-When the Terminate keyword statment is found within the program, the program ends.
+When the Terminate keyword statement is found within the program, the program ends.
 ```
 main() {
   init{
@@ -191,11 +216,13 @@ Slang passes arguments by value. The argument sent to a function is in fact a co
 
 ## Objects
 In Slang, an object is an encapsulation of a set of user defined properties. An object can be declared and not defined as:
+```
 Object person;
+```
 Alternatively, an object can be defined as:
 
 ```
-Object person = new Object(name="Bob", age=25);
+Object person = Object(string name="Bob", int age=25);
 ```
 
 The user also has the option to not initialize the values of the properties (such as name and age) but is required to list out all of the properties of the Object on definition.
