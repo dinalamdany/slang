@@ -31,6 +31,19 @@ Used to separate statement and expression in a for loop. Used at the end of ever
 ### Colon
 Colons are used specificially for property lists when declaring an object.
 
+### Escape Sequence
+A backslash followed by a sequence or character is used to represent certain characters within strings.
+
+| Sequence | Character|
+| -------- |:--------:|
+|\\	   | \        |
+|\"	   |"	      |
+|\'	   |'         |
+|\n	   | linefeed |
+|\r	   |carriage return|
+|\t	   |horizontal tabulation|
+|\b	   |backspace|
+
 ## Comments 
 Multiline comments in Slang start with /* and terminate with the next */. Multiline comments do not nest.
 
@@ -141,12 +154,12 @@ func void Stuff(Object person){
 ### Objects
 In Slang, an object is an encapsulation of a set of user defined properties. An object can be declared and not defined as:
 ```
-Object person;
+object person;
 ```
 Alternatively, an object can be defined as:
 
 ```
-Object person = Object(string name="Bob", int age=25, string nicknames[] = ["Bobby", "Lil' B"]);
+object person = object(string name="Bob", int age=25, string nicknames[] = ["Bobby", "Lil' B"]);
 ```
 
 The user also has the option to not initialize the values of the properties (such as name and age) but is required to list out all of the properties of the Object on definition.
