@@ -31,7 +31,7 @@ Used to separate statement and expression in a for loop. Used at the end of ever
 ### Colon
 Colons are used specificially for property lists when declaring an object.
 
-### Escape Sequence
+### Escape Sequences
 A backslash followed by a sequence or character is used to represent certain characters within strings.
 
 | Sequence | Character|
@@ -140,9 +140,7 @@ func returntype func_name(type var1, type var2, …) {
             body
 }
 ```
-Functions are defined only by identifying the block of code with func, giving the function a name, optionally supplying parameters, and defining a function body. A function does not need to return a value.
-
-return types are any data type, or void for no value 
+Functions are defined only by identifying the block of code with func, giving the function a name, optionally supplying parameters, and defining a function body. Function return types are any data type, or void for no value.
 
 Example:
 ```
@@ -163,6 +161,10 @@ object person = object(string name="Bob", int age=25, string nicknames[] = ["Bob
 ```
 
 The user also has the option to not initialize the values of the properties (such as name and age) but is required to list out all of the properties of the Object on definition.
+
+```
+object person = object(string name, int age, string nicknames[]);
+```
 
 ## Statements
 Statements are used to get the program to do something. Statements are used for variable declartions and assignment, delays, returns, control flow, loops, and expressions.  All statements end with a semicolon ; .  Statements are used within blocks All of theses are examples of statements:
@@ -192,6 +194,13 @@ A block is defined inside curly braces, which can include a possibly-empty list 
 
 Slang accepts:
 * if expression block
+
+```
+if (3 == 3){
+	block
+}
+```
+
 * if expression block else block
 where expression evaluates to a boolean value. The else keyword is tied to the nearest previous if. Example:
 ```
@@ -305,7 +314,7 @@ Slang passes arguments by value. The argument sent to a function is in fact a co
 ##Keywords
 Our keywords are:
 ```
-else for while return int func main init always Terminate
+if else for while return int float bool string object void func main init always true false Terminate
 ```
 These words have special meanings and are reserved, so the user may not use them as an identifier.
 
@@ -330,7 +339,7 @@ An init block of code is executed a single time at the beginning of the program,
 
 
 ## TO ADD 
-precedence - precedence of individual operators is already defined. I do not think that we need to explicitly add a precedence section (I checked the C LRM and others)
+precedence - precedence of individual operators is already defined. I do not think that we need to explicitly add a precedence section (I checked the C LRM and others) -- resolved? precedence table added, but unsure if accurate, proper
 
 scope (threads) - I defined threads but I am unclear on the exact scope. Any feedback on this would be appreciated
 
