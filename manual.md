@@ -16,6 +16,15 @@ The simulator processes events in the event queue by removing all the events for
 ## Whitespace 
 Slang is whitespace-ambivalent, meaning that whitespace does not affect the program.
 
+## Identifiers
+An identifier is used to refer to an object, data structure, or primitive type, in declarations, assignments, and general statements. 
+```
+	int decl_ident; /* declaration */
+	int indent_1 = 5; /* assignment */
+	ident_1 + 2 == 7; /* general statement; evaluates to true */
+```
+An identifier must start with with a character letter and can contain any combination of numbers, letters, and the underscore symbol '_'. Whitespace signals the end of the identifier.
+
 ##Punctuation
 
 ### Parenthesis
@@ -336,6 +345,54 @@ always{
 ```
 An init block of code is executed a single time at the beginning of the program, setting up any conditions necessary for execution. The body of an init thread can be empty. An always thread executes once per time unit, looping consistently until the program terminates. Always blocks run as separate threads, and therefore it is possible to run multiple always threads concurrently.
 
+## Program Structure
+The program consists of function declarations followed by a main, which contains 'always' and/or 'init' threads. All threads execute concurrently and have access to the data structures and variables defined in other threads. Example:
+```
+	1 	function foo(object x){
+	2		#2
+	3		stuff.add(x);
+	4 	}
+	5
+	6 	function bar(){
+	7		#5
+	8		stuff.pop();
+	9 	}
+	10
+	11 	main(){
+	12		init {
+	13			#20
+	14			terminate;
+	15		}
+	16
+	17		always { //always_1
+	18			#3 //sleeps the thread for 3 time units
+	19			foo(object(type properties[])); //since there is a delay of 2 within foo, a call to foo will sleep the thread for another 2 time units
+	20		}
+	21
+	22		always { //always_2
+	23			#10 //sleeps the thread for 10 time units
+	24			bar(); //because of the delay of 5 within bar(), this thread sleeps for another 5 time units
+	25		}
+	26	}
+```
+On an absolute time scale from the beginning of the execution of main:
+
+| Time | Lines executed | Details on actions 																	| 
+| ---- | -------------- | -------------------------------------------------------------------------------------	|
+| 00:  | 13, 18, 23 	| //sleep each thread for the time units specified										| 
+| 03:  | 19, 2  		| //foo() is called in always_1, which sleeps the the thread for another 2 time units	| 
+| 05:  | 3, 18  		| //stuff.add() is called in always_1, thread sleeps for another 3 time units			| 
+| 08:  | 19, 2  		| //foo() is called in always_1, which sleeps the the thread for another 2 time units	| 
+| 10:  | 3, 18  		| //stuff.add() is called in always_1, thread sleeps for another 3 time units			| 
+| 10:  | 24, 7  		| //bar() is called in always_2, thread sleeps for 5 time units							| 
+| 13:  | 19, 2  		| //foo() is called in always_1, which sleeps the the thread for another 2 time units	| 
+| 15:  | 3, 18  		| //stuff.add() is called in always_1, thread sleeps for another 3 time units			| 
+| 15:  | 8, 23  		| //stuff.pop() is called in always_2, thread sleeps for another 10 time units			| 
+| 15:  | 14     		| //program terminates																	| 
+
+Because threads can wake and access data structures at the same time, there are race condition concerns. However, because this is a simulation language, randomness in process execution at the same time is acceptable (i.e. in a real life situation at an amusement park, at exactly time 10, a person may leave the line for a roller coaster just before the roller coaster arrives, or the roller coaster may arrive just before the person leaves the line).
+
+Because there is the danger of calling stuff.pop() before any objects are added to the stuff array, if the array is empty, pop() will recover from its error and allow the program execution to continue.
 
 ## TO ADD 
 precedence - precedence of individual operators is already defined. I do not think that we need to explicitly add a precedence section (I checked the C LRM and others) -- resolved? precedence table added, but unsure if accurate, proper
@@ -345,4 +402,9 @@ scope (threads) - I defined threads but I am unclear on the exact scope. Any fee
 Sample program - I do not think this goes in an LRM (I looked over a few examples) but correct me if I am wrong and I will do it
 
 unit tests
+
+## Added
+identifiers
+program structure
+Please look over the program structure and example time scale to make sure it's correct.
 
