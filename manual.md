@@ -32,7 +32,7 @@ Used to separate statement and expression in a for loop. Used at the end of ever
 Colons are used specificially for property lists when declaring an object.
 
 ### Escape Sequences
-A backslash followed by a sequence or character is used to represent certain characters within strings.
+A backslash followed by a character is used to represent certain characters within strings.
 
 | Sequence | Character|
 | -------- |:--------:|
