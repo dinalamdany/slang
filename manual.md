@@ -20,7 +20,7 @@ Slang is whitespace-ambivalent, meaning that whitespace does not affect the prog
 An identifier is used to refer to an object, data structure, or primitive type, in declarations, assignments, and general statements. 
 ```
 	int decl_ident; /* declaration */
-	int indent_1 = 5; /* assignment */
+	int ident_1 = 5; /* assignment */
 	ident_1 + 2 == 7; /* general statement; evaluates to true */
 ```
 An identifier must start with with a character letter and can contain any combination of numbers, letters, and the underscore symbol '_'. Whitespace signals the end of the identifier.
