@@ -76,7 +76,7 @@ A string is a sequence of characters. String literals are placed between double 
 An object is a user defined data structure. Objects can hold different types and values.
 
 ## Operators 
-Integers are automatically cast to floats when necessary. If an arithmetic operator is used on two integers, the result is an integer, otherwise it is a float. 
+Some operators (such as +) are overloaded. They must be used on expressions of the same type, as Slang will not automatically promote.
 
 ###Arithmetic 
 * + addition, addition, and String concatenation. 
@@ -316,8 +316,11 @@ main() {
 The return keyword accepts an expression, function call, or nothing, and exists out of the smallest containing function or calling block. 
 
 ## Pass by Value and Pass by Reference
-Slang passes arguments by value. The argument sent to a function is in fact a copy of the original argument sent to the function. In this way the function can not modify the argument originally sent to it. The only exceptions to this are arrays and functions, both of which are passed by reference.
+Slang passes arguments by value. The argument sent to a function is in fact a copy of the original argument sent to the function. In this way the function can not modify the argument originally sent to it. The only exceptions to this are arrays, objects, and functions, which are passed by reference.
 
+## Overloading
+
+Slang does not allow overloading of functions, or of identifiers (there can be no int x at the same time as object x, for example). 
 
 ##Keywords
 Our keywords are:
@@ -390,19 +393,6 @@ On an absolute time scale from the beginning of the execution of main:
 | 15:  | 8, 23  		| //1+1 is evaluated in always_2, thread sleeps for another 10 time units			| 
 | 15:  | 14     		| //program terminates																	| 
 
-Because threads can wake and access data structures at the same time, there are race condition concerns. However, because this is a simulation language, randomness in process execution at the same time is acceptable (i.e. in a real life situation at an amusement park, at exactly time 10, a person may leave the line for a roller coaster just before the roller coaster arrives, or the roller coaster may arrive just before the person leaves the line).
+Because threads can wake and access data structures at the same time, there are race condition concerns. In the case of race conditions, Slang does not guarantee a particular behavior.
 
-## TO ADD 
-precedence - precedence of individual operators is already defined. I do not think that we need to explicitly add a precedence section (I checked the C LRM and others) -- resolved? precedence table added, but unsure if accurate, proper
-
-scope (threads) - I defined threads but I am unclear on the exact scope. Any feedback on this would be appreciated
-
-Sample program - I do not think this goes in an LRM (I looked over a few examples) but correct me if I am wrong and I will do it
-
-unit tests
-
-## Added
-identifiers
-program structure
-Please look over the program structure and example time scale to make sure it's correct.
 
