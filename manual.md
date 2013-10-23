@@ -41,9 +41,14 @@ A float is a 64-bit signed floating-point number.
 
 ### Boolean  
 A boolean value defined using the keywords true or false. 
+```
     bool x = true;
+```
 ### String 
 A string is a sequence of characters. String literals are placed between double quotes.
+
+### Object
+An object is a user defined data structure. Objects can hold different types and values.
 
 ## Operators 
 Integers are automatically cast to floats when necessary. If an arithmetic operator is used on two integers, the result is an integer, otherwise it is a float. 
@@ -101,6 +106,61 @@ Definition & Declaration:
 int a = 5;
 ```
 
+### Arrays
+In Slang, you can have arrays of any type. You declare an array as follow:
+```
+type name [];
+```
+You can also create an array and fill it with values, as in:
+```
+type name[] = [5,6,7]
+```
+
+Arrays are dynamically sized.
+
+### Functions
+```
+func returntype func_name(type var1, type var2, …) {
+            body
+}
+```
+Functions are defined only by identifying the block of code with func, giving the function a name, optionally supplying parameters, and defining a function body. A function does not need to return a value.
+
+return types are any data type, or void for no value 
+
+Example:
+```
+func void Stuff(Object person){
+             line.add(person);
+             # 10 line.remove(person);
+}
+```
+### Objects
+In Slang, an object is an encapsulation of a set of user defined properties. An object can be declared and not defined as:
+```
+Object person;
+```
+Alternatively, an object can be defined as:
+
+```
+Object person = Object(string name="Bob", int age=25);
+```
+
+The user also has the option to not initialize the values of the properties (such as name and age) but is required to list out all of the properties of the Object on definition.
+
+## Statements
+Statements are used to get the program to do something. Statements are used for variable declartions and assignment, delays, returns, control flow, loops, and expressions.  All statements end with a semicolon ; .  Statements are used within blocks All of theses are examples of statements:
+```
+{
+	4+4;
+	#5;
+	return 0;
+	if (5<6) {
+		string name = "Pete";
+	}
+		Terminate;
+}
+```
 ## Blocks and Control Flow 
 
 ### Blocks 
@@ -116,13 +176,13 @@ Slang accepts:
 where expression evaluates to a boolean value. The else keyword is tied to the nearest previous if. Example:
 ```
 if (5>10) { /*if statement one*/
-   if (4>5){ /*if statement two*/
+	if (4>5){ /*if statement two*/
 
-        block
+		block
   
-   }
-   else { /*tied to if statement two*/
-   }
+	}
+	else { /*tied to if statement two*/
+	}
 }
 ```
 
@@ -132,6 +192,7 @@ A for loop can be:
 * starting assignment; boolean loop condition expression; assignment for advancing to next iteration {
         block
     }
+
 ```
 for (int i = 0; i < 10; i++) {
 
@@ -156,43 +217,19 @@ A while loop is:
         block
     }
 ```
-## Arrays
-In Slang, you can have arrays of any type. You declare an array as follow:
-type name []; 
-You can also create an array and fill it with values, as in:
-type name[] = [5,6,7]
 
-Arrays are dynamically sized.
-
-## Functions
-```
-func returntype func_name(type var1, type var2, …) {
-            body
-}
-```
-Functions are defined only by identifying the block of code with func, giving the function a name, optionally supplying parameters, and defining a function body. A function does not need to return a value.
-
-return types are any data type, or void for no value 
-
-Example:
-```
-func void Stuff(Object person){
-             line.add(person);
-             # 10 line.remove(person);
-}
-```
 
 ## Terminate
 When the Terminate keyword statement is found within the program, the program ends.
 ```
 main() {
-  init{
-    int a = 5;
-  }
-  always{
-    Terminate;
-    a = 2; /*program ends before this statement is executed*/
-  }
+	init{
+		int a = 5;
+	}
+	always{
+		Terminate;
+		a = 2; /*program ends before this statement is executed*/
+	}
 }
 ```
 
@@ -200,10 +237,10 @@ main() {
 In Slang, you can delay a block of code for a designated number of simulation time units by doing #time, where time is a float or a variable. This will delay only the current init or always block, and the other blocks will execute as they would have before.
 ```
 main() {
-  init{
-    #12
-    Terminate;  
-  }
+	init{
+		#12
+		Terminate;  
+	}
 }
 ```
 
@@ -214,18 +251,6 @@ The return keyword accepts an expression, function call, or nothing, and exists 
 ## Pass by Value and Pass by Reference
 Slang passes arguments by value. The argument sent to a function is in fact a copy of the original argument sent to the function. In this way the function can not modify the argument originally sent to it. The only exceptions to this are arrays and functions, both of which are passed by reference.
 
-## Objects
-In Slang, an object is an encapsulation of a set of user defined properties. An object can be declared and not defined as:
-```
-Object person;
-```
-Alternatively, an object can be defined as:
-
-```
-Object person = Object(string name="Bob", int age=25);
-```
-
-The user also has the option to not initialize the values of the properties (such as name and age) but is required to list out all of the properties of the Object on definition.
 
 ##Keywords
 Our keywords are:
