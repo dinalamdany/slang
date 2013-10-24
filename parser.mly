@@ -23,6 +23,7 @@
 %left TIMES DIVIDE MOD
 %right NOT
 %right UMINUS DEC INC
+%nonassoc LPAREN RPAREN LBRAC RBRAC
 
 %start program
 %type <Ast.program> program
