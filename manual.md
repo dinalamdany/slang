@@ -72,8 +72,22 @@ A boolean value defined using the keywords true or false.
 ### String 
 A string is a sequence of characters. String literals are placed between double quotes.
 
-### Object
-An object is a user defined data structure. Objects can hold different types and values.
+### Objects
+In Slang, an object is an encapsulation of a set of user defined properties. An object can be declared and not defined as:
+```
+object person;
+```
+Alternatively, an object can be defined as:
+
+```
+object person = object(string name="Bob", int age=25, string nicknames[] = ["Bobby", "Lil' B"]);
+```
+
+The user also has the option to not initialize the values of the properties (such as name and age) but is required to list out all of the properties of the Object on definition.
+
+```
+object person = object(string name, int age, string nicknames[]);
+```
 
 ## Operators 
 Some operators (such as +) are overloaded. They must be used on expressions of the same type, as Slang will not automatically promote.
@@ -157,25 +171,7 @@ func void Stuff(Object person){
              line.add(person);
              # 10 line.remove(person);
 }
-```
-### Objects
-In Slang, an object is an encapsulation of a set of user defined properties. An object can be declared and not defined as:
-```
-object person;
-```
-Alternatively, an object can be defined as:
-
-```
-object person = object(string name="Bob", int age=25, string nicknames[] = ["Bobby", "Lil' B"]);
-```
-
-The user also has the option to not initialize the values of the properties (such as name and age) but is required to list out all of the properties of the Object on definition.
-
-```
-object person = object(string name, int age, string nicknames[]);
-```
-
-## Statements
+# Statements
 Statements are used to get the program to do something. Statements are used for variable declartions and assignment, delays, returns, control flow, loops, and expressions.  All statements end with a semicolon ; .  Statements are used within blocks All of theses are examples of statements:
 ```
 {
