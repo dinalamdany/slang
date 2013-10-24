@@ -58,8 +58,12 @@ formals_opt:
 
 formal_list:
     vdecl { [$1] }
-    | formal_list COMMA vdecl { $3 :: $1}
+    | formal_list COMMA param { $3 :: $1}
 
+param:
+    TYPE ID { Vdecl(Datatype($1),Ident($2)) }
+    | OBJECT ID { ObjDecl(Ident($2))}
+    
 stmt_list: 
     /* nothing */ {[]}
     | stmt_list stmt { $2 :: $1 }
