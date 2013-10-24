@@ -171,6 +171,8 @@ func void Stuff(Object person){
              line.add(person);
              # 10 line.remove(person);
 }
+```
+
 # Statements
 Statements are used to get the program to do something. Statements are used for variable declartions and assignment, delays, returns, control flow, loops, and expressions.  All statements end with a semicolon ; .  Statements are used within blocks All of theses are examples of statements:
 ```
