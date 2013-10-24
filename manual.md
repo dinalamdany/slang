@@ -153,11 +153,11 @@ int a = 5;
 ### Arrays
 In Slang, you can have arrays of any type. You declare an array as follow:
 ```
-type name [];
+type name_of_array[];
 ```
 You can also create an array and fill it with values, as in:
 ```
-type name[] = [5,6,7]
+type name_of_array[] = [5,6,7]
 ```
 
 Arrays are dynamically sized.
