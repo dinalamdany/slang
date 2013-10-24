@@ -401,4 +401,111 @@ On an absolute time scale from the beginning of the execution of main:
 
 Because threads can wake and access data structures at the same time, there are race condition concerns. In the case of race conditions, Slang does not guarantee a particular behavior.
 
+## Grammar
 
+In the grammar below, words in all caps are tokens passed in from the lexer. 
+program:
+    main 
+    | fdecl program 
+
+main:
+    MAIN() { vdecl_list timeblock_list } 
+    
+timeblock_list:
+    /* nothing */
+    | timeblock_list timeblock 
+
+timeblock:
+    INIT { stmt_list } 
+    | ALWAYS { stmt_list } 
+
+fdecl:
+    FUNC TYPE ID ( formals_opt ) { stmt_list }
+ 
+formals_opt:
+    /* nothing */ 
+    | formal_list 
+
+formal_list:
+    vdecl 
+    | formal_list, vdecl 
+
+stmt_list: 
+    /* nothing */
+    | stmt_list stmt 
+
+delay:
+    INT_LITERAL 
+    | FLOAT_LITERAL 
+    | ID 
+
+vdecl_list:
+    /* nothing */ 
+    | vdecl; vdecl_list 
+
+vdecl:
+    TYPE ID 
+    | TYPE ID = expr 
+    | TYPE ID [ ]
+    | TYPE ID [ ] = [ expr_list ] 
+    | OBJECT ID 
+    | OBJECT ID = OBJECT(property_list) 
+
+property_list:
+    /* nothing */ 
+    | property, property_list 
+
+property:
+    TYPE ID 
+    | TYPE ID [ ] 
+    | TYPE ID COLON expr 
+    | TYPE ID [ ] = [ expr_list ] 
+
+expr_list:
+    /* nothing */ 
+    | expr, expr_list 
+ 
+stmt:
+    expr; 
+    | #delay stmt 
+    | Terminate;
+    | return expr; 
+    | { stmt_list } 
+    | If ( expr ) stmt 
+    | If ( expr ) stmt else stmt    
+    | For ( expr_opt; expr_opt; expr_opt ) stmt    
+    | Wwhile ( expr ) stmt 
+    | vdecl; 
+    | ID.ID = expr; 
+
+expr_opt:
+    /* nothing */ 
+    | expr 
+
+expr:
+  INT_LITERAL 
+  | FLOAT_LITERAL 
+  | STRING_LITERAL 
+  | BOOL_LITERAL 
+  | TYPE(expr) 
+  | ID 
+  | expr + expr
+  | expr -  expr
+  | expr *  expr
+  | expr / expr
+  | expr == expr
+  | expr != expr
+  | expr < expr
+  | expr <= expr 
+  | expr > expr
+  | expr >= expr 
+  | expr % expr
+  | ID = expr   
+  | ID[INT_LITERAL] = expr 
+  | ID[INT_LITERAL]
+  | (expr) 
+  | -expr 
+  | expr++
+  | expr-- 
+  | expr & expr 
+  | expr | expr 
