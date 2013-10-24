@@ -8,7 +8,12 @@ A program is a single file consisting of functions, defined and written above th
 The program ends when the Terminate keyword is used.
 
 ## Scoping
+
+Slang uses block scoping, such that something that is defined within a block is defined within all blocks following the line in which it was defined, within that block.
+
 Variables can exist within any function, and exist within functions that are called within the outer function. Local variables take precedent over variables defined outside the function. 
+
+There are no global variables, but variables defined within main, above the init and always blocks, are visible within all blocks.
 
 ## Execution 
 The simulator processes events in the event queue by removing all the events for the current time and processing them. During the processing, more events may be created (such as by functions) and placed in the proper place in the queue for later processing. When all the events of the current time have been processed, the simulator advances time and processes the next events at the front of the queue.
@@ -284,6 +289,9 @@ d = bool("false"); /*d is now false, same as if d = bool(boolean)*/
 d = bool("Mike"); /*d is now true*/
 d = bool(""); /*d is now false*/
 ```
+
+Objects cannot be cast to or from other data types.
+
 ## Terminate
 When the Terminate keyword statement is found within the program, the program ends.
 ```
