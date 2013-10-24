@@ -357,12 +357,12 @@ An init block of code is executed a single time at the beginning of the program,
 ## Program Structure
 The program consists of function declarations followed by a main, which contains 'always' and/or 'init' threads. All threads execute concurrently and have access to the data structures and variables defined in other threads. Example:
 ```
-	1 	function foo(object x){
+	1 	func foo(){
 	2		#2
 	3		2+2;
 	4 	}
 	5
-	6 	function bar(){
+	6 	func bar(){
 	7		#5
 	8		1+1;
 	9 	}
@@ -370,7 +370,7 @@ The program consists of function declarations followed by a main, which contains
 	11 	main(){
 	12		init {
 	13			#20
-	14			terminate;
+	14			Terminate;
 	15		}
 	16
 	17		always { //always_1
@@ -386,20 +386,23 @@ The program consists of function declarations followed by a main, which contains
 ```
 On an absolute time scale from the beginning of the execution of main:
 
-| Time | Lines executed | Details on actions 																	| 
+| Time | Lines executed | Details on actions 	| 
 | ---- | -------------- | -------------------------------------------------------------------------------------	|
-| 00:  | 13, 18, 23 	| //sleep each thread for the time units specified										| 
-| 03:  | 19, 2  		| //foo() is called in always_1, which sleeps the the thread for another 2 time units	| 
-| 05:  | 3, 18  		| //2+2 is evaluated in always_1, thread sleeps for another 3 time units			| 
-| 08:  | 19, 2  		| //foo() is called in always_1, which sleeps the the thread for another 2 time units	| 
-| 10:  | 3, 18  		| //2+2 is evaluated in always_1, thread sleeps for another 3 time units			| 
-| 10:  | 24, 7  		| //bar() is called in always_2, thread sleeps for 5 time units							| 
-| 13:  | 19, 2  		| //foo() is called in always_1, which sleeps the the thread for another 2 time units	| 
-| 15:  | 3, 18  		| //2+2 is called in always_1, thread sleeps for another 3 time units			| 
-| 15:  | 8, 23  		| //1+1 is evaluated in always_2, thread sleeps for another 10 time units			| 
-| 15:  | 14     		| //program terminates																	| 
+| 00:  | 13, 18, 23 	| sleep each thread for the time units specified						| 
+| 03:  | 19, 2  		| foo() is called in always_1, which sleeps the the thread for another 2 time units	| 
+| 05:  | 3, 18  		| 2+2 is evaluated in foo(), always_1 sleeps for another 3 time units			| 
+| 08:  | 19, 2  		| foo() is called in always_1, which sleeps the the thread for another 2 time units	| 
+| 10:  | 3, 18  		| 2+2 is evaluated in foo(), always_1 sleeps for another 3 time units			| 
+| 10:  | 24, 7  		| bar() is called in always_2, which sleeps for 5 time units				| 
+| 13:  | 19, 2  		| foo() is called in always_1, which sleeps the the thread for another 2 time units	| 
+| 15:  | 3, 18  		| 2+2 is called in foo(), thread sleeps for another 3 time units			| 
+| 15:  | 8, 23  		| 1+1 is evaluated in bar(), always_2 sleeps for another 10 time units			| 
+| 18:  | 19,2			| foo() is called in always_1, which sleeps the the thread for another 2 time units	|
+| 20:  | 14, 3, 18, 24, 7    	| *always_1 calls foo and sleeps for 2, alway_2 calls bar and sleeps, program terminates| 
 
 Because threads can wake and access data structures at the same time, there are race condition concerns. In the case of race conditions, Slang does not guarantee a particular behavior.
+
+*Because the order in which threads execute events are undefined, line 14 terminating the program might occur before or after any of the other lines in other threads.
 
 ## Grammar
 
