@@ -431,8 +431,13 @@ formals_opt:
 	| formal_list 
 
 formal_list:
-	vdecl 
-	| formal_list, vdecl 
+	param 
+	| formal_list, param
+
+param:
+    TYPE ID
+    | OBJECT ID
+    | TYPE ID []
 
 stmt_list: 
 	/* nothing */
@@ -478,7 +483,7 @@ stmt:
 	| If ( expr ) stmt 
 	| If ( expr ) stmt else stmt    
 	| For ( expr_opt; expr_opt; expr_opt ) stmt    
-	| Wwhile ( expr ) stmt 
+	| While ( expr ) stmt 
 	| vdecl; 
 	| ID.ID = expr; 
 
