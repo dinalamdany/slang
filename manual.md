@@ -183,8 +183,7 @@ Statements are used to get the program to do something. Statements are used for 
 ```
 {
 	4+4;
-	#5;
-	return 0;
+	#5 return 0;
 	if (5<6) {
 		string name = "Pete";
 	}
@@ -311,8 +310,7 @@ In Slang, you can delay a block of code for a designated number of simulation ti
 ```
 main() {
 	init{
-		#12
-		Terminate;  
+		#12 Terminate;  
 	}
 }
 ```
@@ -358,31 +356,25 @@ An init block of code is executed a single time at the beginning of the program,
 The program consists of function declarations followed by a main, which contains 'always' and/or 'init' threads. All threads execute concurrently and have access to the data structures and variables defined in other threads. Example:
 ```
 	1 	func foo(){
-	2		#2
-	3		2+2;
-	4 	}
-	5
-	6 	func bar(){
-	7		#5
-	8		1+1;
-	9 	}
-	10
-	11 	main(){
-	12		init {
-	13			#20
-	14			Terminate;
+	2		#2 2+2;
+	3 	}
+	4
+	5 	func bar(){
+	6		#5 1+1;
+	7 	}
+	8
+	9 	main(){
+	10		init {
+	11			#20 Terminate;
+	12		}
+	13		always { //always_1
+	14			#3 foo(); //since there is a delay of 2 within foo, a call to foo will sleep the thread for another 2 time units
 	15		}
 	16
-	17		always { //always_1
-	18			#3 //sleeps the thread for 3 time units
-	19			foo(); //since there is a delay of 2 within foo, a call to foo will sleep the thread for another 2 time units
-	20		}
-	21
-	22		always { //always_2
-	23			#10 //sleeps the thread for 10 time units
-	24			bar(); //because of the delay of 5 within bar(), this thread sleeps for another 5 time units
-	25		}
-	26	}
+	17		always { //always_2
+	18			#10 bar(); //because of the delay of 5 within bar(), this thread sleeps for another 5 time units
+	19		}
+	20	}
 ```
 On an absolute time scale from the beginning of the execution of main:
 
