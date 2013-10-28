@@ -369,7 +369,7 @@ The program consists of function declarations followed by a main, which contains
 	11			#20 Terminate;
 	12		}
 	13		always { //always_1
-	14			#3 foo(); //since there is a delay of 2 within foo, a call to foo will sleep the thread for another 2 time units
+	14			#3 foo(); //because of the delay of 2 within foo(), this thread sleeps for another 2 time units
 	15		}
 	16
 	17		always { //always_2
