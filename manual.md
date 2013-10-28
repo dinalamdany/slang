@@ -380,17 +380,17 @@ On an absolute time scale from the beginning of the execution of main:
 
 | Time | Lines executed | Details on actions 	| 
 | ---- | -------------- | -------------------------------------------------------------------------------------	|
-| 00:  | 13, 18, 23 	| sleep each thread for the time units specified						| 
-| 03:  | 19, 2  		| foo() is called in always_1, which sleeps the the thread for another 2 time units	| 
-| 05:  | 3, 18  		| 2+2 is evaluated in foo(), always_1 sleeps for another 3 time units			| 
-| 08:  | 19, 2  		| foo() is called in always_1, which sleeps the the thread for another 2 time units	| 
-| 10:  | 3, 18  		| 2+2 is evaluated in foo(), always_1 sleeps for another 3 time units			| 
-| 10:  | 24, 7  		| bar() is called in always_2, which sleeps for 5 time units				| 
-| 13:  | 19, 2  		| foo() is called in always_1, which sleeps the the thread for another 2 time units	| 
-| 15:  | 3, 18  		| 2+2 is called in foo(), thread sleeps for another 3 time units			| 
-| 15:  | 8, 23  		| 1+1 is evaluated in bar(), always_2 sleeps for another 10 time units			| 
-| 18:  | 19,2			| foo() is called in always_1, which sleeps the the thread for another 2 time units	|
-| 20:  | 14, 3, 18, 24, 7    	| *always_1 calls foo and sleeps for 2, alway_2 calls bar and sleeps, program terminates| 
+| 00:  | 11, 14, 18 	| sleep each thread for the time units specified |	
+| 03:  | 14, 2  		| foo() is called in always_1, which sleeps the the thread for another 2 time units	| 
+| 05:  | 2  		    | 2+2 is evaluated in foo(), always_1 sleeps for 3 time units |
+| 08:  | 14, 2  		| foo() is called in always_1, which sleeps the the thread for another 2 time units	| 
+| 10:  | 2, 14  		| 2+2 is evaluated in foo(), always_1 sleeps for another 3 time units			| 
+| 10:  | 18, 6  		| bar() is called in always_2, which sleeps for 5 time units				| 
+| 13:  | 14, 2  		| foo() is called in always_1, which sleeps the the thread for another 2 time units	| 
+| 15:  | 2, 14  		| 2+2 is called in foo(), thread sleeps for another 3 time units			| 
+| 15:  | 5, 18  		| 1+1 is evaluated in bar(), always_2 sleeps for another 10 time units			| 
+| 18:  | 14,2			| foo() is called in always_1, which sleeps the the thread for another 2 time units	|
+| 20:  | 14, 2, 18, 11  | *always_1 calls foo and sleeps for 2, alway_2 calls bar and sleeps, program terminates| 
 
 Because threads can wake and access data structures at the same time, there are race condition concerns. In the case of race conditions, Slang does not guarantee a particular behavior.
 
