@@ -1,4 +1,5 @@
 # Slang Reference Manual 
+### Joshua Itwaru (jni2102), Mauricio Castaneda (mc3683), Tony Ling (tl2573, Olivia Byer (okb2102), Dina Lamdany (dtl2117)
 
 ## Description 
 Slang is a discrete event simulation language. It allows for a programmer to schedule events at discrete times, and have those events executed based on an event queue ordered by start time. 
