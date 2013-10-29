@@ -1,5 +1,5 @@
 # Slang Reference Manual 
-### Joshua Itwaru (jni2102), Mauricio Castaneda (mc3683), Tony Ling (tl2573, Olivia Byer (okb2102), Dina Lamdany (dtl2117)
+### Joshua Itwaru (jni2102), Mauricio Castaneda (mc3683), Tony Ling (tl2573), Olivia Byer (okb2102), Dina Lamdany (dtl2117)
 
 ## Description 
 Slang is a discrete event simulation language. It allows for a programmer to schedule events at discrete times, and have those events executed based on an event queue ordered by start time. 
@@ -204,6 +204,7 @@ A block is defined inside curly braces, which can include a possibly-empty list 
 ### If-else 
 
 Slang accepts:
+
 * if expression block
 
 ```
@@ -214,6 +215,7 @@ if (3 == 3){
 
 * if expression block else block
 where expression evaluates to a boolean value. The else keyword is tied to the nearest previous if. Example:
+
 ```
 if (5>10) { /*if statement one*/
 	if (4>5) { /*if statement two*/
@@ -229,6 +231,7 @@ if (5>10) { /*if statement one*/
 ### Iteration 
 Slang has for-loops and while loops. 
 A for loop can be:
+
 * starting assignment; boolean loop condition expression; assignment for advancing to next iteration {
         block
     }
