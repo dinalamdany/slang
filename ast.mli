@@ -4,7 +4,7 @@ type ident =
   Ident of string
 
 type datatype = 
-    Datatype of string
+  Datatype of string
 
 type expr =
   IntLit of int
@@ -20,43 +20,43 @@ type expr =
   | Call of ident * expr list
 
 type decl = 
-    Vdecl of datatype * ident 
-    | VarAssignDecl of datatype * ident * expr
-    | ArrDecl of datatype * ident 
-    | ArrAssignDecl of datatype * ident * expr list
-    | ObjDecl of ident
-    | ObjAssignDecl of ident * decl list
+  Vdecl of datatype * ident 
+  | VarAssignDecl of datatype * ident * expr
+  | ArrDecl of datatype * ident 
+  | ArrAssignDecl of datatype * ident * expr list
+  | ObjDecl of ident
+  | ObjAssignDecl of ident * decl list
 
 type stmt = 
-      Block of stmt list
-    | Expr of expr
-    | Return of expr
-    | If of expr * stmt * stmt
-    | For of expr * expr * expr * stmt
-    | Delay of expr * stmt
-    | While of expr * stmt
-    | Declaration of decl 
-    | PropertyAssign of ident * ident * expr
-    | Assign of ident * expr
-    | ArrAssign of ident * expr list
-    | ArrElemAssign of ident * int * expr
-    | Terminate
+    Block of stmt list
+  | Expr of expr
+  | Return of expr
+  | If of expr * stmt * stmt
+  | For of expr * expr * expr * stmt
+  | Delay of expr * stmt
+  | While of expr * stmt
+  | Declaration of decl 
+  | PropertyAssign of ident * ident * expr
+  | Assign of ident * expr
+  | ArrAssign of ident * expr list
+  | ArrElemAssign of ident * int * expr
+  | Terminate
 
 type formal = 
-    VFormal of datatype * ident 
-    | ObjFormal of ident
-    | ArrFormal of datatype * ident
+  VFormal of datatype * ident 
+  | ObjFormal of ident
+  | ArrFormal of datatype * ident
 
 type func_decl = {
-    return: datatype;
-    fname : ident;
-    formals : formal list;
-    body : stmt list;
+  return: datatype;
+  fname : ident;
+  formals : formal list;
+  body : stmt list;
 }
 
 type thread = 
-    Init of stmt list
-    | Always of stmt list
+  Init of stmt list
+  | Always of stmt list
 
 type program = 
-    func_decl list * (decl list * thread list)
+  func_decl list * (decl list * thread list)

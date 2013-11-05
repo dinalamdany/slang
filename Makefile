@@ -8,6 +8,7 @@ compile:
 	ocamlc -c parser.mli
 	ocamlc -c scanner.ml
 	ocamlc -c parser.ml
+	ocamlc -c sast.mli
 
 #OBJECTS
 #I'm narcissistic
