@@ -8,6 +8,7 @@ type sl_ret =
   | RBool
   | RVoid
   | RObject
+  | RArray
 
 (* Slang type definitions *)
 type sl_var = 
@@ -16,6 +17,7 @@ type sl_var =
   | String
   | Bool
   | Object
+  | Array
 
 (* Expressions *)
 type sexpr = 

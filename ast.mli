@@ -1,3 +1,5 @@
+(*TODO: separate unop and op... does >5 make sense?*)
+
 type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq |And | Or | Not | Neg | Inc | Dec | Mod
 
 type ident = 
