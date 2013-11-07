@@ -1,3 +1,4 @@
+/*SHOULD NOT BE ACCEPTED*/
 func void test(){}
 
 func int test2(int a){}
