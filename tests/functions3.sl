@@ -1,4 +1,8 @@
 /* Test functions with return types */
+func int foo(){
+	/* dosomething */
+	return 5;
+}
 
 main(){
 
@@ -10,7 +14,3 @@ main(){
 	}
 }
 
-func int foo(){
-	/* dosomething */
-	return 5;
-}

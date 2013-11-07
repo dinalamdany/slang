@@ -9,6 +9,8 @@ compile:
 
 #I'm narcissistic
 TONYOBJS = parser.cmo scanner.cmo codegenloop.cmo codegen.cmo
+TONYOBJS = parser.cmo scanner.cmo codegenloop.cmo
+TESTEROBJS = parser.cmo scanner.cmo tester.cmo
 codegenloop.cmo : codegenloop.ml
 	ocamlc -c codegenloop.ml -o $@
 codegenloop : $(TONYOBJS)
@@ -19,6 +21,14 @@ codegen: $(TONYOBJS)
 	ocamlc -o $@ $(TONYOBJS)
 
 #Tack on your own targets
+all: compile codegenloop codegen
+tester.cmo : tester.ml
+	ocamlc -c tester.ml -o $@
+tester : $(TESTEROBJS)
+	ocamlc -o $@ $(TESTEROBJS)
+
+#Tack on your own targets
+.PHONY : all
 all: compile codegenloop codegen
 
 .PHONY : clean
