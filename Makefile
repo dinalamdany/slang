@@ -7,6 +7,16 @@ compile:
 	ocamlc -c scanner.ml
 	ocamlc -c parser.ml
 
+#I'm narcissistic
+TONYOBJS = parser.cmo scanner.cmo codegenloop.cmo
+codegenloop.cmo : codegenloop.ml
+	ocamlc -c codegenloop.ml -o $@
+codegenloop : $(TONYOBJS)
+	ocamlc -o $@ $(TONYOBJS)
+
+#Tack on your own targets
+all: compile codegenloop
+
 .PHONY : clean
 clean:
-	rm parser.ml parser.mli scanner.ml *.cmo *.cmi 
+	rm parser.ml codegenloop parser.mli scanner.ml *.cmo *.cmi 
