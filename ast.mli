@@ -1,12 +1,10 @@
-type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq |
-And | Or | Not | Neg | Inc | Dec | Mod
+type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq |And | Or | Not | Neg | Inc | Dec | Mod
 
 type ident = 
   Ident of string
 
 type datatype = 
     Datatype of string
-
 
 type expr =
   IntLit of int
@@ -21,7 +19,11 @@ type expr =
   | ArrElem of ident * int 
   | Noexpr
   | Cast of datatype * expr
+<<<<<<< HEAD
   | Call of string * expr list
+=======
+
+>>>>>>> 850aec69f358816b3bf47897e785799db2f25add
 type decl = 
     Vdecl of datatype * ident 
     | VarAssignDecl of datatype * ident * expr
@@ -42,10 +44,15 @@ type stmt =
     | PropertyAssign of ident * ident * expr
     | Terminate
 
+type formal = 
+    VFormal of datatype * ident 
+    | ObjFormal of ident
+    | ArrFormal of datatype * ident
+
 type func_decl = {
     return: string;
     fname : string;
-    formals : decl list;
+    formals : formal list;
     body : stmt list;
 }
 
