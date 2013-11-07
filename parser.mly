@@ -81,8 +81,7 @@ vdecl_list:
 vdecl:
     TYPE ID { Vdecl(Datatype($1),Ident($2)) }
     | TYPE ID ASSIGN expr { VarAssignDecl(Datatype($1),Ident($2),$4) }
-    | TYPE ID LBRAC RBRAC {
-        ArrDecl(Datatype($1),Ident($2))}
+    | TYPE ID LBRAC RBRAC { ArrDecl(Datatype($1),Ident($2))}
     | TYPE ID LBRAC RBRAC ASSIGN LBRAC expr_list RBRAC {
         ArrAssignDecl(Datatype($1),Ident($2),$7)}
     | OBJECT ID { ObjDecl(Ident($2))}

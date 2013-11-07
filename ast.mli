@@ -1,12 +1,10 @@
-type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq |
-And | Or | Not | Neg | Inc | Dec | Mod
+type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq |And | Or | Not | Neg | Inc | Dec | Mod
 
 type ident = 
   Ident of string
 
 type datatype = 
     Datatype of string
-
 
 type expr =
   IntLit of int
@@ -21,6 +19,7 @@ type expr =
   | ArrElem of ident * int 
   | Noexpr
   | Cast of datatype * expr
+
 type decl = 
     Vdecl of datatype * ident 
     | VarAssignDecl of datatype * ident * expr
