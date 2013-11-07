@@ -61,9 +61,9 @@ formal_list:
     | formal_list COMMA param { $3 :: $1}
 
 param:
-    TYPE ID { Vdecl(Datatype($1),Ident($2)) }
-    | OBJECT ID { ObjDecl(Ident($2))}
-    | TYPE ID LBRAC RBRAC {ArrDecl(Datatype($1),Ident($2))}
+    TYPE ID { VFormal(Datatype($1),Ident($2)) }
+    | OBJECT ID { ObjFormal(Ident($2))}
+    | TYPE ID LBRAC RBRAC {ArrFormal(Datatype($1),Ident($2))}
     
 stmt_list: 
     /* nothing */ {[]}

@@ -40,10 +40,15 @@ type stmt =
     | PropertyAssign of ident * ident * expr
     | Terminate
 
+type formal = 
+    VFormal of datatype * ident 
+    | ObjFormal of ident
+    | ArrFormal of datatype * ident
+
 type func_decl = {
     return: string;
     fname : string;
-    formals : decl list;
+    formals : formal list;
     body : stmt list;
 }
 
