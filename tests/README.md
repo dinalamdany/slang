@@ -4,3 +4,8 @@ The tests are broken up and named with prefixes signifying which part of the LRM
 For example, program1.sl, program2.sl, program3.sl ... etc all test statements made under the "Program" description in the LRM.
 
 Due to the nature of attempting to test every line of the LRM, there will be overlapping tests for the same errors.
+
+###Tester
+Usage: ./tester [slang file]
+
+E.g. ./tester program1.sl should print "program1.sl	OK"
