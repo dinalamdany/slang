@@ -19,11 +19,8 @@ type expr =
   | ArrElem of ident * int 
   | Noexpr
   | Cast of datatype * expr
-<<<<<<< HEAD
   | Call of string * expr list
-=======
 
->>>>>>> 850aec69f358816b3bf47897e785799db2f25add
 type decl = 
     Vdecl of datatype * ident 
     | VarAssignDecl of datatype * ident * expr
