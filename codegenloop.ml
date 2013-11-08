@@ -26,10 +26,10 @@ let rec gen_formal_list = function
 | h::t -> gen_formal h; printf ", "; gen_formal_list t
 
 let gen_func func =
-  printf "%s %s (" func.return func.fname;
-  gen_formal_list func.formals;
-  printf ")\n{";
-  printf "}\n"
+	printf "%s %s (" func.return func.fname;
+	gen_formal_list func.formals;
+	printf ")\n{";
+	printf "}\n"
 
 let rec gen_function_list = function
   [] -> ""(*print_endline "no func"*)
@@ -50,6 +50,7 @@ let gen_main (decl_list, thread_list) =
 	printf "return 0;\n}"
 
 let gen_program (func_list, main) =
+	printf "#include <iostream>\n#include <string>\nusing namespace std;\n";
 	gen_function_list func_list;
 	gen_main main
 
