@@ -7,6 +7,11 @@ let gen_datatype = function
 let gen_id = function
   Ident(id) -> id
 
+let rec gen_formal = function
+  VFormal(datatype, id) -> printf "%s %s" (gen_datatype datatype) (gen_id id)  
+| ObjFormal(ident) -> print_endline ""
+| ArrFormal(datatype, id) -> printf "%s %s[]" (gen_datatype datatype) (gen_id id)
+
 let rec gen_vdecl = function
   Vdecl(datatype, id) -> printf "%s %s;\n" (gen_datatype datatype) (gen_id id)
 | VarAssignDecl(datatype, ident, expr) -> print_endline ""
@@ -15,9 +20,20 @@ let rec gen_vdecl = function
 | ObjDecl(ident) -> print_endline ""
 | ObjAssignDecl(ident, decl) -> print_endline""
 
+let rec gen_formal_list = function
+  [] -> ()
+| h::[] -> gen_formal h
+| h::t -> gen_formal h; printf ", "; gen_formal_list t
+
+let gen_func func =
+  printf "%s %s (" func.return func.fname;
+  gen_formal_list func.formals;
+  printf ")\n{";
+  printf "}\n"
+
 let rec gen_function_list = function
   [] -> ""(*print_endline "no func"*)
-| h::t -> ""(*print_endline "func found"*); gen_function_list t
+| h::t -> gen_func h; gen_function_list t
 
 let rec gen_vdecl_list = function
   [] -> ""(*print_endline "no decls"*)
