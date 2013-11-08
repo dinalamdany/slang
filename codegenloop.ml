@@ -1,14 +1,6 @@
 open Ast
 open Printf
-(*
-let rec evalloop loop = match loop with
-    Noexpr -> ""
-  | For(expr1, expr2, expr3, stmt) -> "for"(*"for("^(evalloop expr1)^";"^(evalloop expr2)^";"^(evalloop expr3)^")\n{"^(evalloop stmt)*)^"}\n"
-  | While(expr, stmt) -> "while"(*"while("^(evalloop expr)^")\n{"^(evalloop stmt)^"}\n"*)
-*)
-let rec print_func func = function
-  [] -> ""
-(*| stuff -> print_endline stuff.return*)
+
 let gen_datatype = function
   Datatype(dtype) -> dtype
 
@@ -23,31 +15,29 @@ let rec gen_vdecl = function
 | ObjDecl(ident) -> print_endline ""
 | ObjAssignDecl(ident, decl) -> print_endline""
 
-let rec test_function = function
+let rec gen_function_list = function
   [] -> ""(*print_endline "no func"*)
-| h::t -> ""(*print_endline "func found"*); test_function t
+| h::t -> ""(*print_endline "func found"*); gen_function_list t
 
 let rec gen_vdecl_list = function
   [] -> ""(*print_endline "no decls"*)
 | h::t -> gen_vdecl h; gen_vdecl_list t
 
-let rec test_thread = function
+let rec gen_thread_list = function
   [] -> ""(*print_endline "no threads"*)
-| h::t -> ""(*print_endline "thread found "*) ; test_thread t
+| h::t -> ""(*print_endline "thread found "*) ; gen_thread_list t
 
-let test_main (decl_list, thread_list) =
+let gen_main (decl_list, thread_list) =
 	printf "int main()\n{\n";
 	gen_vdecl_list decl_list;
-	test_thread thread_list;
+	gen_thread_list thread_list;
 	printf "return 0;\n}"
 
-let printTest (func_list, main) =
-	test_function func_list;
-	test_main main
+let gen_program (func_list, main) =
+	gen_function_list func_list;
+	gen_main main
 
 let _ =
   let lexbuf = Lexing.from_channel stdin in
   let loopcode = Parser.program Scanner.token lexbuf in
-  (*let testloop = evalloop loopcode in
-  print_endline testloop*)
-  printTest loopcode
+  gen_program loopcode
