@@ -7,21 +7,20 @@ compile:
 	ocamlc -c scanner.ml
 	ocamlc -c parser.ml
 
+#OBJECTS
 #I'm narcissistic
-TONYOBJS = parser.cmo scanner.cmo codegenloop.cmo codegen.cmo
 TONYOBJS = parser.cmo scanner.cmo codegenloop.cmo
+CODEGENOBJS = parser.cmo scanner.cmo codegen.cmo
 TESTEROBJS = parser.cmo scanner.cmo tester.cmo
+
 codegenloop.cmo : codegenloop.ml
 	ocamlc -c codegenloop.ml -o $@
 codegenloop : $(TONYOBJS)
 	ocamlc -o $@ $(TONYOBJS)
 codegen.cmo: codegen.ml
 	ocamlc -c codegen.ml -o $@
-codegen: $(TONYOBJS)
-	ocamlc -o $@ $(TONYOBJS)
-
-#Tack on your own targets
-all: compile codegenloop codegen
+codegen: $(CODEGENOBJS)
+	ocamlc -o $@ $(CODEGENOBJS)
 tester.cmo : tester.ml
 	ocamlc -c tester.ml -o $@
 tester : $(TESTEROBJS)
