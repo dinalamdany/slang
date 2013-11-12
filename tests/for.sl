@@ -3,15 +3,10 @@
 
 main(){
 	init{
+    #7 Terminate;
 	}
+
 	always{
-		/* Full for */
-		for (int i = 0; i < 10; i++){
-			/* Dosomething */
-		}
-	}
-	always{
-		/* empty for... do something FOREVER */
-		for;;{ /* DOsomething */ }
+		for;;{ print(5)};
 	}
 }

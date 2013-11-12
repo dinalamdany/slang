@@ -1,3 +1,5 @@
-function main(){
-  print("Hello World");
+main(){
+  init{
+    print("hello world");
+  }
 }

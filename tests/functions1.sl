@@ -1,11 +1,11 @@
 /* Test function delcaration */
 func void foo(){
-	/* dosomething */
+    print(5)
 }
 
 main(){
 	init{
-
+        foo();
 	}
 }
 

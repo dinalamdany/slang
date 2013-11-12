@@ -10,7 +10,7 @@ main(){
 	int myFoo = foo();
 
 	init{
-
+       print(myFoo); 
 	}
 }
 

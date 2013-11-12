@@ -4,7 +4,7 @@ main(){
 	init{
 		int i = 0;
 	    while (i < 10) {
-        	/* Dosomething */
+        	print(i)
         	i++;
     	}
 	}

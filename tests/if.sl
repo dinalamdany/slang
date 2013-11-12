@@ -6,22 +6,23 @@ main{
 		
 		/* Test if/else */
 		if(true){
-			/* Dosomething */
+            print("yes");
 		}
 		else{
 			/* Dosomething */
 		}
 		/* Standalone if */
 
-		if(4<5){/* Dosomething */}
-
+		if(4<5){/* Dosomething */
+            print(3);
 		/* Nested if/else */
-		if(1<1){
-
-		}
-		else{
-			if (false){}
-			else{}
-		}
+		    if(1<1){
+                print(1);
+		    }
+		    else{
+			    if (false){}
+			    else{}
+		    }
+        }
 	}
 }

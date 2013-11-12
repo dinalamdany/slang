@@ -3,8 +3,10 @@
 
 main() {
     init{
-    	/* Dosomething */
-        #12
+    	int a = 5;
+        print(a)
+        #12 a = 6;
+        print(a);
         /* Dosomething */
         Terminate;
     }

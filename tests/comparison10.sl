@@ -1,6 +1,6 @@
 /*should not be accepted*/
 main() {
   init{
-    2>=!3;
+    print(2>=!3);
   }
 }

@@ -26,7 +26,7 @@ let rec gen_formal_list = function
 | h::t -> gen_formal h; printf ", "; gen_formal_list t
 
 let gen_func func =
-	printf "%s %s (" func.return func.fname;
+    printf "%s %s ("(gen_datatype func.return) (gen_id func.fname);
 	gen_formal_list func.formals;
 	printf ")\n{";
 	printf "}\n"

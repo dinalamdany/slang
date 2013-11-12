@@ -1,14 +1,17 @@
 /* Test double declaration of a variable 
-   -- Should fail
+local scoping
 */
 
 main(){
 	int a = 100;
+    print(a);
 	a = 5;
+    print(a);
 	init{
 		int b;
 		b = 200;
-		int a; /* variable already delcared, what should happen? */
+        print(b);
+		int a = 10;
+        print(a); /* variable already delcared, what should happen? */
 	}
-	int a; /* again here */
 }
