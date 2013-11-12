@@ -7,7 +7,7 @@
 */
 func/*d*/ void/*c*/ moo(/*b*/){/*a*/}
 
-int main(/*i should be ignored :)*/){
+main(/*i should be ignored :)*/){
   /*an inside job*/
   init{
     /*

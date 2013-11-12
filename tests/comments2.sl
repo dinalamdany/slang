@@ -6,7 +6,7 @@
   hello
 */
 
-int main(){
+main(){
   init{
     /*
     also here
