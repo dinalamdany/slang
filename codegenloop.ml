@@ -15,7 +15,7 @@ let rec gen_formal = function
 let rec gen_vdecl = function
   Vdecl(datatype, id) -> printf "%s %s;\n" (gen_datatype datatype) (gen_id id)
 | VarAssignDecl(datatype, ident, expr) -> print_endline ""
-| ArrDecl(datatype, ident) -> print_endline ""
+| ArrDecl(datatype, ident) -> printf "%s %s[];\n" (gen_datatype datatype) (gen_id ident)
 | ArrAssignDecl(datatype, ident, expr_list) -> print_endline ""
 | ObjDecl(ident) -> print_endline ""
 | ObjAssignDecl(ident, decl) -> print_endline""
@@ -38,6 +38,10 @@ let rec gen_function_list = function
 let rec gen_vdecl_list = function
   [] -> ""(*print_endline "no decls"*)
 | h::t -> gen_vdecl h; gen_vdecl_list t
+
+let rec gen_thread = function
+  Init(stmt_list) -> ""
+| Always(stmt_list) -> ""
 
 let rec gen_thread_list = function
   [] -> ""(*print_endline "no threads"*)

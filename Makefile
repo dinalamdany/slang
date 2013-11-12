@@ -15,6 +15,7 @@ compile:
 TONYOBJS = parser.cmo scanner.cmo codegenloop.cmo
 CODEGENOBJS = parser.cmo scanner.cmo codegen.cmo
 TESTEROBJS = parser.cmo scanner.cmo tester.cmo
+COMP1OBJS = parser.cmo scanner.cmo compiler_v1.cmo
 
 codegenloop.cmo : codegenloop.ml
 	ocamlc -c codegenloop.ml -o $@
@@ -24,6 +25,10 @@ tester.cmo : tester.ml
 	ocamlc -c tester.ml -o $@
 tester : $(TESTEROBJS)
 	ocamlc -o $@ $(TESTEROBJS)
+compiler_v1.cmo : compiler_v1.ml
+	ocamlc -c compiler_v1.ml -o $@
+compiler_v1: $(COMP1OBJS)
+	ocamlc -o $@ $(COMP1OBJS)
 
 #Tack on your own targets
 .PHONY : all
