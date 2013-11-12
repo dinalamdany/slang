@@ -151,4 +151,5 @@ expr:
   | expr AND expr {Binop($1, And, $3)}
   | expr OR expr {Binop($1, Or, $3)}
   | ID LPAREN expr_list RPAREN {Call(Ident($1), $3)}
+  | ID DOT ID { ObjProp(Ident($1),Ident($1))}
   

@@ -18,6 +18,7 @@ type expr =
   | Noexpr
   | Cast of datatype * expr
   | Call of ident * expr list
+  | ObjProp of ident * ident
 
 type decl = 
   Vdecl of datatype * ident 
