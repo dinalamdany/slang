@@ -90,6 +90,7 @@ vdecl:
 property_list:
     /* nothing */ {[]}
     | property COMMA property_list { $1 :: $3}
+    | property {[$1]}
 
 property:
     TYPE ID {Vdecl(Datatype($1),Ident($2))}
@@ -100,6 +101,7 @@ property:
 expr_list:
     /* nothing */ { [] }
     | expr COMMA expr_list { $1 :: $3 }
+    | expr { [$1] } 
  
 stmt:
     expr SEMI { Expr($1)}
@@ -146,4 +148,4 @@ expr:
   | expr DEC {Unop(Dec, $1)}
   | expr AND expr {Binop($1, And, $3)}
   | expr OR expr {Binop($1, Or, $3)}
-  | ID LPAREN expr_list RPAREN {Call(Ident($1),$3)}
+  | ID LPAREN expr_list RPAREN {Call(Ident($1), $3)}
