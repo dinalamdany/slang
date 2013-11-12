@@ -1,9 +1,8 @@
 /* Test for if/ifelse */
 /* TODO: must print values and check expected results */
 
-main{
+main(){
 	init{
-		
 		if(true){
             print("yes");
 		}
