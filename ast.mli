@@ -14,8 +14,6 @@ type expr =
   | Variable of ident 
   | Unop of op * expr
   | Binop of expr * op * expr
-  | Assign of ident * expr
-  | ArrAssign of ident * int * expr
   | ArrElem of ident * int 
   | Noexpr
   | Cast of datatype * expr
@@ -39,6 +37,9 @@ type stmt =
     | While of expr * stmt
     | Declaration of decl 
     | PropertyAssign of ident * ident * expr
+    | Assign of ident * expr
+    | ArrAssign of ident * expr list
+    | ArrElemAssign of ident * int * expr
     | Terminate
 
 type formal = 

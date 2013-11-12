@@ -115,9 +115,13 @@ stmt:
         { For($3, $5, $7, $9) }
     | WHILE LPAREN expr RPAREN stmt { While($3, $5) }
     | vdecl SEMI { Declaration($1) }
+    | ID LBRAC INT_LITERAL RBRAC ASSIGN expr SEMI { ArrElemAssign(Ident($1), $3 ,$6)}
+    | ID ASSIGN LBRAC expr_list RBRAC SEMI {ArrAssign(Ident($1),$4)}
+    | ID ASSIGN expr SEMI { Assign(Ident($1), $3) }
     | ID DOT ID ASSIGN expr SEMI {PropertyAssign(Ident($1),Ident($3), $5)}
+ 
 
-expr_opt:
+ expr_opt:
     /* nothing */ { Noexpr }
     | expr {$1}
 
@@ -139,8 +143,6 @@ expr:
   | expr GT     expr { Binop($1, Greater,  $3) }
   | expr GEQ    expr { Binop($1, Geq,   $3) }
   | expr MOD    expr { Binop($1, Mod, $3)}
-  | ID ASSIGN expr   { Assign(Ident($1), $3) }
-  | ID LBRAC INT_LITERAL RBRAC ASSIGN expr { ArrAssign(Ident($1), $3 ,$6)}
   | ID LBRAC INT_LITERAL RBRAC { ArrElem(Ident($1), $3)}
   | LPAREN expr RPAREN { $2 }
   | MINUS expr %prec UMINUS { Unop(Neg, $2) }
@@ -149,3 +151,4 @@ expr:
   | expr AND expr {Binop($1, And, $3)}
   | expr OR expr {Binop($1, Or, $3)}
   | ID LPAREN expr_list RPAREN {Call(Ident($1), $3)}
+  
