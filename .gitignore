@@ -1,1 +1,6 @@
 *.prc
+*.cmi
+*.cmo
+parser.mli
+parser.ml
+scanner.ml
