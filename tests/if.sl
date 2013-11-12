@@ -4,23 +4,19 @@
 main{
 	init{
 		
-		/* Test if/else */
 		if(true){
             print("yes");
 		}
 		else{
-			/* Dosomething */
 		}
-		/* Standalone if */
 
-		if(4<5){/* Dosomething */
+		if(4<5){ 
             print(3);
-		/* Nested if/else */
 		    if(1<1){
                 print(1);
 		    }
 		    else{
-			    if (false){}
+			    if(false){}
 			    else{}
 		    }
         }

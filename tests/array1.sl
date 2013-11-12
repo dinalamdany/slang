@@ -1,11 +1,10 @@
 /* Test creating an array */
 
 main(){
-	int[] myInts;
-	myInts = [1,2,3];
-    print(myInts);
+	int myInts[];
 	init{
-		float[] myFloats = [1.0, 2.0, 3.0];
-        print(myFloats);
+        myInts = [1,2,3,4,5,5];
+        myInts[5] = 3;
+        print(myInts);
 	}
 }

@@ -1,4 +1,4 @@
-/* Test calling a function */
+/* Test calling a function outside of timeblocks, SHOULD FAIL */
 
 func void foo(){
 	/* dosomething */
