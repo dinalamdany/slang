@@ -1,3 +1,5 @@
+default: all
+
 .PHONY : compile
 compile:
 	ocamllex scanner.mll
@@ -17,10 +19,6 @@ codegenloop.cmo : codegenloop.ml
 	ocamlc -c codegenloop.ml -o $@
 codegenloop : $(TONYOBJS)
 	ocamlc -o $@ $(TONYOBJS)
-codegen.cmo: codegen.ml
-	ocamlc -c codegen.ml -o $@
-codegen: $(CODEGENOBJS)
-	ocamlc -o $@ $(CODEGENOBJS)
 tester.cmo : tester.ml
 	ocamlc -c tester.ml -o $@
 tester : $(TESTEROBJS)
@@ -28,8 +26,8 @@ tester : $(TESTEROBJS)
 
 #Tack on your own targets
 .PHONY : all
-all: compile codegenloop codegen
+all: compile codegenloop
 
 .PHONY : clean
 clean:
-	rm parser.ml codegenloop parser.mli scanner.ml *.cmo *.cmi codegen 
+	rm -f parser.ml codegenloop parser.mli scanner.ml *.cmo *.cmi codegen 
