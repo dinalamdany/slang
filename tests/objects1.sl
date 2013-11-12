@@ -3,10 +3,8 @@
 main(){
 
 	object myObject;
-    
-	init{
-        myObject.myDog = "cat";
-        print(myObject.myDog);
-	}
-	
+    init{
+        myObject.dog = "cat";
+        print(myObject.dog);
+    }	
 }

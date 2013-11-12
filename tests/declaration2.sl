@@ -4,10 +4,10 @@ local scoping
 
 main(){
 	int a = 100;
-    print(a);
-	a = 5;
-    print(a);
-	init{
+    init{
+	    print(a);
+	    a = 5;
+        print(a);
 		int b;
 		b = 200;
         print(b);
