@@ -97,5 +97,5 @@ let _ =
   let lexbuf = Lexing.from_channel stdin in
   let loopcode = Parser.program Scanner.token lexbuf in
   let code = gen_program loopcode in
-  let output = open_out "output.c" in
+  let output = open_out "output.cpp" in
   output_string output code
