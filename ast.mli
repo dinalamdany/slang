@@ -19,7 +19,7 @@ type expr =
   | ArrElem of ident * int 
   | Noexpr
   | Cast of datatype * expr
-  | Call of string * expr list
+  | Call of ident * expr list
 
 type decl = 
     Vdecl of datatype * ident 
@@ -47,8 +47,8 @@ type formal =
     | ArrFormal of datatype * ident
 
 type func_decl = {
-    return: string;
-    fname : string;
+    return: datatype;
+    fname : ident;
     formals : formal list;
     body : stmt list;
 }

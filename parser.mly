@@ -47,8 +47,8 @@ timeblock:
 
 fdecl:
     FUNC TYPE ID LPAREN formals_opt RPAREN LBRACE stmt_list RBRACE
-    { { return = $2;
-    fname = $3;
+    { { return = Datatype($2);
+    fname = Ident($3);
     formals = $5;
     body = List.rev $8 }} 
 
@@ -146,4 +146,4 @@ expr:
   | expr DEC {Unop(Dec, $1)}
   | expr AND expr {Binop($1, And, $3)}
   | expr OR expr {Binop($1, Or, $3)}
-  | ID LPAREN expr_list RPAREN {Call($1,$3)}
+  | ID LPAREN expr_list RPAREN {Call(Ident($1),$3)}
