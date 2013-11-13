@@ -35,6 +35,9 @@ let rec string_of_expr = function
 | Binop(expr1, op, expr2) -> string_of_expr expr1 ^ " " ^ string_of_op op ^ " " ^ string_of_expr expr2 
 | ArrElem(ident, i) -> string_of_ident ident ^ "[" ^ string_of_int i ^ "]"
 | Noexpr -> ""
+| ExprVarAssignDecl(datatype, ident, expr) -> string_of_datatype datatype ^ " " ^ string_of_ident ident ^ 
+                                              " = " ^ string_of_expr expr
+| ExprAssign(ident, expr) -> string_of_ident ident ^ " = " ^ string_of_expr expr 
 | Cast(datatype, expr) -> string_of_datatype datatype^ " " ^ string_of_expr expr
 | Call(ident, expr_list) -> string_of_ident ident ^ "(" ^ 
                             String.concat "," (List.map string_of_expr expr_list) ^")"
