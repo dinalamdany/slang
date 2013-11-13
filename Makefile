@@ -18,15 +18,15 @@ TESTEROBJS = parser.cmo scanner.cmo tester.cmo
 COMP1OBJS = parser.cmo scanner.cmo compiler_v1.cmo
 
 codegenloop.cmo : codegenloop.ml
-	ocamlc -c codegenloop.ml -o $@
+	ocamlc -c $< -o $@
 codegenloop : $(TONYOBJS)
 	ocamlc -o $@ $(TONYOBJS)
 tester.cmo : tester.ml
-	ocamlc -c tester.ml -o $@
+	ocamlc -c $< -o $@
 tester : $(TESTEROBJS)
 	ocamlc -o $@ $(TESTEROBJS)
 compiler_v1.cmo : compiler_v1.ml
-	ocamlc -c compiler_v1.ml -o $@
+	ocamlc -c $< -o $@
 compiler_v1: $(COMP1OBJS)
 	ocamlc -o $@ $(COMP1OBJS)
 
