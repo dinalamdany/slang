@@ -123,6 +123,8 @@ stmt:
 
  expr_opt:
     /* nothing */ { Noexpr }
+    | ID ASSIGN expr { Assign(Ident($1),$3)}
+    | TYPE ID ASSIGN expr { VarAssignDecl(Datatype($1),Ident($2),$4)}
     | expr {$1}
 
 expr:

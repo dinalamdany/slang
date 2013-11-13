@@ -1,12 +1,12 @@
 /* Test for */
-/* TODO: Print values and check results */
-
 main(){
-	init{
-    #7 Terminate;
-	}
+    init {
+    #5 Terminate;
+    }
 
-	always{
-		for;;{ print(5)};
+	init{
+		for(;;){ 
+            print(5);
+        }
 	}
 }

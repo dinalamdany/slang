@@ -18,6 +18,8 @@ type expr =
   | Binop of expr * op * expr
   | ArrElem of ident * int 
   | Noexpr
+  | VarAssignDecl of datatype * ident * expr
+  | Assign of ident * expr
   | Cast of datatype * expr
   | Call of ident * expr list
   | ObjProp of ident * ident
