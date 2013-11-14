@@ -1,12 +1,13 @@
 #!/bin/bash
 #script for testing helloworld
 
+COMPILER="../compiler_v1"
 COMPFILE="helloworld"
-FILENAME="./tests/helloworld.sl"
-OUTFILENAME="./tests/helloworld.output"
-TESTFILENAME="./tests/helloworld.out"
+FILENAME=".././tests/helloworld.sl"
+OUTFILENAME="helloworld.output"
+TESTFILENAME=".././tests/helloworld.out"
 
-./compiler_v1 < "$FILENAME"
+"$COMPILER" < "$FILENAME"
 g++ output.cpp -o "$COMPFILE"
 ./"$COMPFILE" > "$OUTFILENAME"
 RESULTS=`./"$COMPFILE"`
@@ -14,9 +15,9 @@ RESULTS+="\n"
 printf "$RESULTS" > "$OUTFILENAME"
 if (diff "$OUTFILENAME" "$TESTFILENAME") 
 then
-	echo "$FILENAME matches $OUTFILENAME"
+	echo "$OUTFILENAME matches $TESTFILENAME"
 else
-	echo "$FILENAME does not match $OUTFILENAME"
+	echo "$OUTFILENAME does not match $TESTFILENAME"
 fi
 
 rm "$OUTFILENAME" output.cpp "$COMPFILE"
