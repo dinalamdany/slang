@@ -18,3 +18,5 @@ then
 else
 	echo "$FILENAME does not match $OUTFILENAME"
 fi
+
+rm "$OUTFILENAME" output.cpp "$COMPFILE"
