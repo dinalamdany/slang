@@ -36,7 +36,6 @@ let rec gen_stmt = function
 | Return(expr) -> ""
 | If(expr, stmt, stmt2) -> ""
 | For(expr, expr2, expr3, stmt) -> ""
-| Delay(expr, stmt) -> ""
 | While(expr, stmt) -> ""
 | Declaration(decl) -> ""
 | PropertyAssign(ident, ident2, expr) -> ""
