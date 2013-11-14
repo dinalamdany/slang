@@ -1,4 +1,4 @@
-%{ open Ast %}
+ open Ast %}
 
 %token SEMI LPAREN RPAREN LBRACE RBRACE COMMA RBRAC LBRAC COLON DOT
 %token PLUS MINUS TIMES DIVIDE ASSIGN 
@@ -66,7 +66,7 @@ param:
     | TYPE ID LBRAC RBRAC {ArrFormal(Datatype($1),Ident($2))}
 
 event:
-    DELAY delay stmt_list {Event($2,$3)}
+    DELAY INT_LITERAL stmt_list {Event($2,$3)}
 
 events:
     stmt_list {[ Event(IntLit(0),$1)]} 
@@ -79,10 +79,6 @@ event_list:
 stmt_list: 
     /* nothing */ {[]}
     | stmt_list stmt { $2 :: $1 }
-
-delay:
-    INT_LITERAL {IntLit($1)}
-    | ID { Variable(Ident($1))}
 
 vdecl_list:
     /* nothing */ {[]}
