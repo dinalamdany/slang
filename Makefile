@@ -45,4 +45,4 @@ all: compile compiler_v1
 
 .PHONY : clean
 clean:
-	rm -f parser.ml codegenloop parser.mli scanner.ml *.cmo *.cmi codegen slang
+	rm -f parser.ml codegenloop parser.mli scanner.ml *.cmo *.cmi codegen slang compiler_v1
