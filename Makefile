@@ -41,7 +41,7 @@ tester : $(TESTEROBJS)
 
 #Tack on your own targets
 .PHONY : all
-all: compile codegenloop
+all: compile compiler_v1
 
 .PHONY : clean
 clean:
