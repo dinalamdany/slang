@@ -38,7 +38,6 @@ type stmt =
   | Return of expr
   | If of expr * stmt * stmt
   | For of expr * expr * expr * stmt
-  | Delay of expr * stmt
   | While of expr * stmt
   | Declaration of decl 
   | PropertyAssign of ident * ident * expr
@@ -47,6 +46,9 @@ type stmt =
   | ArrElemAssign of ident * int * expr
   | Terminate
 
+type event = 
+    Event of expr * stmt list 
+    
 type formal = 
   VFormal of datatype * ident 
   | ObjFormal of ident
@@ -60,8 +62,8 @@ type func_decl = {
 }
 
 type thread = 
-  Init of stmt list
-  | Always of stmt list
+  Init of event list
+  | Always of event list
 
 type program = 
   func_decl list * (decl list * thread list)

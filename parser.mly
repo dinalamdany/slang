@@ -42,8 +42,8 @@ timeblock_list:
     | timeblock_list timeblock { $2 :: $1 }
 
 timeblock:
-    INIT LBRACE stmt_list RBRACE {Init($3)}
-    | ALWAYS LBRACE stmt_list RBRACE {Always($3)}
+    INIT LBRACE events RBRACE {Init($3)}
+    | ALWAYS LBRACE events RBRACE {Always($3)}
 
 fdecl:
     FUNC TYPE ID LPAREN formals_opt RPAREN LBRACE stmt_list RBRACE
@@ -64,14 +64,24 @@ param:
     TYPE ID { VFormal(Datatype($1),Ident($2)) }
     | OBJECT ID { ObjFormal(Ident($2))}
     | TYPE ID LBRAC RBRAC {ArrFormal(Datatype($1),Ident($2))}
-    
+
+event:
+    DELAY delay stmt_list {Event($2,$3)}
+
+events:
+    stmt_list {[ Event(IntLit(0),$1)]} 
+    | stmt_list event_list { Event(IntLit(0), $1) :: $2}
+
+event_list:
+    event { [$1] }
+    | event event_list { $1 :: $2 }
+
 stmt_list: 
     /* nothing */ {[]}
     | stmt_list stmt { $2 :: $1 }
 
 delay:
     INT_LITERAL {IntLit($1)}
-    | FLOAT_LITERAL { FloatLit($1)}
     | ID { Variable(Ident($1))}
 
 vdecl_list:
@@ -105,7 +115,6 @@ expr_list:
  
 stmt:
     expr SEMI { Expr($1)}
-    | DELAY delay stmt { Delay($2,$3)}
     | TERMINATE SEMI { Terminate }
     | RETURN expr SEMI { Return($2)}
     | LBRACE stmt_list RBRACE { Block(List.rev $2) }
