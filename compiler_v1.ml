@@ -18,6 +18,8 @@ let rec gen_expr = function
 | Binop(expr, op, expr2) -> ""
 | ArrElem(ident, i) -> "" 
 | Noexpr -> ""
+| ExprVarAssignDecl(datatype, ident, expr) -> ""
+| ExprAssign(ident, expr) -> ""
 | Cast(datatype, expr) -> ""
 | Call(ident, expr_list) -> if ((gen_id ident) = print)
 	then "std::cout << "^(gen_expr_list expr_list)
@@ -28,7 +30,6 @@ and gen_expr_list = function
  [] -> ""
 | h::[] -> gen_expr h
 | h::t -> (gen_expr h)^", "^(gen_expr_list t)
-
 
 let rec gen_stmt = function
   Block(stmt_list) -> ""
@@ -48,6 +49,14 @@ let rec gen_stmt_list = function
  [] -> ""
 | h::[] -> gen_stmt h
 | h::t -> (gen_stmt h)^(gen_stmt_list t)
+
+let rec gen_event = function
+  Event(expr, stmt_list) -> (*(gen_expr expr)^*)(gen_stmt_list stmt_list)     
+
+let rec gen_event_list = function
+ [] -> ""
+| h::[] -> gen_event h
+| h::t -> (gen_event h)^(gen_event_list t)
 
 let rec gen_formal = function
   VFormal(datatype, id) -> (gen_datatype datatype)^" "^(gen_id id)  
@@ -79,8 +88,8 @@ let rec gen_vdecl_list = function
 | h::t -> (gen_vdecl h)^(gen_vdecl_list t)
 
 let rec gen_thread = function
-  Init(stmt_list) -> gen_stmt_list stmt_list
-| Always(stmt_list) -> gen_stmt_list stmt_list
+  Init(event_list) -> gen_event_list event_list
+| Always(event_list) -> gen_event_list event_list
 
 let rec gen_thread_list = function
   [] -> ""(*print_endline "no threads"*)
