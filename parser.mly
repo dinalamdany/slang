@@ -72,6 +72,10 @@ events:
     stmt_list {[ Event(IntLit(0),$1)]} 
     | stmt_list event_list { Event(IntLit(0), $1) :: $2}
 
+delay:
+    INT_LITERAL {IntLit($1)}
+     | ID { Variable(Ident($1))}
+
 event_list:
     event { [$1] }
     | event event_list { $1 :: $2 }
@@ -79,10 +83,6 @@ event_list:
 stmt_list: 
     /* nothing */ {[]}
     | stmt_list stmt { $2 :: $1 }
-
-delay:
-    INT_LITERAL {IntLit($1)}
-    | ID { Variable(Ident($1))}
 
 vdecl_list:
     /* nothing */ {[]}

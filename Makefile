@@ -9,8 +9,6 @@ compile:
 	ocamlc -c scanner.ml
 	ocamlc -c parser.ml
 	ocamlc -c sast.mli
-	ocamlc -c scanner_tester.ml
-	ocamlc -c parser_tester.ml
 
 #OBJECTS
 #I'm narcissistic
@@ -20,6 +18,10 @@ SLANGOBJS = parser.cmo scanner.cmo scanner_tester.cmo parser_tester.cmo slang.cm
 COMP1OBJS = parser.cmo scanner.cmo compiler_v1.cmo
 TESTEROBJS = parser.cmo scanner.cmo tester.cmo
 
+scanner_tester.cmo : scanner_tester.ml
+	ocamlc -c $< -o $@
+parser_tester.cmo : parser_tester.ml
+	ocamlc -c $< -o $@
 codegenloop.cmo : codegenloop.ml
 	ocamlc -c $< -o $@
 codegenloop : $(TONYOBJS)
