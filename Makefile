@@ -16,6 +16,7 @@ TONYOBJS = parser.cmo scanner.cmo codegenloop.cmo
 CODEGENOBJS = parser.cmo scanner.cmo codegen.cmo
 SLANGOBJS = parser.cmo scanner.cmo scanner_tester.cmo parser_tester.cmo slang.cmo
 COMP1OBJS = parser.cmo scanner.cmo compiler_v1.cmo
+COMP2OBJS = parser.cmo scanner.cmo compiler_v2.cmo
 TESTEROBJS = parser.cmo scanner.cmo tester.cmo
 
 scanner_tester.cmo : scanner_tester.ml
@@ -30,6 +31,10 @@ slang.cmo : slang.ml
 	ocamlc -c $< -o $@
 slang : $(SLANGOBJS)
 	ocamlc -o $@ $(SLANGOBJS)
+compiler_v2.cmo : compiler_v2.ml
+	ocamlc -c $< -o $@
+compiler_v2: $(COMP2OBJS)
+	ocamlc -o $@ $(COMP2OBJS)
 compiler_v1.cmo : compiler_v1.ml
 	ocamlc -c $< -o $@
 compiler_v1: $(COMP1OBJS)
@@ -45,4 +50,4 @@ all: compile compiler_v1
 
 .PHONY : clean
 clean:
-	rm -f parser.ml codegenloop parser.mli scanner.ml *.cmo *.cmi codegen slang compiler_v1
+	rm -f parser.ml codegenloop parser.mli scanner.ml *.cmo *.cmi codegen slang compiler_v1 compiler_v2
