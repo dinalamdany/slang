@@ -1,7 +1,7 @@
 #!/bin/bash
 #script for testing helloworld
 
-COMPILER="../compiler_v1"
+COMPILER="../compiler_v2"
 COMPFILE="helloworld"
 FILENAME=".././tests/helloworld.sl"
 OUTFILENAME="helloworld.output"
