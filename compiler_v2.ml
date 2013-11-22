@@ -2,7 +2,7 @@ open Ast
 open Printf
 let print = "print"
 
-(*instead of counters, we could assign numbers to the strings in our storage*)
+(*instead of counters, we could assign tack on numbers info to the strings in our storage*)
 (*ie first init block has number 0, second 1..and all the individuals structs have their own numbers as well*)
 let always_counter = 0
 let always_block_counter = 0
@@ -19,6 +19,7 @@ let prefix_init_block = prefix_init^"block"^(string_of_int init_block_counter)^"
 let code_event_base = "struct "^prefix_event^" {\n\tunsigned int time;\n\tvirtual unsigned int get_time(){};\n\tvirtual void foo(){};\n\tvirtual ~"^prefix_event^"(){};\n};\n"
 let code_event_list = "struct "^prefix_event_list^" {\n\tbool empty(){return event_q.empty();}\n\t"^prefix_event^"* pop() {\n\t\t"^prefix_event^" *front = event_q.front();\n\t\tevent_q.pop_front();\n\t\treturn front;\n\t}\n\tvoid add(unsigned int time_, "^prefix_event^" *obj_) {\n\t\tbool eol = true;\n\t\tstd::deque<"^prefix_event^"*>::iterator it;\n\t\tfor (it = event_q.begin(); it != event_q.end(); it++) {\n\t\t\tif ((*it)->get_time() > time_) {\n\t\t\t\tevent_q.insert(it, obj_);\n\t\t\t\teol = false;\n\t\t\t\tbreak;\n\t\t\t}\n\t\t}\n\t\tif (eol) {\n\t\t\tevent_q.push_back(obj_);\n\t\t}\n\t}\n\tprivate:\n\t\tstd::deque<"^prefix_event^"*> event_q;\n};\n"^prefix_event_list^" event_q;"
 let code_directives = "#include <iostream>\n#include <string>\n#include <deque>\n#include <vector>\n#include <cstdlib>\n"
+let code_event_list_do = "while(!event_q.empty()) {\n\tevent_q.pop()->foo();\n}\n"
 let header = code_directives^code_event_base^code_event_list
 (*let _ = print_endline header*)
 
