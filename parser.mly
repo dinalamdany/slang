@@ -61,8 +61,8 @@ formal_list:
     | formal_list COMMA param { $3 :: $1}
 
 param:
-    TYPE ID { VFormal(Datatype($1),Ident($2)) }
-    | OBJECT ID { ObjFormal(Ident($2))}
+    TYPE ID { Formal(Datatype($1),Ident($2)) }
+    | OBJECT ID { Formal(Datatype($1), Ident($2))}
     | TYPE ID LBRAC RBRAC {ArrFormal(Datatype($1),Ident($2))}
 
 event:
@@ -91,11 +91,11 @@ vdecl_list:
 vdecl:
     TYPE ID { Vdecl(Datatype($1),Ident($2)) }
     | TYPE ID ASSIGN expr { VarAssignDecl(Datatype($1),Ident($2),$4) }
-    | TYPE ID LBRAC RBRAC { ArrDecl(Datatype($1),Ident($2))}
+    | TYPE ID LBRAC RBRAC { Vdecl(Arraytype($1),Ident($2))}
     | TYPE ID LBRAC RBRAC ASSIGN LBRAC expr_list RBRAC {
-        ArrAssignDecl(Datatype($1),Ident($2),$7)}
-    | OBJECT ID { ObjDecl(Ident($2))}
-    | OBJECT ID ASSIGN OBJECT LPAREN property_list RPAREN { ObjAssignDecl(Ident($2), $6)}
+        VarAssignDecl(Arraytype($1),Ident($2),$7)}
+    | OBJECT ID ASSIGN OBJECT LPAREN property_list RPAREN { VarAssignDecl(Ident($2), $6)}
+    | OBJECT ID { VDecl(Datatype($1),Ident($2))}
 
 property_list:
     /* nothing */ {[]}
@@ -104,9 +104,9 @@ property_list:
 
 property:
     TYPE ID {Vdecl(Datatype($1),Ident($2))}
-    | TYPE ID LBRAC RBRAC { ArrDecl(Datatype($1),Ident($2))} 
+    | TYPE ID LBRAC RBRAC { VDecl(Arraytype($1),Ident($2))} 
     | TYPE ID COLON expr {VarAssignDecl(Datatype($1),Ident($2), $4)}
-    | TYPE ID LBRAC RBRAC ASSIGN LBRAC expr_list RBRAC {ArrAssignDecl(Datatype($1),Ident($2),$7)}
+    | TYPE ID LBRAC RBRAC ASSIGN LBRAC expr_list RBRAC {VarAssignDecl(Arraytype($1),Ident($2),$7)}
 
 expr_list:
     /* nothing */ { [] }
