@@ -1,12 +1,11 @@
-(*TODO: separate unop and op... does >5 make sense?*)
-
 type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq |And | Or | Not | Neg | Inc | Dec | Mod
 
 type ident = 
   Ident of string
 
 type datatype = 
-  Datatype of string
+  Datatype of string |
+  Arraytype of datatype 
 
 type expr =
   IntLit of int
@@ -24,13 +23,14 @@ type expr =
   | Call of ident * expr list
   | ObjProp of ident * ident
 
-type decl = 
+type value = 
+  ExprVal of expr
+  | ArrVal of expr list 
+  | ObjVal of decl list 
+
+and decl = 
   Vdecl of datatype * ident 
-  | VarAssignDecl of datatype * ident * expr
-  | ArrDecl of datatype * ident 
-  | ArrAssignDecl of datatype * ident * expr list
-  | ObjDecl of ident
-  | ObjAssignDecl of ident * decl list
+  | VarAssignDecl of datatype * ident * value
 
 type stmt = 
     Block of stmt list
@@ -50,9 +50,7 @@ type event =
     Event of expr * stmt list 
     
 type formal = 
-  VFormal of datatype * ident 
-  | ObjFormal of ident
-  | ArrFormal of datatype * ident
+  Formal of datatype * ident 
 
 type func_decl = {
   return: datatype;

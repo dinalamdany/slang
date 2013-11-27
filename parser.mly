@@ -8,10 +8,10 @@
 %token <int> INT_LITERAL
 %token <float> FLOAT_LITERAL
 %token <bool> BOOL_LITERAL
-%token <string> STRING_LITERAL TYPE ID
+%token <string> STRING_LITERAL TYPE ID OBJECT
 %token EOF
 %token DELAY MAIN INIT ALWAYS
-%token OBJECT TERMINATE
+%token TERMINATE
 
 %nonassoc NOELSE
 %nonassoc ELSE
@@ -63,7 +63,7 @@ formal_list:
 param:
     TYPE ID { Formal(Datatype($1),Ident($2)) }
     | OBJECT ID { Formal(Datatype($1), Ident($2))}
-    | TYPE ID LBRAC RBRAC {ArrFormal(Datatype($1),Ident($2))}
+    | TYPE ID LBRAC RBRAC {Formal(Arraytype(Datatype($1)),Ident($2))}
 
 event:
     DELAY delay stmt_list {Event($2,$3)}
@@ -90,12 +90,13 @@ vdecl_list:
 
 vdecl:
     TYPE ID { Vdecl(Datatype($1),Ident($2)) }
-    | TYPE ID ASSIGN expr { VarAssignDecl(Datatype($1),Ident($2),$4) }
-    | TYPE ID LBRAC RBRAC { Vdecl(Arraytype($1),Ident($2))}
+    | TYPE ID ASSIGN expr { VarAssignDecl(Datatype($1),Ident($2),ExprVal($4)) }
+    | TYPE ID LBRAC RBRAC { Vdecl(Arraytype(Datatype($1)),Ident($2))}
     | TYPE ID LBRAC RBRAC ASSIGN LBRAC expr_list RBRAC {
-        VarAssignDecl(Arraytype($1),Ident($2),$7)}
-    | OBJECT ID ASSIGN OBJECT LPAREN property_list RPAREN { VarAssignDecl(Ident($2), $6)}
-    | OBJECT ID { VDecl(Datatype($1),Ident($2))}
+        VarAssignDecl(Arraytype(Datatype($1)),Ident($2),ArrVal($7))}
+    | OBJECT ID ASSIGN OBJECT LPAREN property_list RPAREN {
+        VarAssignDecl(Datatype($1),Ident($2), ObjVal($6))}
+    | OBJECT ID { Vdecl(Datatype($1),Ident($2))}
 
 property_list:
     /* nothing */ {[]}
@@ -104,9 +105,10 @@ property_list:
 
 property:
     TYPE ID {Vdecl(Datatype($1),Ident($2))}
-    | TYPE ID LBRAC RBRAC { VDecl(Arraytype($1),Ident($2))} 
-    | TYPE ID COLON expr {VarAssignDecl(Datatype($1),Ident($2), $4)}
-    | TYPE ID LBRAC RBRAC ASSIGN LBRAC expr_list RBRAC {VarAssignDecl(Arraytype($1),Ident($2),$7)}
+    | TYPE ID LBRAC RBRAC { Vdecl(Arraytype(Datatype($1)),Ident($2))} 
+    | TYPE ID ASSIGN expr {VarAssignDecl(Datatype($1),Ident($2), ExprVal($4))}
+    | TYPE ID LBRAC RBRAC ASSIGN LBRAC expr_list RBRAC
+    {VarAssignDecl(Arraytype(Datatype($1)),Ident($2),ArrVal($7))}
 
 expr_list:
     /* nothing */ { [] }

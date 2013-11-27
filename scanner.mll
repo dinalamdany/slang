@@ -13,7 +13,7 @@ rule token = parse
 | ':'      { COLON }
 | ','      { COMMA }
 | '.'      { DOT }
-| "object" { OBJECT } 
+| "object" { TYPE("object") } 
 | '+'      { PLUS }
 | '-'      { MINUS }
 | '*'      { TIMES }
