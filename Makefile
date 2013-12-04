@@ -3,6 +3,7 @@ default: all
 .PHONY : compile
 compile:
 	ocamllex scanner.mll
+	ocamlc -c type.mli
 	ocamlyacc parser.mly
 	ocamlc -c ast.mli
 	ocamlc -c pretty_c.mli
@@ -44,6 +45,8 @@ tester.cmo : tester.ml
 	ocamlc -c tester.ml -o $@
 tester : $(TESTEROBJS)
 	ocamlc -o $@ $(TESTEROBJS)
+
+
 
 #Tack on your own targets
 .PHONY : all

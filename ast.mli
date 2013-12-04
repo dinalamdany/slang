@@ -1,10 +1,13 @@
-type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq |And | Or | Not | Neg | Inc | Dec | Mod
+open Type
+
+type binop = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq | Mod | And | Or
+type unop = Neg | Inc | Dec | Not
 
 type ident = 
   Ident of string
 
 type datatype = 
-  Datatype of string |
+  Datatype of Type.var_type |
   Arraytype of datatype 
 
 type expr =
@@ -13,11 +16,10 @@ type expr =
   | FloatLit of float
   | StringLit of string
   | Variable of ident 
-  | Unop of op * expr
-  | Binop of expr * op * expr
-  | ArrElem of ident * int 
+  | Unop of unop * expr
+  | Binop of expr * binop * expr
+  | ArrElem of ident * int
   | Noexpr
-  | ExprVarAssignDecl of datatype * ident * expr
   | ExprAssign of ident * expr
   | Cast of datatype * expr
   | Call of ident * expr list
@@ -29,7 +31,7 @@ type value =
   | ObjVal of decl list 
 
 and decl = 
-  Vdecl of datatype * ident 
+  VarDecl of datatype * ident 
   | VarAssignDecl of datatype * ident * value
 
 type stmt = 
