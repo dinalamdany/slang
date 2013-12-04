@@ -1,5 +1,5 @@
 %{ open Ast %}
-
+%{ open Type %}
 %token SEMI LPAREN RPAREN LBRACE RBRACE COMMA RBRAC LBRAC COLON DOT
 %token PLUS MINUS TIMES DIVIDE ASSIGN 
 %token NOT INC DEC
@@ -11,7 +11,8 @@
 %token <string> STRING_LITERAL TYPE ID
 %token EOF
 %token DELAY MAIN INIT ALWAYS
-%token OBJECT TERMINATE
+%token TERMINATE
+%token BOOLEAN STRING INT FLOAT VOID OBJECT
 
 %nonassoc NOELSE
 %nonassoc ELSE
@@ -37,16 +38,21 @@ program:
 main:
     MAIN LPAREN RPAREN LBRACE vdecl_list timeblock_list RBRACE { $5, $6}
     
+var_type:
+	INT			{Int}
+	|FLOAT		{Float}
+	|BOOLEAN	{Boolean}
+	|STRING		{String}
+	|OBJECT		{Object}
 timeblock_list:
     /* nothing */ {[]}
     | timeblock_list timeblock { $2 :: $1 }
-
 timeblock:
     INIT LBRACE events RBRACE {Init($3)}
     | ALWAYS LBRACE events RBRACE {Always($3)}
 
 fdecl:
-    FUNC TYPE ID LPAREN formals_opt RPAREN LBRACE stmt_list RBRACE
+    FUNC var_type ID LPAREN formals_opt RPAREN LBRACE stmt_list RBRACE
     { { return = Datatype($2);
     fname = Ident($3);
     formals = $5;
@@ -61,9 +67,8 @@ formal_list:
     | formal_list COMMA param { $3 :: $1}
 
 param:
-    TYPE ID { VFormal(Datatype($1),Ident($2)) }
-    | OBJECT ID { ObjFormal(Ident($2))}
-    | TYPE ID LBRAC RBRAC {ArrFormal(Datatype($1),Ident($2))}
+    var_type ID { VFormal(Datatype($1),Ident($2)) }
+    | var_type ID LBRAC RBRAC {ArrFormal(Datatype($1),Ident($2))}
 
 event:
     DELAY delay stmt_list {Event($2,$3)}
@@ -89,13 +94,11 @@ vdecl_list:
     | vdecl SEMI vdecl_list { $1 :: $3 }
 
 vdecl:
-    TYPE ID { Vdecl(Datatype($1),Ident($2)) }
-    | TYPE ID ASSIGN expr { VarAssignDecl(Datatype($1),Ident($2),$4) }
-    | TYPE ID LBRAC RBRAC { ArrDecl(Datatype($1),Ident($2))}
-    | TYPE ID LBRAC RBRAC ASSIGN LBRAC expr_list RBRAC {
+    var_type ID { VarDecl(Datatype($1),Ident($2)) }
+    | var_type ID ASSIGN expr { VarAssignDecl(Datatype($1),Ident($2),$4) }
+    | var_type ID LBRAC RBRAC { ArrDecl(Datatype($1),Ident($2))}
+    | var_type ID LBRAC RBRAC ASSIGN LBRAC expr_list RBRAC {
         ArrAssignDecl(Datatype($1),Ident($2),$7)}
-    | OBJECT ID { ObjDecl(Ident($2))}
-    | OBJECT ID ASSIGN OBJECT LPAREN property_list RPAREN { ObjAssignDecl(Ident($2), $6)}
 
 property_list:
     /* nothing */ {[]}
@@ -103,10 +106,10 @@ property_list:
     | property {[$1]}
 
 property:
-    TYPE ID {Vdecl(Datatype($1),Ident($2))}
-    | TYPE ID LBRAC RBRAC { ArrDecl(Datatype($1),Ident($2))} 
-    | TYPE ID COLON expr {VarAssignDecl(Datatype($1),Ident($2), $4)}
-    | TYPE ID LBRAC RBRAC ASSIGN LBRAC expr_list RBRAC {ArrAssignDecl(Datatype($1),Ident($2),$7)}
+    var_type ID {VarDecl(Datatype($1),Ident($2))}
+    | var_type ID LBRAC RBRAC { ArrDecl(Datatype($1),Ident($2))} 
+    | var_type ID COLON expr {VarAssignDecl(Datatype($1),Ident($2), $4)}
+    | var_type ID LBRAC RBRAC ASSIGN LBRAC expr_list RBRAC {ArrAssignDecl(Datatype($1),Ident($2),$7)}
 
 expr_list:
     /* nothing */ { [] }
@@ -133,7 +136,6 @@ stmt:
  expr_opt:
     /* nothing */ { Noexpr }
     | ID ASSIGN expr { ExprAssign(Ident($1),$3)}
-    | TYPE ID ASSIGN expr { ExprVarAssignDecl(Datatype($1),Ident($2),$4)}
     | expr {$1}
 
 expr:
@@ -141,7 +143,7 @@ expr:
   | FLOAT_LITERAL { FloatLit($1)}
   | STRING_LITERAL { StringLit($1)}
   | BOOL_LITERAL {BoolLit($1)}
-  | TYPE LPAREN expr RPAREN { Cast(Datatype($1),$3)}
+  | var_type LPAREN expr RPAREN { Cast(Datatype($1),$3)}
   | ID { Variable(Ident($1)) }
   | expr PLUS   expr { Binop($1, Add,   $3) }
   | expr MINUS  expr { Binop($1, Sub,   $3) }
