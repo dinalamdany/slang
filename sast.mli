@@ -1,65 +1,70 @@
 open Ast
+open Type
 
-(* Slang return types *)
-type sl_ret = 
-    RInt
-  | RFloat
-  | RString
-  | RBool
-  | RVoid
-  | RObject
-  | RArray
+type sexpr =
+	IntLit of int
+	| BoolLit of bool
+	| StringList of string
+	| Variable of ident
+	| Unop of unop * sexpr
+	| Binop of sexpr * binop * sexpr
+	| ArrElem of ident * int
+	| Noexpr
+	| ExprAssign of ident* sexpr
+	| Cast of datatype * sexpr
+	| Call of ident * sexpr list
+	| ObjProp of ident * ident
 
-(* Slang type definitions *)
-type sl_var = 
-    Int
-  | Float
-  | String
-  | Bool
-  | Object
-  | Array
+type expr = 
+	sexpr * Type.var_type
 
-(* Expressions *)
-type sexpr = 
-  ExprType of expr * sl_ret
+type sdecl =
+	VarDecl of datatype * ident
+	| VarAssignDecl of datatype * ident * sexpr
+	| ArrDecl of datatype * ident
+	| ArrAssignDecl of datatype * ident * sexpr list
 
-(* Declarations *)
-type sdecl = 
-  Vdecl of datatype * ident * sl_var
-  | VarAssignDecl of datatype * ident * sexpr * sl_var
-  | ArrDecl of datatype * ident * sl_var
-  | ArrAssignDecl of datatype * ident * sexpr list * sl_var  
-  | ObjDecl of ident * sl_var
-  | ObjAssignDecl of ident * sdecl list * sl_var
+type decl = sdecl * Type.var_type
 
-(* Statements *)
 type sstmt = 
-    Block of sstmt list
-  | Expr of sexpr
-  | Return of sexpr
-  | If of sexpr * sstmt * sstmt
-  | For of sexpr * sexpr * sexpr * sstmt
-  | Delay of sexpr * sstmt
-  | While of sexpr * sstmt
-  | Declaration of sdecl 
-  | PropertyAssign of ident * ident * sexpr
-  | Assign of ident * sexpr
-  | ArrAssign of ident * sexpr list
-  | ArrElemAssign of ident * int * sexpr
-  | Terminate
+	Block of sstmt list
+	| Expr of sexpr
+	| Return of sexpr
+	| If of sexpr * sstmt * sstmt
+	| For of sexpr * sexpr * sexpr * sstmt
+	| While of sexpr * sstmt
+	| Declaration of sdecl
+	| PropertyAssign of ident * ident * sexpr
+	| Assign of ident * sexpr
+	| ArrAssign of ident * sexpr list
+	| ArrElemAssign of ident * int * sexpr
+	| Terminate
 
-(* Formals in function declaration *)
-type sformal = 
-  VFormal of datatype * ident * sl_var 
-  | ObjFormal of ident * sl_var
-  | ArrFormal of datatype * ident * sl_var
+type stmt = 
+	sstmt * Type.var_type
+
+type sevent =
+	Event of sexpr * sstmt list
+
+type event =
+	sevent * Type.var_type
 
 type sfunc_decl = {
-  return: datatype * sl_var;
-  fname : ident;
-  formals : sformal list;
-  body : sstmt list;
-}
+		return: datatype;
+		fname: ident;
+		formals: formal list;
+		body: sstmt list;
+		}
+
+type func_decl = 
+	sfunc_decl * Type.var_type
+
+type sthread = 
+	Init of sevent list
+	| Always of sevent list
+
+type thread = 
+	sthread * Type.var_type
 
 type sprogram = 
-  sfunc_decl list * (sdecl list * thread list)
+	sfunc_decl list * (sdecl list * sthread list) * Type.var_type
