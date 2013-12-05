@@ -97,10 +97,10 @@ vdecl_list:
 
 vdecl:
     var_type ID { VarDecl(Datatype($1),Ident($2)) }
-    | var_type ID ASSIGN expr { VarAssignDecl(Datatype($1),Ident($2),$4) }
+    | var_type ID ASSIGN expr { VarAssignDecl(Datatype($1),Ident($2),ExprVal($4)) }
     | var_type ID LBRAC RBRAC { VarDecl(Arraytype(Datatype($1)),Ident($2))}
     | var_type ID LBRAC RBRAC ASSIGN LBRAC expr_list RBRAC {
-        VarAssignDecl(Arraytype(Datatype($1)),Ident($2),$7)}
+        VarAssignDecl(Arraytype(Datatype($1)),Ident($2),ArrVal($7))}
     | var_type ID ASSIGN var_type LPAREN property_list RPAREN
     {VarAssignDecl(Datatype($1),Ident($2),ObjVal($6))}
 
