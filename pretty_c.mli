@@ -11,8 +11,8 @@ type struct_obj =
     Init_obj of name * link
     | Always_obj of name * link 
 
-type main =
-    struct_obj list * struct_obj list * link list
+type main = (*two link lists, init objects and always objects*)
+    struct_obj list * link list * struct_obj list * link list
 
 type structure =
     Init of name * int * link * stmt list
