@@ -15,11 +15,11 @@ type main =
     struct_obj list * struct_obj list * link list
 
 type structure =
-    Init of name * int * func_decl
-    | Always of name * int * link * func_decl
+    Init of name * int * stmt list
+    | Always of name * int * link * stmt list
 
 type time_block =
-    decl list * structure list
+    link * decl list * structure list
 
  type pretty_c =
     decl list * func_decl list * time_block list * main
