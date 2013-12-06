@@ -11,6 +11,7 @@ compile:
 	ocamlc -c scanner.ml
 	ocamlc -c parser.ml
 	ocamlc -c sast.mli
+	ocamlc -c semantic_check.ml
 
 #OBJECTS
 #I'm narcissistic
