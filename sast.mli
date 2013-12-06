@@ -51,5 +51,12 @@ type sstmt =
 (*type sstmt = 
 	Stmt of sstmt * datatype*)
 
+type sevent = 
+    Event of int * sstmt list
+
+type sthread =
+    Init of sevent list
+    | Always of sevent list
+
 type sprogram = 
-	Prog of sfunc_decl list * (sdecl list * thread list) * datatype
+	Prog of sfunc_decl list * (sdecl list * sthread list) 
