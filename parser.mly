@@ -116,8 +116,6 @@ stmt:
     | ID LBRAC INT_LITERAL RBRAC ASSIGN expr SEMI { ArrElemAssign(Ident($1), $3 ,$6)}
     | ID ASSIGN LBRAC expr_list RBRAC SEMI {ArrAssign(Ident($1),$4)}
     | ID ASSIGN expr SEMI { Assign(Ident($1), $3) }
-    | ID DOT ID ASSIGN expr SEMI {PropertyAssign(Ident($1),Ident($3), $5)}
- 
 
  expr_opt:
     /* nothing */ { Noexpr }
