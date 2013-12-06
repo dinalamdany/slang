@@ -43,7 +43,6 @@ var_type:
 	|FLOAT		{Float}
 	|BOOLEAN	{Boolean}
 	|STRING		{String}
-	|OBJECT		{Object}
 
 timeblock_list:
     /* nothing */ {[]}
@@ -97,22 +96,8 @@ vdecl:
     | var_type ID LBRAC RBRAC { VarDecl(Arraytype(Datatype($1)),Ident($2))}
     | var_type ID LBRAC RBRAC ASSIGN LBRAC expr_list RBRAC {
         VarAssignDecl(Arraytype(Datatype($1)),Ident($2),ArrVal($7))}
-    | var_type ID ASSIGN var_type LPAREN property_list RPAREN
-    {VarAssignDecl(Datatype($1),Ident($2),ObjVal($6))}
 
-property_list:
-    /* nothing */ {[]}
-    | property COMMA property_list { $1 :: $3}
-    | property {[$1]}
-
-property:
-    var_type ID {VarDecl(Datatype($1),Ident($2))}
-    | var_type ID LBRAC RBRAC { VarDecl(Arraytype(Datatype($1)),Ident($2))} 
-    | var_type ID LBRAC RBRAC ASSIGN LBRAC expr_list RBRAC
-        {VarAssignDecl(Arraytype(Datatype($1)),Ident($2),ArrVal($7))}
-    | var_type ID ASSIGN expr {VarAssignDecl(Datatype($1),Ident($2), ExprVal($4))}
-
-   expr_list:
+expr_list:
     /* nothing */ { [] }
     | expr COMMA expr_list { $1 :: $3 }
     | expr { [$1] } 
@@ -165,5 +150,4 @@ expr:
   | expr AND expr {Binop($1, And, $3)}
   | expr OR expr {Binop($1, Or, $3)}
   | ID LPAREN expr_list RPAREN {Call(Ident($1), $3)}
-  | ID DOT ID { ObjProp(Ident($1),Ident($1))}
   
