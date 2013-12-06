@@ -4,11 +4,11 @@ open Type
 
 type symbol_table = {
 	parent: symbol_table option;
-	variables: (string * Type.var_type * bool) list
+	variables: (ident * datatype * bool) list
 }
 
 type function_table = {
-	functions: (string * Type.var_type*Type.var_type list * stmt list) list
+	functions: (ident * datatype*formal list * stmt list) list
 }
 
 type translation_environment = {
@@ -36,8 +36,8 @@ let add_to_global_table env name t is_array=
 
 (*search for variable in global and local symbol tables*)
 let find_variable env name =
-	try List.find (fun (s,_,_) -> s=name) env.global_scope.variables
-	with Not_found -> try List.find(fun (s,_,_) -> s=name) env.var_scope.variables
+	try List.find (fun (s,_,_) -> s=name) env.var_scope.variables
+	with Not_found -> try List.find(fun (s,_,_) -> s=name) env.global_scope.variables
 	with Not_found -> raise Not_found
 
 (* search for a function in our function table*)
@@ -51,10 +51,10 @@ let check_binops type1 type2 = match (type1,type2) with
 	|(Int, Float) -> true
 	|(Float, Int) -> true
 	|(Boolean, Boolean) ->true
-	|_ -> false
+	|(_,_) -> false
 
 (* check both sides of an assignment are compatible*) 
-let check_assignments type1 typ2 = match (type1, type2) with
+let check_assignments type1 type2 = match (type1, type2) with
 	(Int, Int) -> true
 	|(Float, Float) -> true
 	|(Int, Float) -> true
@@ -62,6 +62,7 @@ let check_assignments type1 typ2 = match (type1, type2) with
 	|(Boolean, Boolean) -> true
 	|(String, String) -> true
 	|(Object, Object) -> true
+	|(_,_) -> false
 
 (* add a function to the environment*)
 let add_function env func_declaration =
@@ -72,12 +73,20 @@ let add_function env func_declaration =
 	let func_formals=func_declaration.formals in
 	let func_body=func_declaration.body in
 	let new_functions = (func_name, func_type, func_formals, func_body)::old_functions in
-	let new_func_scope = {functions = new_functions} in
-	let new_env = {env with func_scope = new_fun_scope} in
+	let new_fun_scope = {functions = new_functions} in
+	let new_env = {env with fun_scope = new_fun_scope} in
 	new_env
 
 (* add a value to the symbol table*)
 let add_var env var_declaration is_array=
-	let sym_table= match env.location with
-		main -> add_to_global_table env var_declaration.ident var_declaration.datatype is_array
-		| _ -> add_to_local_table env var_declaration.ident var_declaration.datatype is_array
+	let sym_table= match (env.location,var_declaration) with
+		(main,VarDecl(t,name)) -> add_to_global_table env name t is_array 
+		|(main,VarAssignDecl(t,name,v)) -> add_to_global_table env name t is_array 
+		|(_,VarDecl(t,name)) -> add_to_var_table env name t is_array 	
+		|(_,VarAssignDecl(t,name,v)) -> add_to_var_table env name t is_array in
+		sym_table
+
+(* checks the type of a variable in the symbol table*)
+let check_var_type env v t is_array=
+	let(name,ty,t_is_array) = find_variable env v in
+	if(t=ty) then if (is_array=t_is_array) then true else false
