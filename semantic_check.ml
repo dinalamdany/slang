@@ -91,15 +91,16 @@ let check_var_type env v t is_array=
 	let(name,ty,t_is_array) = find_variable env v in
 	if(t<>ty) then false else if (is_array<>t_is_array) then false else true
 
-let get_name_type_from_var vs = 
-	let (t, n) = vs in (t, n) 
+let get_name_type_from_var = function
+	Formal(datatype, ident) -> (ident, datatype, false)
+
 
 (* Semantic checking on a function *)
 let check_funcs env func_declaration =
 	let env = add_function env func_declaration in
 	let new_locals = List.fold_left (fun a vs -> (get_name_type_from_var vs)::a) [] func_declaration.formals in
-	let new_var_scope = {parent = Some(env.var_scope); variables = new_variables} in
-	let new_env = {return_type = func_declaration.return; return_seen = false; location = func_declaration.fname; global_scope = env.global_scope; var_scope = new_var_scope; fun_scope = env.fun_scope} in
+	let new_var_scope = {parent = Some(env.var_scope); variables = new_locals} in
+	let new_env = {return_type = func_declaration.return; return_seen = false; location = env.location; global_scope = env.global_scope; var_scope = new_var_scope; fun_scope = env.fun_scope} in
 	let (stbody, final_env) = get_env_for_stmt new_env function_declaration.body in
 	let _ = check_final_env final_env in
 	let sfuncdecl = ({ return = function_declaration.return_type; fname = function_declaration.fname; formals = function_declaration.formals; body = func_declaration.body }, func_declaration.return_type) in
