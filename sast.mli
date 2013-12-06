@@ -16,7 +16,7 @@ type sexpr =
 	| ObjProp of ident * ident
 
 type expr = 
-	sexpr * Type.var_type
+	Expr of sexpr * datatype
 
 type sdecl =
 	VarDecl of datatype * ident
@@ -24,47 +24,18 @@ type sdecl =
 	| ArrDecl of datatype * ident
 	| ArrAssignDecl of datatype * ident * sexpr list
 
-type decl = sdecl * Type.var_type
-
-type sstmt = 
-	Block of sstmt list
-	| Expr of sexpr
-	| Return of sexpr
-	| If of sexpr * sstmt * sstmt
-	| For of sexpr * sexpr * sexpr * sstmt
-	| While of sexpr * sstmt
-	| Declaration of sdecl
-	| PropertyAssign of ident * ident * sexpr
-	| Assign of ident * sexpr
-	| ArrAssign of ident * sexpr list
-	| ArrElemAssign of ident * int * sexpr
-	| Terminate
-
-type stmt = 
-	sstmt * Type.var_type
-
-type sevent =
-	Event of sexpr * sstmt list
-
-type event =
-	sevent * Type.var_type
+type decl = 
+	Decl of sdecl * datatype
 
 type sfunc_decl = {
 		return: datatype;
 		fname: ident;
 		formals: formal list;
-		body: sstmt list;
+		body: stmt list;
 		}
 
 type func_decl = 
-	sfunc_decl * Type.var_type
-
-type sthread = 
-	Init of sevent list
-	| Always of sevent list
-
-type thread = 
-	sthread * Type.var_type
+	Func_Decl of sfunc_decl * datatype
 
 type sprogram = 
-	sfunc_decl list * (sdecl list * sthread list) * Type.var_type
+	Prog of sfunc_decl list * (sdecl list * thread list) * Type.var_type
