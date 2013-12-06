@@ -12,7 +12,7 @@ type function_table = {
 }
 
 type translation_environment = {
-	return_type: var_type;	(*function's return type*)
+	return_type: datatype;	(*function's return type*)
 	return_seen: bool;		(*does the function have a return statement*)
 	location: string;		(*init, always, main, or function name*)
 	global_scope: symbol_table;	(*symbol table for global vairables*)
@@ -89,4 +89,19 @@ let add_var env var_declaration is_array=
 (* checks the type of a variable in the symbol table*)
 let check_var_type env v t is_array=
 	let(name,ty,t_is_array) = find_variable env v in
-	if(t=ty) then if (is_array=t_is_array) then true else false
+	if(t<>ty) then false else if (is_array<>t_is_array) then false else true
+
+(*extracts the type and name from a Formal declaration*)
+let get_name_type_from_var = function
+	Formal(datatype,ident) -> (ident, datatype,false)
+
+(* Semantic checking on a function*)
+let check_funcs env func_declaration =
+	let env = add_function env func_declaration in
+	let new_locals = List.fold_left(fun a vs -> (get_name_type_from_var vs)::a)[] func_declaration.formals in
+	let new_var_scope = {parent=Some(env.var_scope); variables = new_locals} in
+	let new_env = {return_type = func_declaration.return; return_seen=false; location="in_func"; global_scope = env.global_scope; var_scope = new_var_scope; fun_scope = env.fun_scope} in
+	let (stbody,final_env) = get_env_for_stmt new_env function_declaration.body in
+	let _=check_final_env final_env in
+	let sfuncdecl = ({return = function_declaration.return_type; fname = function_dclaration.fname; formals = function_declaration.formals; body = func_declaration.body}, func_declaration.return_type) in
+	Func_Decl(sfuncdecl)
