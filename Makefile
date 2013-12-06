@@ -51,7 +51,7 @@ tester : $(TESTEROBJS)
 
 #Tack on your own targets
 .PHONY : all
-all: compile compiler_v2
+all: compile 
 
 .PHONY : clean
 clean:
