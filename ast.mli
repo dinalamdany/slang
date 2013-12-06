@@ -49,7 +49,7 @@ type stmt =
   | Terminate
 
 type event = 
-    Event of expr * stmt list 
+    Event of int * stmt list 
     
 type formal = 
   Formal of datatype * ident 
