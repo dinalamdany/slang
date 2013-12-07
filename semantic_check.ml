@@ -3,7 +3,8 @@ open Sast
 open Type
 
 exception Error of string
-(*NOTE: WILL END UP HAVING RECURSIVE ARRAYS AND THAT IS TERRIBLE*)
+(*NOTE: WILL END UP HAVING RECURSIVE ARRAYS AND THAT IS TERRIBLE --> add in a
+ * check*)
 
 (*a symbol table consisting of the parent as the variables*)
 type symbol_table = {
