@@ -124,8 +124,8 @@ let rec get_type_from_datatype = function
 	|Arraytype(ty) ->Arraytype(get_type_from_datatype(ty))
 
 (*extracts the stmt list from the event declaration*)
-let rec get_stmts_from_event = function
-	Event(i,stmts)->stmts
+let rec get_time_stmts_from_event = function
+	Event(i,stmts)->(i,stmts)
 
 (*extracts event list from thread declaration*)
 let rec get_events_from_thread = function
@@ -274,22 +274,23 @@ let check_func env func_declaration =
 	Func_Decl(sfuncdecl,func_declaration.return)
 
 (*Semantic checking on events *)
-let check_event env event_declaration = 
-	let statements = get_stmts_from_event event_declaration in
-	let final_env = List.fold_left(fun env stmt -> snd(check_stmt env stmt)) env statements
-	in final_env
+let check_event (typed_events, env) event_list = 
+	let (time,statements) = get_time_stmts_from_event event_list in
+	let (typed_statements, env) = List.fold_left (fun (sstmt_list, env) stmt -> let (sstmt,new_env) = check_stmt env stmt in 
+        (sstmt::sstmt_list,new_env)) (typed_events,env) event_list
+	in (SEvent(time, typed_statements), env)
 
 (* Semantic checking on threads*)
-let check_thread env thread_declaration =
-	let events = get_events_from_thread thread_declaration in
-	let final_env = List.fold_left(fun env event -> check_event env event) env events in
-	final_env
+let check_thread env thread_declaration = match thread_declaration with
+    Init(events) -> let (typed_events,_) = List.fold_left check_event ([],env) events 
+        in SInit(typed_events)
+    | Always(events) -> let typed events = List.fold_left check_event env events
+        in SAlways(typed_events) 
 
 (*Semantic checking on a program*)
 let check_program program =
 	let (functions,( globals, threads)) = program in
-	    let (typed_globals, env) = List.fold_left(fun env globals-> initialize_globals (globals, env)) ([],empty_environment) globals in
+	    let (typed_globals, env) = List.fold_left(fun (new_globals,env) globals -> initialize_globals (new_globals, env) globals) ([],empty_environment) globals in
 	        let typed_functions = List.map(fun function_declaration -> check_func env function_declaration) env functions in
-                let typed_threads = List.map(fun thread -> check_thread env
-                thread) threads in
-                    typed_functions, (typed_globals, typed_threads) temp_env
+                let typed_threads = List.map(fun thread -> check_thread env thread) threads in
+                    Prog(typed_functions, (typed_globals, typed_threads))
