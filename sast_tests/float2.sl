@@ -1,5 +1,5 @@
 main() {
   init{
-   print(2+4);
+    print(1.0/3.0);
   }
 }

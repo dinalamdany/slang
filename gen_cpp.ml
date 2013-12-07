@@ -218,10 +218,9 @@ let rec gen_struct_obj_list = function
 | h::t -> gen_struct_obj h ^ gen_struct_obj_list t
 
 (*all arguments are lists*)
-let gen_main (init_obj_l, init_link_l, always_obj_l, always_link_l) =
-  gen_struct_obj_list init_obj_l ^ 
+let gen_main (time_block_obj_l, init_link_l, always_link_l) =
+  gen_struct_obj_list time_block_obj_l ^ 
   gen_init_linker_list init_link_l ^
-  gen_struct_obj_list always_obj_l ^ 
   gen_always_linker_list always_link_l
 
 let gen_program (global_decl_list, global_func_list, time_block_list, main) =
