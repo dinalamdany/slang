@@ -23,12 +23,10 @@ type expr =
   | ExprAssign of ident * expr
   | Cast of datatype * expr
   | Call of ident * expr list
-  | ObjProp of ident * ident
 
 type value = 
   ExprVal of expr
   | ArrVal of expr list 
-  | ObjVal of decl list 
 
 and decl = 
   VarDecl of datatype * ident 

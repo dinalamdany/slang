@@ -46,7 +46,6 @@ rule token = parse
 | "int"    {INT}
 | "float"  {FLOAT}
 | "void"   {VOID}
-| "object" {OBJECT}
 | "true" | "false" as b { BOOL_LITERAL(bool_of_string b)}
 | ['0'-'9']+ as lxm { INT_LITERAL(int_of_string lxm) }
 | ((['0'-'9']+('.'['0'-'9']*|('.'?['0'-'9']*'e'('+'|'-')?))['0'-'9']*) | (['0'-'9']*('.'['0'-'9']*|('.'?['0'-'9']*'e'('+'|'-')?))['0'-'9']+)) 

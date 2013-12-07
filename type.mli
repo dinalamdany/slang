@@ -3,5 +3,4 @@ type var_type =
 	| Float
 	| String
 	| Boolean
-	| Object
 	| Void
