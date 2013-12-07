@@ -292,4 +292,4 @@ let check_program program =
 	    let (typed_globals, env) = List.fold_left(fun (new_globals,env) globals -> initialize_globals (new_globals, env) globals) ([],empty_environment) globals in
 	        let typed_functions = List.map(fun function_declaration -> check_func env function_declaration) env functions in
                 let typed_threads = List.map(fun thread -> check_thread env thread) threads in
-                    typed_functions, (typed_globals, typed_threads)
+                    Prog(typed_functions, (typed_globals, typed_threads))
