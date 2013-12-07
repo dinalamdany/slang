@@ -3,30 +3,12 @@ open Sast
 open Type
 
 exception Error of string
-
-(*extracts the type and name from a Formal declaration*)
-let get_name_type_from_var = function
-	Formal(datatype,ident) -> (ident, datatype,false)
-(*write a similar function that matches var and varassigns to name, type, and what is on the right*)
-
-(*extracts the type from a datatype declaration*)
-let rec get_type_from_datatype = function
-	Datatype(t)->t
-	|Arraytype(ty) ->get_type_from_datatype(ty)
-
-(*extracts the stmt list from the event declaration*)
-let rec get_stmts_from_event = function
-	Event(i,stmts)->stmts
-
-(*extracts event list from thread declaration*)
-let rec get_events_from_thread = function
-	Init(event) ->event
-	|Always(event2) ->event2
+(*NOTE: WILL END UP HAVING RECURSIVE ARRAYS AND THAT IS TERRIBLE*)
 
 (*a symbol table consisting of the parent as the variables*)
 type symbol_table = {
 	parent: symbol_table option;
-	variables: (ident * datatype * bool) list
+	variables: (ident * datatype ) list
 }
 
 (*a function table containing function definitions*)
@@ -44,38 +26,124 @@ type translation_environment = {
 	fun_scope: function_table;	(*symbol table for functions*)
 }
 
+(* search for a function in our function table*)
+let rec find_function (fun_scope: function_table) name = 
+	List.find (fun (s,_,_,_) -> s=name) fun_scope.functions
+
+
+(* check both sides of a binop are compatible *)
+let check_binops op type1 type2 = match (op,type1,type2) with
+	 (Or, Datatype(Int), Datatype(Int)) -> false
+    | (And, Datatype(Int),Datatype(Int)) -> false
+    | (_, Datatype(Int),Datatype(Int)) -> true
+	|(Or, Datatype(Float), Datatype(Float)) -> false
+	|(And, Datatype(Float), Datatype(Float)) -> false
+	|(_, Datatype(Float), Datatype(Float)) -> true
+	|(And, Datatype(Int), Datatype(Float)) -> false
+	|(Or, Datatype(Int), Datatype(Float)) -> false
+	|(_, Datatype(Int), Datatype(Float)) -> true
+	|(And, Datatype(Float), Datatype(Int)) -> false
+	|(Or, Datatype(Float), Datatype(Int)) -> false
+	|(_, Datatype(Float), Datatype(Int)) -> true
+	|(Equal, Datatype(Boolean), Datatype(Boolean)) ->true
+	|(Neq, Datatype(Boolean), Datatype(Boolean)) ->true
+	|(Or, Datatype(Boolean), Datatype(Boolean)) ->true
+	|(And, Datatype(Boolean), Datatype(Boolean)) ->true
+	|(_, Datatype(Boolean), Datatype(Boolean)) ->false
+    |(Equal,Datatype(String),Datatype(String)) -> true
+    | (Neq, Datatype(String),Datatype(String)) -> true
+	|(_,_,_) -> false
+
+
+let check_return_value op = match op with 
+    Add -> Datatype(Float) (*fix this it's dumb, it sould do better matching *)
+    | Sub -> Datatype(Float)
+    | Mult -> Datatype(Float)
+    | Div -> Datatype(Float)
+    | Mod -> Datatype(Float)
+    | _ -> Datatype(Boolean) 
+
+(*extracts the type and name from a Formal declaration*)
+let get_name_type_from_formal env = function
+    Formal(datatype,ident) -> (ident,datatype)
+
+    (*search for variable in global and local symbol tables*)
+let find_variable env name =
+	try List.find (fun (s,_) -> s=name) env.var_scope.variables
+	with Not_found -> try List.find(fun (s,_) -> s=name) env.global_scope.variables
+	with Not_found -> raise Not_found
+
+(*Semantic checking on expressions*)
+let rec check_expr env e = match e with
+    IntLit(i) ->Datatype(Int)
+    | BoolLit(b) -> Datatype(Boolean)
+    | FloatLit(f) -> Datatype(Float)
+    | StringLit(s) -> Datatype(String)
+    | Variable(v) -> let (_,s_type) = try
+        find_variable env v with Not_found ->
+            raise (Error("Undeclared Identifier " )) in s_type
+    | Unop(u, e) -> let t = check_expr env e in 
+        (match u with
+          Not -> if t = Datatype(Boolean) then t else raise (Error("Cannot negate a
+         non-boolean value"))
+        | _ -> if t = Datatype(Int) then t else if t = Datatype(Float) then t else
+            raise (Error("Cannot perform operation on " )))
+    | Binop(e1, b, e2) -> let t1 = check_expr env e1 and t2 = check_expr env e2 in if
+        check_binops b t1 t2 then check_return_value b else raise(Error("Incompatible types with binary
+        operator"));
+    | ArrElem(id, index) -> Arraytype(Datatype(Int)) (*this is wrong *) 
+    | Noexpr -> raise (Error ("Expression has no type"))
+    | ExprAssign(id, e) -> let t1 = snd (find_variable env id) and t2 =
+        check_expr env e 
+        in (if not (t1 = t2) then (raise (Error("Mismatch in types for
+        assignment")))); check_expr env e
+    | Cast(ty, e) -> ty
+    | Call(id, e) -> let (fname, fret, fargs, fbody) = try 
+         find_function env.fun_scope id
+           with Not_found ->
+              raise (Error("Undeclared Function ")) in
+                let el_tys = List.map (fun exp -> check_expr env exp) e in (*get list of types of the passed in args*)
+                let fn_tys = List.map (fun farg-> snd get_name_type_from_formal env farg) fargs in
+                (if not (el_tys = fn_tys) then
+                    raise (Error("Mismatching types in function call")));
+                    fret 
+
+(*deal with arrays here*)
+let get_typed_value env = function
+   ExprVal(e) -> Expr(e, check_expr env e)  
+   | ArrVal(e) -> Expr(e, check_expr env e)
+
+let get_name_type_from_var env = function
+    VarDecl(datatype,ident) -> (ident,datatype,None)
+    | VarAssignDecl(datatype,ident,value) -> (ident,datatype, get_typed_value env value)
+       
+(*extracts the type from a datatype declaration*)
+let rec get_type_from_datatype = function
+	Datatype(t)->t
+	|Arraytype(ty) ->Arraytype(get_type_from_datatype(ty))
+
+(*extracts the stmt list from the event declaration*)
+let rec get_stmts_from_event = function
+	Event(i,stmts)->stmts
+
+(*extracts event list from thread declaration*)
+let rec get_events_from_thread = function
+	Init(event) ->event
+	|Always(event2) ->event2
+
 (*function that adds variables to environment's var_scope for use in functions*)
-let add_to_var_table env name t is_array = 
-	let new_vars = (name,t,is_array)::env.var_scope.variables in
+let add_to_var_table env name t = 
+	let new_vars = (name,t)::env.var_scope.variables in
 	let new_sym_table = {parent = env.var_scope.parent; variables = new_vars} in
 	let new_env = {env with var_scope = new_sym_table} in
 	new_env
 
 (*function that adds variables to environment's global_scope for use with main*)
-let add_to_global_table env name t is_array= 
-	let new_vars = (name,t,is_array)::env.global_scope.variables in
+let add_to_global_table env name t = 
+	let new_vars = (name,t)::env.global_scope.variables in
 	let new_sym_table = {parent=env.global_scope.parent; variables = new_vars} in
 	let new_env = {env with global_scope = new_sym_table} in
 	new_env
-
-(*search for variable in global and local symbol tables*)
-let find_variable env name =
-	try List.find (fun (s,_,_) -> s=name) env.var_scope.variables
-	with Not_found -> try List.find(fun (s,_,_) -> s=name) env.global_scope.variables
-	with Not_found -> raise Not_found
-
-(* search for a function in our function table*)
-let rec find_function (fun_scope: function_table) name = 
-	List.find (fun (s,_,_,_) -> s=name) fun_scope.functions
-
-(* check both sides of a binop are compatible*)
-let check_binops type1 type2 = match (type1,type2) with
-	 (Int, Int) -> true
-	|(Float, Float) -> true
-	|(Int, Float) -> true
-	|(Float, Int) -> true
-	|(Boolean, Boolean) ->true
-	|(_,_) -> false
 
 (* check both sides of an assignment are compatible*) 
 let check_assignments type1 type2 = match (type1, type2) with
@@ -102,18 +170,18 @@ let add_function env func_declaration =
 	new_env
 
 (* add a value to the symbol table*)
-let add_var env var_declaration is_array=
+let add_var env var_declaration =
 	let sym_table= match (env.location,var_declaration) with
-		(main,VarDecl(t,name)) -> add_to_global_table env name t is_array 
-		|(main,VarAssignDecl(t,name,v)) -> add_to_global_table env name t is_array 
-		|(_,VarDecl(t,name)) -> add_to_var_table env name t is_array 	
-		|(_,VarAssignDecl(t,name,v)) -> add_to_var_table env name t is_array in
+		(main,VarDecl(t,name)) -> add_to_global_table env name t 
+		|(main,VarAssignDecl(t,name,v)) -> add_to_global_table env name t 
+		|(_,VarDecl(t,name)) -> add_to_var_table env name t 	
+		|(_,VarAssignDecl(t,name,v)) -> add_to_var_table env name t in
 		sym_table
 
 (* checks the type of a variable in the symbol table*)
-let check_var_type env v t is_array=
-	let(name,ty,t_is_array) = find_variable env v in
-	if(t<>ty) then false else if (is_array<>t_is_array) then false else true
+let check_var_type env v t =
+	let(name,ty) = find_variable env v in
+	if(t<>ty) then false else true
 
 (* Checks that a function returned if it was supposed to*)
 let check_final_env env =
@@ -132,15 +200,16 @@ let initialize_functions env function_declaration =
 	new_env
 
 (* Add global variables to the environment *)
-let initialize_globals env variable_declaration = 
-	let (n,t,b) = get_name_type_from_var variable_declaration in
-	check_types t   
-	let new_env = add_to_global_table env n t b in
-	new_env
-
-(*Semantic checking on expressions*)
-let rec check_expr env e = match e with
-	|IntLit(i) ->Datatype(Int)
+let initialize_globals (globals,env) variable_declaration = 
+    match variable_declaration with
+        VarDecl(datatype,ident) -> let (name,ty,_) = get_name_type_from_var env variable_declaration in
+            let new_env = add_to_global_table env name ty in
+            (SVarDecl(datatype,ident)::globals, new_env)
+        | VarAssignDecl(datatype,ident, value) -> let (name,ty,value) =
+            get_name_from_var env variable_declaration in
+            let new_env = add_to_global_table env name ty in
+            (SVarAssignDecl(datatype,ident,get_typed_value env
+            value)::globals, new_env)
 
 (*converts expr to sexpr*)
 let rec retrieve_sexpr env e =
@@ -190,10 +259,11 @@ let rec check_stmt env stmt = match stmt with
 			raise (Error("Improper While loop format")));
 		let (st, new_env)=check_stmt env s in
 		(SWhile((retrieve_sexpr env e), st),new_env)
+    (*This is not complete, have to do assignments and other things*)
 
 (* Semantic checking on a function*)
 let check_func env func_declaration =
-	let new_locals = List.fold_left(fun a vs -> (get_name_type_from_var vs)::a)[] func_declaration.formals in
+	let new_locals = List.fold_left(fun a vs -> (get_name_type_from_formal env vs)::a)[] func_declaration.formals in
 	let new_var_scope = {parent=Some(env.var_scope); variables = new_locals} in
 	let new_env = {return_type = get_type_from_datatype func_declaration.return; return_seen=false; location="in_func"; global_scope = env.global_scope; var_scope = new_var_scope; fun_scope = env.fun_scope} in
 	let final_env  =List.fold_left(fun env stmt -> snd (check_stmt env stmt)) new_env func_declaration.body in
@@ -216,6 +286,8 @@ let check_thread env thread_declaration =
 (*Semantic checking on a program*)
 let check_program program =
 	let (functions,( globals, threads)) = program in
-	let env=List.fold_left(fun env globals -> initialize_globals env globals) empty_environment functions in
-	let temp_env = List.map(fun function_declaration -> check_func env function_declaration) functions in
-	temp_env		
+	    let (typed_globals, env) = List.fold_left(fun env globals-> initialize_globals (globals, env)) ([],empty_environment) globals in
+	        let typed_functions = List.map(fun function_declaration -> check_func env function_declaration) env functions in
+                let typed_threads = List.map(fun thread -> check_thread env
+                thread) threads in
+                    typed_functions, (typed_globals, typed_threads) temp_env
