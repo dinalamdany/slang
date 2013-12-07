@@ -19,10 +19,8 @@ type sexpr =
 	Expr of expr * datatype
 
 type sdecl =
-	VarDecl of datatype * ident
-	| VarAssignDecl of datatype * ident * sexpr
-	| ArrDecl of datatype * ident
-	| ArrAssignDecl of datatype * ident * sexpr list
+	SVarDecl of datatype * ident
+	| SVarAssignDecl of datatype * ident * sexpr
 
 (*type sfunc_decl = {
 		return: datatype;
