@@ -12,6 +12,7 @@ compile:
 	ocamlc -c parser.ml
 	ocamlc -c sast.mli
 	ocamlc -c pretty_c.mli
+	ocamlc -c semantic_check.ml
 
 #OBJECTS
 #I'm narcissistic
