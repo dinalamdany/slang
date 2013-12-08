@@ -1,12 +1,20 @@
 open Ast
 open Type
 
-type sexpr = 
+(* added to work with arrays *)
+type sval = 
+	SExprVal of  sexpr
+	| SArrVal of sexpr list
+
+and sexpr = 
 	Expr of expr * datatype
 
 type sdecl =
 	SVarDecl of datatype * ident
-	| SVarAssignDecl of datatype * ident * sexpr
+	(* changed sexpr to svalue *)
+	| SVarAssignDecl of datatype * ident * sval
+	(* There is no way to work with arrays with the following *)
+	(* | SVarAssignDecl of datatype * ident * sexpr *)
 
 type sfunc_decl =
 	Func_Decl of func_decl * datatype
