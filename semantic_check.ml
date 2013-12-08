@@ -423,10 +423,20 @@ let check_func env func_declaration =
         in SAlways(typed_events) *) 
 
 (*Semantic checking on a program*)
-let check_program program =
+(* let check_program program =
 	let (functions,( globals, threads)) = program in
 	    let (typed_globals, env) = List.fold_left(fun (new_globals,env) globals -> initialize_globals (new_globals, env) globals) ([],empty_environment) globals in
 	        let typed_functions = List.map(fun function_declaration -> check_func env function_declaration) functions in
                 (* let typed_threads = List.map(fun thread -> check_thread env thread) threads in *)
                 let typed_threads = threads in 
-                    Prog(typed_functions, (typed_globals, typed_threads))
+                    Prog(typed_functions, (typed_globals, typed_threads)) *)
+
+let check_program program =
+	let (functions,globals) = program in
+	    let (typed_globals, env) = List.fold_left(fun (new_globals,env) globals -> initialize_globals (new_globals, env) globals) ([],empty_environment) globals in
+	        let typed_functions = List.map(fun function_declaration -> check_func env function_declaration) functions in
+                (* let typed_threads = List.map(fun thread -> check_thread env thread) threads in *)
+                (* let typed_threads = threads in  *)
+                    (* Prog(typed_functions,typed_globals) *)
+             (typed_functions, typed_globals)
+             
