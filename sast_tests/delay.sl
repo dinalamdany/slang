@@ -3,9 +3,9 @@
 main() {
     init{
     	int a = 5;
-        print(a);
+        a;
         #12 a = 6;
-        print(a);
+        a;
         Terminate;
     }
 }
