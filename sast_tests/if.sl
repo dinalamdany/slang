@@ -4,15 +4,15 @@
 main(){
 	init{
 		if(true){
-            print("yes");
+            5;
 		}
 		else{
 		}
 
 		if(4<5){ 
-            print(3);
+            3;
 		    if(1<1){
-                print(1);
+                1;
 		    }
 		    else{
 			    if(false){}

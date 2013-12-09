@@ -34,30 +34,6 @@ type translation_environment = {
 let rec find_function (fun_scope: function_table) name = 
 	List.find (fun (s,_,_,_) -> s=name) fun_scope.functions
 
-
-(* check both sides of a binop are compatible *)
-let check_binops op type1 type2 = match (op,type1,type2) with
-	 (Or, Datatype(Int), Datatype(Int)) -> false
-    | (And, Datatype(Int),Datatype(Int)) -> false
-    | (_, Datatype(Int),Datatype(Int)) -> true
-	|(Or, Datatype(Float), Datatype(Float)) -> false
-	|(And, Datatype(Float), Datatype(Float)) -> false
-	|(_, Datatype(Float), Datatype(Float)) -> true
-	|(And, Datatype(Int), Datatype(Float)) -> false
-	|(Or, Datatype(Int), Datatype(Float)) -> false
-	|(_, Datatype(Int), Datatype(Float)) -> true
-	|(And, Datatype(Float), Datatype(Int)) -> false
-	|(Or, Datatype(Float), Datatype(Int)) -> false
-	|(_, Datatype(Float), Datatype(Int)) -> true
-	|(Equal, Datatype(Boolean), Datatype(Boolean)) ->true
-	|(Neq, Datatype(Boolean), Datatype(Boolean)) ->true
-	|(Or, Datatype(Boolean), Datatype(Boolean)) ->true
-	|(And, Datatype(Boolean), Datatype(Boolean)) ->true
-	|(_, Datatype(Boolean), Datatype(Boolean)) ->false
-    |(Equal,Datatype(String),Datatype(String)) -> true
-    | (Neq, Datatype(String),Datatype(String)) -> true
-	|(_,_,_) -> false
-
 let basic_math t1 t2 = match (t1, t2) with
 	(Float, Int) -> (Float, true)
 	| (Int, Float) -> (Float, true)
@@ -65,9 +41,25 @@ let basic_math t1 t2 = match (t1, t2) with
 	| (Float, Float) -> (Int, true)
 	| (_,_) -> (Int, false)
 
-let basic_logic t1 t2 = match (t1, t2) with
-	(Boolean, Boolean) -> (Boolean, true)
+let relational_logic t1 t2 = match (t1, t2) with
+    (Int,Int) -> (Int,true)
+    | (Float,Float) -> (Float,true)
+    | (Int,Float) -> (Float,true)
+    | (Float,Int) -> (Float,true)
 	| (_,_) -> (Int, false) 
+
+let basic_logic t1 t2 = match(t1,t2) with
+    (Boolean,Boolean) -> (Boolean,true)
+    | (_,_) -> (Int,false)
+
+let equal_logic t1 t2 = match(t1,t2) with
+    (Boolean,Boolean) -> (Boolean,true)
+    | (Int,Int) -> (Int,true)
+    | (Float,Float) -> (Float,true)
+    | (Int,Float) -> (Float,true)
+    | (Float,Int) -> (Float,true)
+    | (String,String) -> (String,true)
+    | (_,_) -> (Int,false) 
 
 (*extracts the type from a datatype declaration*)
 (* TODO: make sure this compiles. It looks good though. *)
@@ -86,12 +78,12 @@ let get_binop_return_value op typ1 typ2 =
 			| Mult -> basic_math t1 t2
 			| Div -> basic_math t1 t2
 			| Mod -> basic_math t1 t2
-			| Equal -> basic_logic t1 t2 
-			| Neq -> basic_logic t1 t2
-			| Less -> basic_logic t1 t2 
-			| Leq -> basic_logic t1 t2
-			| Greater -> basic_logic t1 t2
-			| Geq -> basic_logic t1 t2
+			| Equal -> equal_logic t1 t2 
+			| Neq -> equal_logic t1 t2
+			| Less -> relational_logic t1 t2 
+			| Leq -> relational_logic t1 t2
+			| Greater -> relational_logic t1 t2
+			| Geq -> relational_logic t1 t2
 			| And -> basic_logic t1 t2
 			| Or -> basic_logic t1 t2
 		in (Datatype(t), valid) 
