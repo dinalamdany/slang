@@ -232,13 +232,14 @@ let add_function env func_declaration =
 
 (* add avalue to the symbol table*)
 (* TODO: needs correction for arrays *)
+    (*this function isn't ever used
 let add_var env var_declaration =
 	let sym_table= match (env.location,var_declaration) with
 		(main,VarDecl(t,name)) -> add_to_global_table env name t None
 		|(main,VarAssignDecl(t,name,v)) -> add_to_global_table env name t (Some(v)) 
-		|(_,VarDecl(t,name)) -> add_to_var_table env name t None	
-		|(_,VarAssignDecl(t,name,v)) -> add_to_var_table env name t (Some(v)) in
-		sym_table
+		(*|(_,VarDecl(t,name)) -> add_to_var_table env name t None	
+		|(_,VarAssignDecl(t,name,v)) -> add_to_var_table env name t (Some(v)) *)in
+		sym_table *)
 
 (* checks the type of a variable in the symbol table*)
 (* Changed from "check_var_type" *)
@@ -273,7 +274,9 @@ let initialize_globals (globals,env) variable_declaration =
         | VarAssignDecl(datatype,ident, value) ->
         	let (name, ty, v) = get_name_type_from_var env variable_declaration in
         	let new_env = add_to_global_table env name ty v in
-        	(SVarAssignDecl(datatype, ident, get_sval env v)::globals, new_env)
+            (match v with
+              | Some(value) -> (SVarAssignDecl(datatype, ident, get_sval env value)::globals, new_env)
+              | None -> raise (Error("Cannot access unitialized value")) )
 
 (*Semantic checking on a stmt*)
 let rec check_stmt env stmt = match stmt with
