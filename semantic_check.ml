@@ -106,15 +106,15 @@ let rec check_expr env e = match e with
         in (if not (t1 = t2) then (raise (Error("Mismatch in types for
         assignment")))); check_expr env e
     | Cast(ty, e) -> ty
-(*     | Call(id, e) -> let (fname, fret, fargs, fbody) = try 
+    | Call(id, e) -> let (fname, fret, fargs, fbody) = try 
          find_function env.fun_scope id
            with Not_found ->
               raise (Error("Undeclared Function ")) in
                 let el_tys = List.map (fun exp -> check_expr env exp) e in
-                let fn_tys = List.map (fun farg-> snd get_name_type_from_formal env farg) fargs in
+                let fn_tys = List.map (fun farg-> let (_,ty,_) = get_name_type_from_formal env farg in ty) fargs in
                 (if not (el_tys = fn_tys) then
                     raise (Error("Mismatching types in function call")));
-                    fret  *)
+                    Datatype(fret)
 
 (*converts expr to sexpr*)
 let rec get_sexpr env e =
