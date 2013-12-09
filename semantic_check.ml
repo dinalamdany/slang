@@ -137,24 +137,6 @@ let rec check_expr env e = match e with
         check_expr env e 
         in (if not (t1 = t2) then (raise (Error("Mismatch in types for assignment")))); check_expr env e
     | Cast(ty, e) -> ty
-<<<<<<< HEAD
-    | Call(id, expr_list) -> 
-    (*Match types of expr list with types of formal*)
-    	let (fname, fret, fargs, fbody) = try find_function env.fun_scope id with 
-    		Not_found -> raise (Error("Undeclared Function ")) in
-		let el_tys = List.map (fun exp -> check_expr env exp) expr_list in
-		let fn_tys = List.map (fun farg-> 
-								let (_,dt,_) = get_name_type_from_formal env farg
-								in dt) fargs in
-		(if not (el_tys = el_tys) then raise (Error("Mismatching types in function call")));
-		Datatype(fret) 
-
-(* 
-type function_table = {
-	functions: (ident * var_type * formal list * stmt list) list
-} *)
-
-=======
     | Call(id, e) -> let (fname, fret, fargs, fbody) = try 
          find_function env.fun_scope id
            with Not_found ->
@@ -164,7 +146,6 @@ type function_table = {
                 (if not (el_tys = fn_tys) then
                     raise (Error("Mismatching types in function call")));
                     Datatype(fret)
->>>>>>> 4aa52188165d3fce93ad466c6ec921f60b32674e
 
 (*converts expr to sexpr*)
 let rec get_sexpr env e =
@@ -437,25 +418,9 @@ let check_event (typed_events, env) event =
     in SAlways(typed_events)
 
 (*Semantic checking on a program*)
-(* let check_program program =
-	let (functions,( globals, threads)) = program in
-	    let (typed_globals, env) = List.fold_left(fun (new_globals,env) globals -> initialize_globals (new_globals, env) globals) ([],empty_environment) globals in
-	        let typed_functions = List.map(fun function_declaration -> check_func env function_declaration) functions in
-<<<<<<< HEAD
-                (* let typed_threads = List.map(fun thread -> check_thread env thread) threads in *)
-                let typed_threads = threads in 
-                    Prog(typed_functions, (typed_globals, typed_threads)) *)
-
 let check_program program =
-	let (functions,globals) = program in
+	let (functions,(globals,threads)) = program in
 	    let (typed_globals, env) = List.fold_left(fun (new_globals,env) globals -> initialize_globals (new_globals, env) globals) ([],empty_environment) globals in
 	        let typed_functions = List.map(fun function_declaration -> check_func env function_declaration) functions in
-                (* let typed_threads = List.map(fun thread -> check_thread env thread) threads in *)
-                (* let typed_threads = threads in  *)
-                    (* Prog(typed_functions,typed_globals) *)
-             (typed_functions, typed_globals)
-             
-=======
                 let typed_threads = List.map(fun thread -> check_thread env thread) threads in 
                     Prog(typed_functions, (typed_globals, typed_threads))
->>>>>>> 4aa52188165d3fce93ad466c6ec921f60b32674e
