@@ -137,6 +137,7 @@ let rec check_expr env e = match e with
         check_expr env e 
         in (if not (t1 = t2) then (raise (Error("Mismatch in types for assignment")))); check_expr env e
     | Cast(ty, e) -> ty
+<<<<<<< HEAD
     | Call(id, expr_list) -> 
     (*Match types of expr list with types of formal*)
     	let (fname, fret, fargs, fbody) = try find_function env.fun_scope id with 
@@ -153,6 +154,17 @@ type function_table = {
 	functions: (ident * var_type * formal list * stmt list) list
 } *)
 
+=======
+    | Call(id, e) -> let (fname, fret, fargs, fbody) = try 
+         find_function env.fun_scope id
+           with Not_found ->
+              raise (Error("Undeclared Function ")) in
+                let el_tys = List.map (fun exp -> check_expr env exp) e in
+                let fn_tys = List.map (fun farg-> let (_,ty,_) = get_name_type_from_formal env farg in ty) fargs in
+                (if not (el_tys = fn_tys) then
+                    raise (Error("Mismatching types in function call")));
+                    Datatype(fret)
+>>>>>>> 4aa52188165d3fce93ad466c6ec921f60b32674e
 
 (*converts expr to sexpr*)
 let rec get_sexpr env e =
@@ -167,7 +179,6 @@ let get_sexpr_list env expr_list =
 
 (* replacement for get_typed_value *)
 let get_sval env = function
-	Some(x) -> match x with
 		ExprVal(expr) -> SExprVal(get_sexpr env expr)
 		| ArrVal(expr_list) -> SArrVal(get_sexpr_list env expr_list)
 
@@ -176,9 +187,9 @@ let get_sval env = function
 (* TODO: complete this like get_sexpr *)
 let get_sdecl env decl = match decl with
 	(* if ident is in env, return typed sdecl *)
-	Ast.VarDecl(datatype, ident) -> (SVarDecl(datatype, ident), env)
-	| Ast.VarAssignDecl(datatype, ident, value) -> 
-		let sv = get_sval env (Some(value)) in
+	VarDecl(datatype, ident) -> (SVarDecl(datatype, ident), env)
+	| VarAssignDecl(datatype, ident, value) -> 
+		let sv = get_sval env value in
 	(SVarAssignDecl(datatype, ident, sv), env)
 
 let get_name_type_from_decl decl = match decl with
@@ -263,7 +274,7 @@ let add_function env func_declaration =
 	let new_env = {env with fun_scope = new_fun_scope} in
 	new_env
 
-(* add a value to the symbol table*)
+(* add avalue to the symbol table*)
 (* TODO: needs correction for arrays *)
 let add_var env var_declaration =
 	let sym_table= match (env.location,var_declaration) with
@@ -366,7 +377,7 @@ let rec check_stmt env stmt = match stmt with
 	(*| Ast.PropertyAssign are we still using this?*)
 	| Ast.Assign(ident, expr) ->
 		(* make sure 1) variable exists, 2) variable and expr have same types *)
-		let (id, dt, _) = try find_variable env ident with Not_found -> raise (Error("Uninitialized variable")) in
+		let (_, dt, _) = try find_variable env ident with Not_found -> raise (Error("Uninitialized variable")) in
 		let t1 = get_type_from_datatype dt 
 		and t2 = get_type_from_datatype(check_expr env expr) in
 		if( not(t1=t2) ) then 
@@ -375,7 +386,7 @@ let rec check_stmt env stmt = match stmt with
 		(SAssign(ident, sexpr), env)
 	| Ast.ArrAssign(ident, expr_list) ->
 		(* make sure 1) array exists and 2) all types in expr list are equal *)
-		let (id, dt, _) = try find_variable env ident with Not_found -> raise (Error("Undeclared array")) in
+		let (_, _, _) = try find_variable env ident with Not_found -> raise (Error("Undeclared array")) in
 		let sexpr_list = List.map (fun expr2 -> 
 							let expr1 = List.hd expr_list in
 							let t1 = get_type_from_datatype(check_expr env expr1) and t2 = get_type_from_datatype(check_expr env expr2) in
@@ -409,24 +420,25 @@ let check_func env func_declaration =
 	Func_Decl(sfuncdecl,func_declaration.return)
 
 (*Semantic checking on events *)
-(* let check_event (typed_events, env) event_list = 
-	let (time,statements) = get_time_stmts_from_event event_list in
-	let (typed_statements, env) = List.fold_left (fun (sstmt_list, env) stmt -> let (sstmt,new_env) = check_stmt env stmt in 
-        (sstmt::sstmt_list,new_env)) (typed_events,env) event_list
-	in (SEvent(time, typed_statements), env) *)
+let check_event (typed_events, env) event = 
+	let (time,statements) = get_time_stmts_from_event event in
+	let (typed_statements, final_env) = List.fold_left (fun (sstmt_list, env) stmt -> let (sstmt,new_env) = check_stmt env stmt in 
+    (sstmt::sstmt_list,new_env)) ([],env) statements
+	in (SEvent(time, typed_statements)::typed_events, final_env) 
 
 (* Semantic checking on threads*)
-(* let check_thread env thread_declaration = match thread_declaration with
+ let check_thread env thread_declaration = match thread_declaration with
     Init(events) -> let (typed_events,_) = List.fold_left check_event ([],env) events 
         in SInit(typed_events)
-    | Always(events) -> let typed events = List.fold_left check_event env events
-        in SAlways(typed_events) *) 
+    | Always(events) -> let (typed_events,_) = List.fold_left check_event ([],env) events
+    in SAlways(typed_events)
 
 (*Semantic checking on a program*)
 (* let check_program program =
 	let (functions,( globals, threads)) = program in
 	    let (typed_globals, env) = List.fold_left(fun (new_globals,env) globals -> initialize_globals (new_globals, env) globals) ([],empty_environment) globals in
 	        let typed_functions = List.map(fun function_declaration -> check_func env function_declaration) functions in
+<<<<<<< HEAD
                 (* let typed_threads = List.map(fun thread -> check_thread env thread) threads in *)
                 let typed_threads = threads in 
                     Prog(typed_functions, (typed_globals, typed_threads)) *)
@@ -440,3 +452,7 @@ let check_program program =
                     (* Prog(typed_functions,typed_globals) *)
              (typed_functions, typed_globals)
              
+=======
+                let typed_threads = List.map(fun thread -> check_thread env thread) threads in 
+                    Prog(typed_functions, (typed_globals, typed_threads))
+>>>>>>> 4aa52188165d3fce93ad466c6ec921f60b32674e
