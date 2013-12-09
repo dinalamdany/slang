@@ -2,7 +2,7 @@
 set -e
 
 # This script will parse and scan STDIN into an AST, which it then prints.
-# 
+ 
 # Usage:
 # cat tests/arithmetic1.sl | ./test_sast.sh
 #
