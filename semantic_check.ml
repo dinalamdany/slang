@@ -231,7 +231,7 @@ let add_function env func_declaration =
 	let new_env = {env with fun_scope = new_fun_scope} in
 	new_env
 
-(* add a value to the symbol table*)
+(* add avalue to the symbol table*)
 (* TODO: needs correction for arrays *)
 let add_var env var_declaration =
 	let sym_table= match (env.location,var_declaration) with
@@ -334,7 +334,7 @@ let rec check_stmt env stmt = match stmt with
 	(*| Ast.PropertyAssign are we still using this?*)
 	| Ast.Assign(ident, expr) ->
 		(* make sure 1) variable exists, 2) variable and expr have same types *)
-		let (id, dt, _) = try find_variable env ident with Not_found -> raise (Error("Uninitialized variable")) in
+		let (_, dt, _) = try find_variable env ident with Not_found -> raise (Error("Uninitialized variable")) in
 		let t1 = get_type_from_datatype dt 
 		and t2 = get_type_from_datatype(check_expr env expr) in
 		if( not(t1=t2) ) then 
@@ -343,7 +343,7 @@ let rec check_stmt env stmt = match stmt with
 		(SAssign(ident, sexpr), env)
 	| Ast.ArrAssign(ident, expr_list) ->
 		(* make sure 1) array exists and 2) all types in expr list are equal *)
-		let (id, dt, _) = try find_variable env ident with Not_found -> raise (Error("Undeclared array")) in
+		let (_, _, _) = try find_variable env ident with Not_found -> raise (Error("Undeclared array")) in
 		let sexpr_list = List.map (fun expr2 -> 
 							let expr1 = List.hd expr_list in
 							let t1 = get_type_from_datatype(check_expr env expr1) and t2 = get_type_from_datatype(check_expr env expr2) in
