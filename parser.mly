@@ -75,8 +75,8 @@ event:
     DELAY INT_LITERAL stmt_list {Event($2,$3)}
 
 events:
-    stmt_list {[ Event(0,$1)]} 
-    | stmt_list event_list { Event(0, $1) :: $2}
+    stmt_list {[ Event(0,List.rev $1)]} 
+    | stmt_list event_list { Event(0, List.rev $1) :: $2}
 
 event_list:
     event { [$1] }
