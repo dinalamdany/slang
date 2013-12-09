@@ -166,7 +166,8 @@ let get_sdecl env decl = match decl with
 	(SVarAssignDecl(datatype, ident, sv), env)
 
 let get_name_type_from_decl decl = match decl with
-	Ast.VarDecl(datatype, ident) -> (ident, datatype)
+	VarDecl(datatype, ident) -> (ident, datatype)
+    | VarAssignDecl(datatype,ident,value) -> (ident,datatype)
 
 
 
