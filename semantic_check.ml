@@ -377,24 +377,23 @@ let check_func env func_declaration =
 	Func_Decl(sfuncdecl,func_declaration.return)
 
 (*Semantic checking on events *)
-(* let check_event (typed_events, env) event_list = 
-	let (time,statements) = get_time_stmts_from_event event_list in
-	let (typed_statements, env) = List.fold_left (fun (sstmt_list, env) stmt -> let (sstmt,new_env) = check_stmt env stmt in 
-        (sstmt::sstmt_list,new_env)) (typed_events,env) event_list
-	in (SEvent(time, typed_statements), env) *)
+let check_event (typed_events, env) event = 
+	let (time,statements) = get_time_stmts_from_event event in
+	let (typed_statements, final_env) = List.fold_left (fun (sstmt_list, env) stmt -> let (sstmt,new_env) = check_stmt env stmt in 
+    (sstmt::sstmt_list,new_env)) ([],env) statements
+	in (SEvent(time, typed_statements)::typed_events, final_env) 
 
 (* Semantic checking on threads*)
-(* let check_thread env thread_declaration = match thread_declaration with
+ let check_thread env thread_declaration = match thread_declaration with
     Init(events) -> let (typed_events,_) = List.fold_left check_event ([],env) events 
         in SInit(typed_events)
-    | Always(events) -> let typed events = List.fold_left check_event env events
-        in SAlways(typed_events) *) 
+    | Always(events) -> let (typed_events,_) = List.fold_left check_event ([],env) events
+    in SAlways(typed_events)
 
 (*Semantic checking on a program*)
 let check_program program =
 	let (functions,( globals, threads)) = program in
 	    let (typed_globals, env) = List.fold_left(fun (new_globals,env) globals -> initialize_globals (new_globals, env) globals) ([],empty_environment) globals in
 	        let typed_functions = List.map(fun function_declaration -> check_func env function_declaration) functions in
-                (* let typed_threads = List.map(fun thread -> check_thread env thread) threads in *)
-                let typed_threads = threads in 
+                let typed_threads = List.map(fun thread -> check_thread env thread) threads in 
                     Prog(typed_functions, (typed_globals, typed_threads))
