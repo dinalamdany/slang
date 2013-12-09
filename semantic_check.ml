@@ -42,11 +42,11 @@ let basic_math t1 t2 = match (t1, t2) with
 	| (_,_) -> (Int, false)
 
 let relational_logic t1 t2 = match (t1, t2) with
-    (Int,Int) -> (Int,true)
-    | (Float,Float) -> (Float,true)
-    | (Int,Float) -> (Float,true)
-    | (Float,Int) -> (Float,true)
-	| (_,_) -> (Int, false) 
+    (Int,Int) -> (Boolean,true)
+    | (Float,Float) -> (Boolean,true)
+    | (Int,Float) -> (Boolean,true)
+    | (Float,Int) -> (Boolean,true)
+	| (_,_) -> (Boolean, false) 
 
 let basic_logic t1 t2 = match(t1,t2) with
     (Boolean,Boolean) -> (Boolean,true)
