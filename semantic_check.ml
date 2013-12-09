@@ -129,7 +129,6 @@ let get_sexpr_list env expr_list =
 
 (* replacement for get_typed_value *)
 let get_sval env = function
-	Some(x) -> match x with
 		ExprVal(expr) -> SExprVal(get_sexpr env expr)
 		| ArrVal(expr_list) -> SArrVal(get_sexpr_list env expr_list)
 
@@ -138,9 +137,9 @@ let get_sval env = function
 (* TODO: complete this like get_sexpr *)
 let get_sdecl env decl = match decl with
 	(* if ident is in env, return typed sdecl *)
-	Ast.VarDecl(datatype, ident) -> (SVarDecl(datatype, ident), env)
-	| Ast.VarAssignDecl(datatype, ident, value) -> 
-		let sv = get_sval env (Some(value)) in
+	VarDecl(datatype, ident) -> (SVarDecl(datatype, ident), env)
+	| VarAssignDecl(datatype, ident, value) -> 
+		let sv = get_sval env value in
 	(SVarAssignDecl(datatype, ident, sv), env)
 
 let get_name_type_from_decl decl = match decl with
