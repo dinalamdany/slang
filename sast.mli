@@ -7,7 +7,7 @@ type sval =
 	| SArrVal of sexpr list
 
 and sexpr = 
-	Expr of expr * datatype
+	SExpr of expr * datatype
 
 type sdecl =
 	SVarDecl of datatype * ident
@@ -21,7 +21,7 @@ type sfunc_decl =
 
 type sstmt = 
 	SBlock of sstmt list
-	| SExpr of sexpr
+	| SSExpr of sexpr
 	| SReturn of sexpr
 	| SIf of sexpr * sstmt * sstmt
 	| SFor of sexpr * sexpr * sexpr * sstmt
