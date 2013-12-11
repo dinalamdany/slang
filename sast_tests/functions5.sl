@@ -1,7 +1,8 @@
 func void foo(){
 }
+
 main() {
     init{
-    string x = foo();
+    int x = foo();
 }
 }

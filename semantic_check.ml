@@ -117,6 +117,12 @@ let update_variable env (name, datatype, value) =
 			new_env
 	in new_envf
 
+let update_list expr_list index expr = 
+	let xarr = Array.of_list expr_list in
+	let _ = Array.set xarr index expr in
+	let xlist = Array.to_list xarr in
+	xlist
+
 (*search for variable in global and local symbol tables*)
 let find_variable env name =
 	try List.find (fun (s,_,_) -> s=name) env.var_scope.variables
@@ -159,16 +165,19 @@ let rec check_expr env e = match e with
         check_expr env e 
         in (if not (t1 = t2) then (raise (Error("Mismatch in types for assignment")))); check_expr env e
     | Cast(ty, e) -> ty
-    | Call(id, e) -> let (fname, fret, fargs, fbody) = try 
-         find_function env.fun_scope id
-           with Not_found ->
-              raise (Error("Undeclared Function ")) in
+    | Call(id, e) -> try (let (fname, fret, fargs, fbody)  = find_function env.fun_scope id in
                 let el_tys = List.map (fun exp -> check_expr env exp) e in
                 let fn_tys = List.map (fun farg-> let (_,ty,_) = get_name_type_from_formal env farg in ty) fargs in
-                (if not (el_tys = fn_tys) then
-                    raise (Error("Mismatching types in function call")));
-                    Datatype(fret)
+                if not (el_tys = fn_tys) then
+                    raise (Error("Mismatching types in function call")) else
+                    Datatype(fret))
+            with Not_found ->
+                raise (Error("Undeclared Function "))
 
+let get_val_type env = function
+    ExprVal(expr) -> check_expr env expr
+    | ArrVal(expr_list) -> check_expr env (List.hd expr_list)
+    
 (*converts expr to sexpr*)
 let rec get_sexpr env e =
 	let type1= check_expr env e in
@@ -190,6 +199,16 @@ let get_sexpr_list env expr_list =
 let get_sval env = function
 		ExprVal(expr) -> SExprVal(get_sexpr env expr)
 		| ArrVal(expr_list) -> SArrVal(get_sexpr_list env expr_list)
+
+let get_datatype_of_list env expr_list = 
+	let ty = List.fold_left (fun dt1 expr2 -> 
+								let dt2 = check_expr env expr2 in
+								if(dt1 = dt2) then dt1 else raise (Error("Inconsistent array types"))) (check_expr env (List.hd expr_list)) expr_list in ty
+
+
+let get_datatype_from_val env = function
+	ExprVal(expr) -> check_expr env expr
+	| ArrVal(expr_list) -> get_datatype_of_list env expr_list
 
 (* if variable is not found, then add it to table and return SVarDecl *)
 (* if variable is found, throw an error: multiple declarations *)
@@ -365,17 +384,29 @@ let rec check_stmt env stmt = match stmt with
 		let (st, new_env)=check_stmt env s in
 		(SWhile((get_sexpr env e), st),new_env)
 	| Ast.Declaration(decl) -> 
+		(* If variable is found, multiple decls error
+			If variable is not found and var is assigndecl, check for type compat *)
 		let (name, ty) = get_name_type_from_decl decl in
-		let ((_,_,_),found) = try (fun f -> ((f env name),true)) find_variable with 
+		let ((_,dt,_),found) = try (fun f -> ((f env name),true)) find_variable with 
 			Not_found ->
 				((name,ty,None),false) in
-		if(found=false) then
+		let ret = if(found=false) then
+			match decl with
+				VarDecl(_,_) ->
 					let (sdecl,_) = get_sdecl env decl in
 					let (n, t, v) = get_name_type_val_from_decl decl in
 					let new_env = add_to_var_table env n t v in
 					(SDeclaration(sdecl), new_env)
+				| VarAssignDecl(dt, id, value) ->
+					let t1 = get_type_from_datatype(dt) and t2 = get_type_from_datatype(get_datatype_from_val env value) in
+					if(t1=t2) then
+						let (sdecl,_) = get_sdecl env decl in
+						let (n, t, v) = get_name_type_val_from_decl decl in
+						let new_env = add_to_var_table env n t v in
+						(SDeclaration(sdecl), new_env)
+					else raise (Error("Type mismatch"))
 				else
-					raise (Error("Multiple declarations"))
+					raise (Error("Multiple declarations")) in ret
 
 	(*| Ast.PropertyAssign are we still using this?*)
 
@@ -416,8 +447,10 @@ let rec check_stmt env stmt = match stmt with
 				| None -> raise (Error("No expression on right hand side"))
 				| _ -> raise (Error("???")) in
 		let _ = if(i>(List.length expr_list)-1 || i<0)
-			then raise (Error("Index out of bounds: "^ (string_of_int i) )) in 
-		let new_env = update_variable env (id, dt, (Some(ExprVal(expr2)))) in
+			then raise (Error("Index out of bounds: "^ (string_of_int i) )) in
+		(* since arrays are not mutable, we have to replace the entire array *)
+		let new_list = update_list expr_list i expr2 in
+		let new_env = update_variable env (id, dt, Some(ArrVal(new_list))) in
 		(SArrElemAssign(ident, i, get_sexpr env expr2), new_env)
 	| Terminate -> (STerminate, env)
 
