@@ -1,5 +1,4 @@
-func int foo(){
-    return 5;
+func void foo(){
 }
 main() {
     init{
