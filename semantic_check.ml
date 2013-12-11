@@ -169,6 +169,9 @@ let get_name_type_from_decl decl = match decl with
 	VarDecl(datatype, ident) -> (ident, datatype)
     | VarAssignDecl(datatype,ident,value) -> (ident,datatype)
 
+let get_name_type_val_from_decl decl = match decl with
+	VarDecl(datatype, ident) -> (ident, datatype, None)
+	| VarAssignDecl(datatype, ident, value) -> (ident, datatype, Some(value))
 
 
 
@@ -346,7 +349,8 @@ let rec check_stmt env stmt = match stmt with
 				((name,ty,None),false) in
 		if(found=false) then
 					let (sdecl,_) = get_sdecl env decl in
-					let new_env = add_to_var_table env name ty None in
+					let (n, t, v) = get_name_type_val_from_decl decl in
+					let new_env = add_to_var_table env n t v in
 					(SDeclaration(sdecl), new_env)
 				else
 					raise (Error("Multiple declarations"))
@@ -380,7 +384,9 @@ let rec check_stmt env stmt = match stmt with
 		let t1 = get_type_from_datatype(dt) and t2 = get_type_from_datatype(check_expr env expr2) in
 		let _ = if(t1=t2) then true else raise (Error("Type Mismatch")) in
 		let expr_list = match v with
-				Some(ArrVal(expr_list)) -> (* get_sexpr_list env  *)expr_list in
+				Some(ArrVal(el)) -> (* get_sexpr_list env  *)el
+				| None -> raise (Error("No expression on right hand side"))
+				| _ -> raise (Error("???")) in
 		let _ = if(i>(List.length expr_list)-1 || i<0)
 			then raise (Error("Index out of bounds: "^ (string_of_int i) )) in 
 		(SArrElemAssign(ident, i, get_sexpr env expr2), env)
