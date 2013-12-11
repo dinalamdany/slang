@@ -179,9 +179,9 @@ let get_sdecl env decl = match decl with
 		let sv = get_sval env value in
 	(SVarAssignDecl(datatype, ident, sv), env)
 
-let get_name_type_from_decl decl = match decl with
-	VarDecl(datatype, ident) -> (ident, datatype)
-    | VarAssignDecl(datatype,ident,value) -> (ident,datatype)
+let get_name_type_val_from_decl decl = match decl with
+	VarDecl(datatype, ident) -> (ident, datatype,None)
+    | VarAssignDecl(datatype,ident,v) -> (ident,datatype,Some(v))
 
 
 (*deal with arrays here*)
@@ -338,17 +338,19 @@ let rec check_stmt env stmt = match stmt with
 			raise (Error("Improper While loop format")));
 		let (st, new_env)=check_stmt env s in
 		(SWhile((get_sexpr env e), st),new_env)
-	| Ast.Declaration(decl) -> match decl with 
-        VarDecl(dt,id) -> try find_variable env id with 
-            (Not_found -> let (sdecl,_) = get sdecl env decl in 
-                let new_env = add_to_var_table env id dt None in
-                SDeclaration(sdecl,new_env)
-            |(_,_,_) -> raise(Error("Multiple declarations")))
-        | VarAssignDecl(dt,id,v) ->  try find_variable env id with
-            (Not found -> let (sdecl,_) = getsdecl env decl in 
+	
+    (*(match decl with 
+            VarDecl(dt,id) -> try (let (_,_,_) = find_variable env id in if true
+            then raise(Error("Multiple
+            declarations"))); with 
+                Not_found -> (let (sdecl,_) = get sdecl env decl in 
+                    let new_env = add_to_var_table env id dt None in
+                       (SDeclaration(sdecl,new_env)))
+        | VarAssignDecl(dt,id,v) ->  (try find_variable env id with
+            Not_found -> let (sdecl,_) = getsdecl env decl in 
                 let new_env = add_to_var_table env name dt v in
-                (SDeclaration(sdecl, new_env) 
-        | (_,_,_) -> raise(Error("Multiple declarations")))
+                SDeclaration(sdecl, new_env) 
+           | _ -> raise(Error("Multiple declarations"))))*)
 
 	| Ast.Assign(ident, expr) ->
 		(* make sure 1) variable exists, 2) variable and expr have same types *)
@@ -384,8 +386,14 @@ let rec check_stmt env stmt = match stmt with
 			            then raise (Error("Index out of bounds: "^ (string_of_int i) )) in 
 		                (SArrElemAssign(ident, i, get_sexpr env expr2), env)
                 | Some(ExprVal(_)) -> raise(Error("Cannot index non-array expression"))
-                | None -> let _ = print_endline env in raise(Error("Cannot index a non-expression")))
-
+                | None -> raise(Error("Cannot index a non-expression")))
+      | Ast.Declaration(decl) -> let (name,ty,v) = get_name_type_val_from_decl decl in 
+            try (let (_,_,_) = find_variable env name in let (sdecl,_) = get_sdecl
+            env decl in if true then raise(Error("Multiple declarations"));
+            let a = (SDeclaration(sdecl),env) in a)
+            with Not_found -> let (sdecl,_) = get_sdecl env decl in 
+                let new_env = add_to_var_table env name ty v in
+                (SDeclaration(sdecl),new_env)
 (* Semantic checking on a function*)
 let check_func env func_declaration =
 	let new_locals = List.fold_left(fun a vs -> (get_name_type_from_formal env vs)::a)[] func_declaration.formals in
