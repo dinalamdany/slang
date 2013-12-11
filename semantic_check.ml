@@ -137,16 +137,19 @@ let rec check_expr env e = match e with
         check_expr env e 
         in (if not (t1 = t2) then (raise (Error("Mismatch in types for assignment")))); check_expr env e
     | Cast(ty, e) -> ty
-    | Call(id, e) -> let (fname, fret, fargs, fbody) = try 
-         find_function env.fun_scope id
-           with Not_found ->
-              raise (Error("Undeclared Function ")) in
+    | Call(id, e) -> try (let (fname, fret, fargs, fbody)  = find_function env.fun_scope id in
                 let el_tys = List.map (fun exp -> check_expr env exp) e in
                 let fn_tys = List.map (fun farg-> let (_,ty,_) = get_name_type_from_formal env farg in ty) fargs in
-                (if not (el_tys = fn_tys) then
-                    raise (Error("Mismatching types in function call")));
-                    Datatype(fret)
+                if not (el_tys = fn_tys) then
+                    raise (Error("Mismatching types in function call")) else
+                    Datatype(fret))
+            with Not_found ->
+                raise (Error("Undeclared Function "))
 
+let get_val_type env = function
+    ExprVal(expr) -> check_expr env expr
+    | ArrVal(expr_list) -> check_expr env (List.hd expr_list)
+    
 (*converts expr to sexpr*)
 let rec get_sexpr env e =
 	let type1= check_expr env e in
@@ -391,9 +394,15 @@ let rec check_stmt env stmt = match stmt with
             try (let (_,_,_) = find_variable env name in let (sdecl,_) = get_sdecl
             env decl in if true then raise(Error("Multiple declarations"));
             let a = (SDeclaration(sdecl),env) in a)
-            with Not_found -> let (sdecl,_) = get_sdecl env decl in 
-                let new_env = add_to_var_table env name ty v in
-                (SDeclaration(sdecl),new_env)
+            with Not_found -> (match v with
+                Some(x) -> let ty2 = get_val_type env x in
+                   if not (ty = ty2) then
+                    raise(Error("Cannot assign variable to mismatched type"))
+                    else let (sdecl,_) = get_sdecl env decl in let new_env =
+                        add_to_var_table env name ty v in (SDeclaration(sdecl),new_env)
+                | None -> let (sdecl,_) = get_sdecl env decl in
+                    let new_env = add_to_var_table env name ty v in
+                (SDeclaration(sdecl),new_env))
 (* Semantic checking on a function*)
 let check_func env func_declaration =
 	let new_locals = List.fold_left(fun a vs -> (get_name_type_from_formal env vs)::a)[] func_declaration.formals in
