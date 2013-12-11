@@ -4,18 +4,19 @@ func void foo(int value){
 	value = value + 1;
 }
 
-func void foo2(int reference[]){
+/*func void foo2(int reference[]){
 	reference = [3,2,1];	
-}
+}*/
+
 main(){
 	init{
-		int a = 5;
+/*		int a = 5;
 		foo(a);
-        print(a);
+        a;
 
 		int array[] = [1,2,3];
 		foo2(array);
-	    print(array);
+	    array;*/
     }
 }
 

@@ -94,6 +94,35 @@ let get_binop_return_value op typ1 typ2 =
 let get_name_type_from_formal env = function
     Formal(datatype,ident) -> (ident,datatype,None)
 
+(* Find the variable. If you find the variable:
+	Create a new list with the updated variable *)
+let update_variable env (name, datatype, value) = 
+	let ((_,_,_), location) = 
+	try (fun var_scope -> ((List.find (fun (s,_,_) -> s=name) var_scope),1)) env.var_scope.variables
+		with Not_found -> try (fun var_scope -> ((List.find (fun (s,_,_) -> s=name) var_scope),2)) env.global_scope.variables
+			with Not_found -> raise Not_found in
+	let new_envf =
+	match location with 
+		1 -> 
+			(* update local vars *)
+			let new_vars = List.map (fun (n, t, v) -> if(n=name) then (name, datatype, value) else (n, t, v)) env.var_scope.variables in
+			let new_sym_table = {parent = env.var_scope.parent; variables = new_vars;} in
+			let new_env = {env with var_scope = new_sym_table} in
+			new_env
+		| 2 -> 
+			(* update global vars *)
+			let new_vars = List.map (fun (n, t, v) -> if(n=name) then (name, datatype, value) else (n, t, v)) env.global_scope.variables in
+			let new_sym_table = {parent = env.var_scope.parent; variables = new_vars;} in
+			let new_env = {env with var_scope = new_sym_table} in
+			new_env
+        | _ -> raise(Error("Undefined scope"))
+	in new_envf
+
+let update_list expr_list index expr = 
+	let xarr = Array.of_list expr_list in
+	let _ = Array.set xarr index expr in
+	let xlist = Array.to_list xarr in
+	xlist
 
 (*search for variable in global and local symbol tables*)
 let find_variable env name =
@@ -137,16 +166,19 @@ let rec check_expr env e = match e with
         check_expr env e 
         in (if not (t1 = t2) then (raise (Error("Mismatch in types for assignment")))); check_expr env e
     | Cast(ty, e) -> ty
-    | Call(id, e) -> let (fname, fret, fargs, fbody) = try 
-         find_function env.fun_scope id
-           with Not_found ->
-              raise (Error("Undeclared Function ")) in
+    | Call(id, e) -> try (let (fname, fret, fargs, fbody)  = find_function env.fun_scope id in
                 let el_tys = List.map (fun exp -> check_expr env exp) e in
                 let fn_tys = List.map (fun farg-> let (_,ty,_) = get_name_type_from_formal env farg in ty) fargs in
-                (if not (el_tys = fn_tys) then
-                    raise (Error("Mismatching types in function call")));
-                    Datatype(fret)
+                if not (el_tys = fn_tys) then
+                    raise (Error("Mismatching types in function call")) else
+                    Datatype(fret))
+            with Not_found ->
+                raise (Error("Undeclared Function "))
 
+let get_val_type env = function
+    ExprVal(expr) -> check_expr env expr
+    | ArrVal(expr_list) -> check_expr env (List.hd expr_list)
+    
 (*converts expr to sexpr*)
 let rec get_sexpr env e =
 	let type1= check_expr env e in
@@ -169,6 +201,16 @@ let get_sval env = function
 		ExprVal(expr) -> SExprVal(get_sexpr env expr)
 		| ArrVal(expr_list) -> SArrVal(get_sexpr_list env expr_list)
 
+let get_datatype_of_list env expr_list = 
+	let ty = List.fold_left (fun dt1 expr2 -> 
+								let dt2 = check_expr env expr2 in
+								if(dt1 = dt2) then dt1 else raise (Error("Inconsistent array types"))) (check_expr env (List.hd expr_list)) expr_list in ty
+
+
+let get_datatype_from_val env = function
+	ExprVal(expr) -> check_expr env expr
+	| ArrVal(expr_list) -> get_datatype_of_list env expr_list
+
 (* if variable is not found, then add it to table and return SVarDecl *)
 (* if variable is found, throw an error: multiple declarations *)
 (* TODO: complete this like get_sexpr *)
@@ -182,6 +224,10 @@ let get_sdecl env decl = match decl with
 let get_name_type_from_decl decl = match decl with
 	VarDecl(datatype, ident) -> (ident, datatype)
     | VarAssignDecl(datatype,ident,value) -> (ident,datatype)
+
+let get_name_type_val_from_decl decl = match decl with
+	VarDecl(datatype, ident) -> (ident, datatype, None)
+	| VarAssignDecl(datatype, ident, value) -> (ident, datatype, Some(value))
 
 
 (*deal with arrays here*)
@@ -338,17 +384,32 @@ let rec check_stmt env stmt = match stmt with
 			raise (Error("Improper While loop format")));
 		let (st, new_env)=check_stmt env s in
 		(SWhile((get_sexpr env e), st),new_env)
-	| Ast.Declaration(decl) -> match decl with 
-        VarDecl(dt,id) -> try find_variable env id with 
-            (Not_found -> let (sdecl,_) = get sdecl env decl in 
-                let new_env = add_to_var_table env id dt None in
-                SDeclaration(sdecl,new_env)
-            |(_,_,_) -> raise(Error("Multiple declarations")))
-        | VarAssignDecl(dt,id,v) ->  try find_variable env id with
-            (Not found -> let (sdecl,_) = getsdecl env decl in 
-                let new_env = add_to_var_table env name dt v in
-                (SDeclaration(sdecl, new_env) 
-        | (_,_,_) -> raise(Error("Multiple declarations")))
+	| Ast.Declaration(decl) -> 
+		(* If variable is found, multiple decls error
+			If variable is not found and var is assigndecl, check for type compat *)
+		let (name, ty) = get_name_type_from_decl decl in
+		let ((_,dt,_),found) = try (fun f -> ((f env name),true)) find_variable with 
+			Not_found ->
+				((name,ty,None),false) in
+		let ret = if(found=false) then
+			match decl with
+				VarDecl(_,_) ->
+					let (sdecl,_) = get_sdecl env decl in
+					let (n, t, v) = get_name_type_val_from_decl decl in
+					let new_env = add_to_var_table env n t v in
+					(SDeclaration(sdecl), new_env)
+				| VarAssignDecl(dt, id, value) ->
+					let t1 = get_type_from_datatype(dt) and t2 = get_type_from_datatype(get_datatype_from_val env value) in
+					if(t1=t2) then
+						let (sdecl,_) = get_sdecl env decl in
+						let (n, t, v) = get_name_type_val_from_decl decl in
+						let new_env = add_to_var_table env n t v in
+						(SDeclaration(sdecl), new_env)
+					else raise (Error("Type mismatch"))
+				else
+					raise (Error("Multiple declarations")) in ret
+
+	(*| Ast.PropertyAssign are we still using this?*)
 
 	| Ast.Assign(ident, expr) ->
 		(* make sure 1) variable exists, 2) variable and expr have same types *)
@@ -358,19 +419,22 @@ let rec check_stmt env stmt = match stmt with
 		if( not(t1=t2) ) then 
 			raise (Error("Mismatched type assignments"));
 		let sexpr = get_sexpr env expr in
-		(SAssign(ident, sexpr), env)
+		let new_env = update_variable env (ident,dt,Some((ExprVal(expr)))) in
+		(SAssign(ident, sexpr), new_env)
 	| Ast.ArrAssign(ident, expr_list) ->
 		(* make sure 1) array exists and 2) all types in expr list are equal *)
-		let (_, ty, _) = try find_variable env ident with Not_found -> raise (Error("Undeclared array")) in
-            (match ty with
-            Arraytype(Datatype(x)) -> let sexpr_list = List.map (fun expr2 -> let expr1 = List.hd expr_list in 
+		let (n,dt,v) = try find_variable env ident with Not_found -> raise (Error("Undeclared array")) in
+		let sexpr_list = List.map (fun expr2 -> 
+							let expr1 = List.hd expr_list in
 							let t1 = get_type_from_datatype(check_expr env expr1) and t2 = get_type_from_datatype(check_expr env expr2) in
 							if(t1=t2) then 
 								let sexpr2 = get_sexpr env expr2 in sexpr2
-								else raise (Error("Array has inconsistent
-                                types"))) expr_list in (SArrAssign(ident, sexpr_list), env)
-           | _ -> raise(Error("Cannot assign array to non-array value")))
-	| Terminate -> (STerminate, env)
+								else raise (Error("Array has inconsistent types"))) expr_list in
+		let _ = 
+			let t1=get_type_from_datatype(check_expr env (List.hd expr_list)) and t2=get_type_from_datatype(dt) in
+			if(t1!=t2) then raise (Error("Type Mismatch")) in
+		let new_env = update_variable env (n,dt,(Some(ArrVal(expr_list)))) in
+		(SArrAssign(ident, sexpr_list), new_env)
 	| Ast.ArrElemAssign(ident, i, expr2) ->
 		(* Make sure
 			1) array exists (if it exists, then it was already declared and semantically checked)
@@ -378,13 +442,18 @@ let rec check_stmt env stmt = match stmt with
 			3) index is not out of bounds *)
 		let (id, dt, v) = try find_variable env ident with Not_found -> raise (Error("Undeclared array")) in
 		let t1 = get_type_from_datatype(dt) and t2 = get_type_from_datatype(check_expr env expr2) in
-		    if(t1!=t2) then raise (Error("Type Mismatch")) else (match v with
-				Some(ArrVal(expr_list)) -> let _ = get_sexpr_list env expr_list in
-		            let _ = if(i>(List.length expr_list)-1 || i<0)
-			            then raise (Error("Index out of bounds: "^ (string_of_int i) )) in 
-		                (SArrElemAssign(ident, i, get_sexpr env expr2), env)
-                | Some(ExprVal(_)) -> raise(Error("Cannot index non-array expression"))
-                | None -> let _ = print_endline env in raise(Error("Cannot index a non-expression")))
+		let _ = if(t1=t2) then true else raise (Error("Type Mismatch")) in
+		let expr_list = match v with
+				Some(ArrVal(el)) -> (* get_sexpr_list env  *)el
+				| None -> raise (Error("No expression on right hand side"))
+				| _ -> raise (Error("???")) in
+		let _ = if(i>(List.length expr_list)-1 || i<0)
+			then raise (Error("Index out of bounds: "^ (string_of_int i) )) in
+		(* since arrays are not mutable, we have to replace the entire array *)
+		let new_list = update_list expr_list i expr2 in
+		let new_env = update_variable env (id, dt, Some(ArrVal(new_list))) in
+		(SArrElemAssign(ident, i, get_sexpr env expr2), new_env)
+	| Terminate -> (STerminate, env)
 
 (* Semantic checking on a function*)
 let check_func env func_declaration =
@@ -413,7 +482,9 @@ let check_event (typed_events, env) event =
 (*Semantic checking on a program*)
 let check_program program =
 	let (functions,(globals,threads)) = program in
-	    let (typed_globals, env) = List.fold_left(fun (new_globals,env) globals -> initialize_globals (new_globals, env) globals) ([],empty_environment) globals in
-	        let typed_functions = List.map(fun function_declaration -> check_func env function_declaration) functions in
-                let typed_threads = List.map(fun thread -> check_thread env thread) threads in 
+	    let env = List.fold_left(fun env function_declaration -> initialize_functions env function_declaration) empty_environment functions in
+			let typed_functions = List.map(fun function_declaration -> check_func env function_declaration) functions in
+             let (typed_globals, env) = List.fold_left(fun (new_globals,env)
+             globals -> initialize_globals (new_globals, env) globals) ([], env) globals in
+	           let typed_threads = List.map(fun thread -> check_thread env thread) threads in
                     Prog(typed_functions, (typed_globals, typed_threads))

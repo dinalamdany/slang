@@ -1,6 +1,6 @@
 main(){
 init{
     int a = 5;
-    #5 print(a);
+    #5 a;
 }
 }
