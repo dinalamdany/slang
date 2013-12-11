@@ -44,6 +44,10 @@ var_type:
 	|BOOLEAN	{Boolean}
 	|STRING		{String}
 
+ret_type:
+    var_type {$1}
+    | VOID {Void}
+
 timeblock_list:
     /* nothing */ {[]}
     | timeblock_list timeblock { $2 :: $1 }
@@ -53,7 +57,7 @@ timeblock:
     | ALWAYS LBRACE events RBRACE {Always($3)}
 
 fdecl:
-    FUNC var_type ID LPAREN formals_opt RPAREN LBRACE stmt_list RBRACE
+    FUNC ret_type ID LPAREN formals_opt RPAREN LBRACE stmt_list RBRACE
     { { return = Datatype($2);
     fname = Ident($3);
     formals = $5;
