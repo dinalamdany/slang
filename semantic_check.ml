@@ -94,6 +94,28 @@ let get_binop_return_value op typ1 typ2 =
 let get_name_type_from_formal env = function
     Formal(datatype,ident) -> (ident,datatype,None)
 
+(* Find the variable. If you find the variable:
+	Create a new list with the updated variable *)
+let update_variable env (name, datatype, value) = 
+	let ((_,_,_), location) = 
+	try (fun var_scope -> ((List.find (fun (s,_,_) -> s=name) var_scope),1)) env.var_scope.variables
+		with Not_found -> try (fun var_scope -> ((List.find (fun (s,_,_) -> s=name) var_scope),2)) env.global_scope.variables
+			with Not_found -> raise Not_found in
+	let new_envf =
+	match location with 
+		1 -> 
+			(* update local vars *)
+			let new_vars = List.map (fun (n, t, v) -> if(n=name) then (name, datatype, value) else (n, t, v)) env.var_scope.variables in
+			let new_sym_table = {parent = env.var_scope.parent; variables = new_vars;} in
+			let new_env = {env with var_scope = new_sym_table} in
+			new_env
+		| 2 -> 
+			(* update global vars *)
+			let new_vars = List.map (fun (n, t, v) -> if(n=name) then (name, datatype, value) else (n, t, v)) env.global_scope.variables in
+			let new_sym_table = {parent = env.var_scope.parent; variables = new_vars;} in
+			let new_env = {env with var_scope = new_sym_table} in
+			new_env
+	in new_envf
 
 (*search for variable in global and local symbol tables*)
 let find_variable env name =
@@ -364,17 +386,19 @@ let rec check_stmt env stmt = match stmt with
 		if( not(t1=t2) ) then 
 			raise (Error("Mismatched type assignments"));
 		let sexpr = get_sexpr env expr in
-		(SAssign(ident, sexpr), env)
+		let new_env = update_variable env (ident,dt,Some((ExprVal(expr)))) in
+		(SAssign(ident, sexpr), new_env)
 	| Ast.ArrAssign(ident, expr_list) ->
 		(* make sure 1) array exists and 2) all types in expr list are equal *)
-		let (_, _, _) = try find_variable env ident with Not_found -> raise (Error("Undeclared array")) in
+		let (n,dt,v) = try find_variable env ident with Not_found -> raise (Error("Undeclared array")) in
 		let sexpr_list = List.map (fun expr2 -> 
 							let expr1 = List.hd expr_list in
 							let t1 = get_type_from_datatype(check_expr env expr1) and t2 = get_type_from_datatype(check_expr env expr2) in
 							if(t1=t2) then 
 								let sexpr2 = get_sexpr env expr2 in sexpr2
 								else raise (Error("Array has inconsistent types"))) expr_list in
-		(SArrAssign(ident, sexpr_list), env)
+		let new_env = update_variable env (n,dt,(Some(ArrVal(expr_list)))) in
+		(SArrAssign(ident, sexpr_list), new_env)
 	| Ast.ArrElemAssign(ident, i, expr2) ->
 		(* Make sure
 			1) array exists (if it exists, then it was already declared and semantically checked)
@@ -389,7 +413,8 @@ let rec check_stmt env stmt = match stmt with
 				| _ -> raise (Error("???")) in
 		let _ = if(i>(List.length expr_list)-1 || i<0)
 			then raise (Error("Index out of bounds: "^ (string_of_int i) )) in 
-		(SArrElemAssign(ident, i, get_sexpr env expr2), env)
+		let new_env = update_variable env (id, dt, (Some(ExprVal(expr2)))) in
+		(SArrElemAssign(ident, i, get_sexpr env expr2), new_env)
 	| Terminate -> (STerminate, env)
 
 (* Semantic checking on a function*)

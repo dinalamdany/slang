@@ -1,13 +1,21 @@
 func int foo(){
-	int a[] = [9, 13];
-	a[0] = 1;
+	int a[];
+	a = [1, 2];
+	a[0] = 0;
 	return 1;
 }
 
 
 main(){
-	
-	init{
 
+	init{
 	}
 }
+
+/* main(){
+	int myInts[];
+	init{
+        myInts = [1,2,3,4,5,5];
+        myInts[3] = 3;
+	}
+} */
