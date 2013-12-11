@@ -6,7 +6,7 @@ main(){
 
 	init{
 		for(;;){ 
-            print(5);
+            5;
         }
 	}
 }

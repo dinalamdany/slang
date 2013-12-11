@@ -145,7 +145,15 @@ let rec check_expr env e = match e with
     	let (t, valid) = get_binop_return_value b t1 t2 in
     	if valid then t else raise(Error("Incompatible types with binary
         operator"));
-    | ArrElem(id, index) -> Arraytype(Datatype(Int)) (*this is wrong *) 
+    | ArrElem(id, index) -> let (_,ty,v ) = try find_variable env id with
+    Not_found -> raise(Error("Uninitialized array")) in let
+    el_type = (match ty with 
+            Arraytype(Datatype(x)) -> Datatype(x)
+            | _ -> raise(Error("Cannot index a non-array expression")))
+    in (match v with 
+        Some(ArrVal(x)) -> if index < List.length x then el_type else
+            raise(Error("Index out of bounds" ^ string_of_int index))
+        | _ -> raise(Error("Cannot index a non-array expression")))
     | Noexpr -> raise (Error ("Expression has no type"))
     | ExprAssign(id, e) -> let (_,t1,_) = (find_variable env id) and t2 =
         check_expr env e 
@@ -164,13 +172,19 @@ let rec check_expr env e = match e with
 (*converts expr to sexpr*)
 let rec get_sexpr env e =
 	let type1= check_expr env e in
-	Expr(e,type1)
+	SExpr(e,type1)
 
-(* TODO: make sure this compiles. looks good though
-	returns list of sexpr *)
+(* Make sure a list contains all items of only a single type; returns (sexpr list, type in list) *)
+(* TODO: don't know if this compiles *)
 let get_sexpr_list env expr_list = 
-	let sexpr_list = List.map (fun expr -> get_sexpr env expr ) expr_list in
-	sexpr_list
+	let sexpr_list = 
+		List.map (fun expr -> 
+				let t1 = get_type_from_datatype(check_expr env (List.hd expr_list)) 
+				and t2 = get_type_from_datatype (check_expr env expr) in
+				if(t1=t2) then get_sexpr env expr 
+					else raise (Error("Type Mismatch"))
+				 ) expr_list in sexpr_list
+
 
 (* replacement for get_typed_value *)
 let get_sval env = function
@@ -194,7 +208,6 @@ let get_name_type_from_decl decl = match decl with
 let get_name_type_val_from_decl decl = match decl with
 	VarDecl(datatype, ident) -> (ident, datatype, None)
 	| VarAssignDecl(datatype, ident, value) -> (ident, datatype, Some(value))
-
 
 
 (*deal with arrays here*)
@@ -221,19 +234,7 @@ let rec get_events_from_thread = function
 	Init(event) ->event
 	|Always(event2) ->event2
 
-(* Make sure a list contains all items of only a single type; returns (sexpr list, type in list) *)
-(* TODO: don't know if this compiles *)
-let get_sexpr_list env expr_list = 
-	let sexpr_list = 
-		List.map (fun expr -> 
-				let t1 = get_type_from_datatype(check_expr env (List.hd expr_list)) 
-				and t2 = get_type_from_datatype (check_expr env expr) in
-				if(t1=t2) then get_sexpr env expr 
-					else raise (Error("Type Mismatch"))
-				 ) expr_list in
-		(sexpr_list, get_type_from_datatype(check_expr env (List.hd expr_list)))
-
-(*function that adds variables to environment's var_scope for use in functions*)
+    (*function that adds variables to environment's var_scope for use in functions*)
 (* ADDED: val, for arrays *)
 let add_to_var_table env name t v = 
 	let new_vars = (name,t, v)::env.var_scope.variables in
@@ -332,9 +333,8 @@ let rec check_stmt env stmt = match stmt with
 		let (ls,st) = List.fold_left(fun e s -> getter e s) (new_env,[]) stmt_list in
 		let revst = List.rev st in
 		(SBlock(revst),ls)
-	| Ast.Expr(e) -> (* OCaml thinks this is the Sast type sexpr *)
-		let _ = check_expr env e in
-		(SExpr(get_sexpr env e),env)
+	| Expr(e) -> 
+		let ty = check_expr env e in (SSExpr(SExpr(e,ty)),env)
 	| Return(e) ->
 		let type1=check_expr env e in
 		(if not(type1=Datatype(env.return_type)) then
@@ -378,6 +378,7 @@ let rec check_stmt env stmt = match stmt with
 					raise (Error("Multiple declarations"))
 
 	(*| Ast.PropertyAssign are we still using this?*)
+
 	| Ast.Assign(ident, expr) ->
 		(* make sure 1) variable exists, 2) variable and expr have same types *)
 		let (_, dt, _) = try find_variable env ident with Not_found -> raise (Error("Uninitialized variable")) in
@@ -397,6 +398,9 @@ let rec check_stmt env stmt = match stmt with
 							if(t1=t2) then 
 								let sexpr2 = get_sexpr env expr2 in sexpr2
 								else raise (Error("Array has inconsistent types"))) expr_list in
+		let _ = 
+			let t1=get_type_from_datatype(check_expr env (List.hd expr_list)) and t2=get_type_from_datatype(dt) in
+			if(t1!=t2) then raise (Error("Type Mismatch")) in
 		let new_env = update_variable env (n,dt,(Some(ArrVal(expr_list)))) in
 		(SArrAssign(ident, sexpr_list), new_env)
 	| Ast.ArrElemAssign(ident, i, expr2) ->
@@ -444,7 +448,9 @@ let check_event (typed_events, env) event =
 (*Semantic checking on a program*)
 let check_program program =
 	let (functions,(globals,threads)) = program in
-	    let (typed_globals, env) = List.fold_left(fun (new_globals,env) globals -> initialize_globals (new_globals, env) globals) ([],empty_environment) globals in
-	        let typed_functions = List.map(fun function_declaration -> check_func env function_declaration) functions in
-                let typed_threads = List.map(fun thread -> check_thread env thread) threads in 
+	    let env = List.fold_left(fun env function_declaration -> initialize_functions env function_declaration) empty_environment functions in
+			let typed_functions = List.map(fun function_declaration -> check_func env function_declaration) functions in
+             let (typed_globals, env) = List.fold_left(fun (new_globals,env)
+             globals -> initialize_globals (new_globals, env) globals) ([], env) globals in
+	           let typed_threads = List.map(fun thread -> check_thread env thread) threads in
                     Prog(typed_functions, (typed_globals, typed_threads))

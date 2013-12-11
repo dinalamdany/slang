@@ -5,6 +5,7 @@ func int foo(){
 
 main(){
 	init{
+        int x = foo();
 	}
 }
 

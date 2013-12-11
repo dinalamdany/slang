@@ -1,5 +1,5 @@
 main(){
   init{
-    print("hello world");
+    "hello world";
   }
 }
