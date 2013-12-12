@@ -10,9 +10,9 @@ and sexpr =
 	SExpr of expr * datatype
 
 type sdecl =
-	SVarDecl of datatype * ident (* inside decl_list (timeblock) *)
+	SVarDecl of datatype * ident (* put these inside decl_list for each timeblock *)
 	(* changed sexpr to svalue *)
-	| SVarAssignDecl of datatype * ident * sval (*return assignment and put decl in timeblock decl list*)
+	| SVarAssignDecl of datatype * ident * sval (* v_assignment and put v_decl in timeblock decl_list*)
 	(* There is no way to work with arrays with the following *)
 	(* | SVarAssignDecl of datatype * ident * sexpr *)
 
