@@ -328,8 +328,9 @@ let initialize_functions env function_declaration =
 	new_env
 
 (* Add global variables to the environment *)
-(* TODO: modify for arrays *)
-let initialize_globals (globals,env) variable_declaration = 
+(* Old version; doesn't check for multiple declarations *)
+(* let initialize_globals (globals,env) variable_declaration = 
+	(* See if ident already exists. If not, continue; else, error *)
     match variable_declaration with
         VarDecl(datatype,ident) -> 
         	let (name,ty,_) = get_name_type_from_var env variable_declaration in
@@ -340,13 +341,36 @@ let initialize_globals (globals,env) variable_declaration =
         	let new_env = add_to_global_table env name ty v in
             (match v with
               | Some(value) -> (SVarAssignDecl(datatype, ident, get_sval env value)::globals, new_env)
-              | None -> raise (Error("Cannot access unitialized value")) )
+              | None -> raise (Error("Cannot access unitialized value")) ) *)
+
+let initialize_globals (globals, env) decl = 
+	let (name, ty) = get_name_type_from_decl decl in
+		let ((_,dt,_),found) = try (fun f -> ((f env name),true)) find_variable with 
+			Not_found ->
+				((name,ty,None),false) in
+		let ret = if(found=false) then
+			match decl with
+				VarDecl(datatype,ident) ->
+		        	let (name,ty,_) = get_name_type_from_var env decl in
+		            let new_env = add_to_global_table env name ty None in
+		            (SVarDecl(datatype,ident)::globals, new_env)
+				| VarAssignDecl(dt, id, value) ->
+					let t1 = get_type_from_datatype(dt) and t2 = get_type_from_datatype(get_datatype_from_val env value) in
+					if(t1=t2) then
+						let (sdecl,_) = get_sdecl env decl in
+						let (n, t, v) = get_name_type_val_from_decl decl in
+						let new_env = add_to_global_table env n t v in
+						((sdecl)::globals, new_env)
+					else raise (Error("Type mismatch"))
+				else
+					raise (Error("Multiple declarations")) in ret
 
 (*Semantic checking on a stmt*)
 let rec check_stmt env stmt = match stmt with
 	| Block(stmt_list) ->
-		let new_var_scope = {parent=Some(env.var_scope);variables=[];} in
-		let new_env = {env with var_scope=new_var_scope} in
+	(*	let new_var_scope = {parent=Some(env.var_scope);variables=[];} in
+		let new_env = {env with var_scope=new_var_scope} in*)
+		let new_env=env in
 		let getter(env,acc) s =
 			let (st, ne) = check_stmt env s in
 			(ne, st::acc) in

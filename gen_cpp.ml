@@ -23,7 +23,7 @@ let code_event_list = "struct "^ prefix_event_list ^
   "event_q.insert(it, obj_);\n\t\t\t\teol = false;\n\t\t\t\tbreak;" ^
   "\n\t\t\t}\n\t\t}\n\t\tif (eol) {\n\t\t\tevent_q.push_back(obj_);" ^
   "\n\t\t}\n\t}\n\tprivate:\n\t\tstd::deque<" ^
-  prefix_event ^ "*> event_q;\n};\n" ^ prefix_event_list ^ " event_q;"
+  prefix_event ^ "*> event_q;\n};\n" ^ prefix_event_list ^ " event_q;\n"
 let code_directives = "#include <iostream>\n#include <string>\n#include <deque>\n#include <vector>\n#include <cstdlib>\n"
 let code_event_list_do = "while(!event_q.empty()) {\n\tevent_q.pop()->foo();\n\t}\n"
 let header = code_directives^code_event_base^code_event_list
