@@ -10,9 +10,9 @@ and sexpr =
 	SExpr of expr * datatype
 
 type sdecl =
-	SVarDecl of datatype * ident
+	SVarDecl of datatype * ident (* inside decl_list (timeblock) *)
 	(* changed sexpr to svalue *)
-	| SVarAssignDecl of datatype * ident * sval
+	| SVarAssignDecl of datatype * ident * sval (*return assignment and put decl in timeblock decl list*)
 	(* There is no way to work with arrays with the following *)
 	(* | SVarAssignDecl of datatype * ident * sexpr *)
 
@@ -27,7 +27,6 @@ type sstmt =
 	| SFor of sexpr * sexpr * sexpr * sstmt
 	| SWhile of sexpr * sstmt
 	| SDeclaration of sdecl
-	| SPropertyAssign of ident * ident * sexpr 
 	| SAssign of ident * sexpr
 	| SArrAssign of ident * sexpr list
 	| SArrElemAssign of ident * int * sexpr
