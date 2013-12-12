@@ -17,7 +17,7 @@ type structure =
 
 type time_block =
     Time_block of link * decl list * structure list (*struct list counts the number of blocks *)
-                                      (*name = link append block # *)
+                                      				(*name = link append block # *)
 
 type pretty_c =
     Pretty_c of decl list * func_decl list * time_block list * main
