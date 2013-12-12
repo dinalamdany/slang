@@ -115,6 +115,7 @@ let update_variable env (name, datatype, value) =
 			let new_sym_table = {parent = env.var_scope.parent; variables = new_vars;} in
 			let new_env = {env with var_scope = new_sym_table} in
 			new_env
+        | _ -> raise(Error("Undefined scope"))
 	in new_envf
 
 let update_list expr_list index expr = 
