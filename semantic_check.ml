@@ -368,8 +368,9 @@ let initialize_globals (globals, env) decl =
 (*Semantic checking on a stmt*)
 let rec check_stmt env stmt = match stmt with
 	| Block(stmt_list) ->
-		let new_var_scope = {parent=Some(env.var_scope);variables=[];} in
-		let new_env = {env with var_scope=new_var_scope} in
+	(*	let new_var_scope = {parent=Some(env.var_scope);variables=[];} in
+		let new_env = {env with var_scope=new_var_scope} in*)
+		let new_env=env in
 		let getter(env,acc) s =
 			let (st, ne) = check_stmt env s in
 			(ne, st::acc) in
