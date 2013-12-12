@@ -12,8 +12,8 @@ compile:
 	ocamlc -c parser.ml
 	ocamlc -c sast.mli
 	ocamlc -c pretty_c.mli
-	ocamlc -c pretty_c_gen.ml
 	ocamlc -c semantic_check.ml
+	ocamlc -c pretty_c_gen.ml
 
 #OBJECTS
 #I'm narcissistic
@@ -24,7 +24,7 @@ COMP1OBJS = parser.cmo scanner.cmo compiler_v1.cmo
 COMP2OBJS = parser.cmo scanner.cmo compiler_v2.cmo
 GENCPPOBJS = parser.cmo scanner.cmo gen_cpp.cmo
 TESTEROBJS = parser.cmo scanner.cmo tester.cmo
-PCGOBJS = parser.cmo scanner.cmo pretty_c_gen.cmo
+PCGOBJS = parser.cmo scanner.cmo semantic_check.cmo pretty_c_gen.cmo
 
 scanner_tester.cmo : scanner_tester.ml
 	ocamlc -c $< -o $@
@@ -58,6 +58,8 @@ pretty_c_gen.cmo : pretty_c_gen.ml
 	ocamlc -c $< -o $@
 pretty_c_gen: $(PCGOBJS)
 	ocamlc -o $@ $(PCGOBJS)
+semantic_check.cmo : semantic_check.ml
+	ocamlc -c $< -o $@
 
 
 
