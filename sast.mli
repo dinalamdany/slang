@@ -27,7 +27,6 @@ type sstmt =
 	| SFor of sexpr * sexpr * sexpr * sstmt
 	| SWhile of sexpr * sstmt
 	| SDeclaration of sdecl
-	| SPropertyAssign of ident * ident * sexpr 
 	| SAssign of ident * sexpr
 	| SArrAssign of ident * sexpr list
 	| SArrElemAssign of ident * int * sexpr
