@@ -55,7 +55,7 @@ SBlock(sstmt_list) -> Block(List.map gen_stmt sstmt_list)
 let gen_structure curr_name_f link = function
   SEvent(delay, sstmt_list) -> let name = Time_struct_name(curr_name_f ()) in (* Counter *)
                                  m_lists.so <- Time_struct_obj(name, link) :: m_lists.so; (*adding to main list*)
-                                 Time_struct(name, delay, link, List.map gen_stmt sstmt_list)
+                                 Time_struct(name, delay, link, List.map gen_stmt (List.rev sstmt_list))
 
 (* Receives sthread, creates Link for init or always,
   sends this link as parameter for gen_structure function *)
@@ -65,12 +65,12 @@ let gen_time_block = function
     let curr_link_str = init_count () in let curr_name_f = inc1 (curr_link_str ^ "_block_") in (*Counters*)
       let link = Link(curr_link_str) in m_lists.l1 <- link :: m_lists.l1; (*adding to main list*)
         let partial_gen_struct = gen_structure curr_name_f link in
-          Time_block(link, [], List.map partial_gen_struct sthread)
+          Time_block(link, [], List.map partial_gen_struct (List.rev sthread))
 | SAlways(sthread) -> 
   let curr_link_str = always_count () in let curr_name_f = inc1 (curr_link_str ^ "_block_") in (*Counters*)
     let link = Link(curr_link_str) in m_lists.l2 <- link :: m_lists.l2; (*adding to main list*)
       let partial_gen_struct = gen_structure curr_name_f link in
-        Time_block(link, [], List.map partial_gen_struct sthread)                        
+        Time_block(link, [], List.map partial_gen_struct (List.rev sthread))                     
 
 let gen_func = function
   Func_Decl(func_decl, datatype) -> func_decl
@@ -81,7 +81,7 @@ let gen_pretty_c = function
   Prog(sfunc_decl_list, (sdecl_list, sthread_list)) -> 
     let func_list = List.map gen_func sfunc_decl_list in (* Functions *)
     let decl_list = List.map gen_decl sdecl_list in (* Declarations *)
-    let time_block_list = List.map gen_time_block  sthread_list in (* Time Blocks *)
+    let time_block_list = List.map gen_time_block (List.rev sthread_list) in (* Time Blocks *)
     let main = Main(m_lists.so, m_lists.l1, m_lists.l2) in (* Main *)
       Pretty_c(decl_list, func_list, time_block_list, main) (* Pretty_c *)
 
