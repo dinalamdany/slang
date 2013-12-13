@@ -1,7 +1,8 @@
 open Ast 
-open Sast 
-open Semantic_check
+open Sast
 open Pretty_c
+
+(* ------------ Helpers -------------- *)
 
 (* Counters *)
 let inc1 prefix =
@@ -75,7 +76,6 @@ let gen_time_block = function
 let gen_func = function
   Func_Decl(func_decl, datatype) -> func_decl
 
-(*TODO: weird extra empty timeblock getting generated. Is it here?*)
 (* Main function to generate a pretty_c *)
 let gen_pretty_c = function 
   Prog(sfunc_decl_list, (sdecl_list, sthread_list)) -> 
