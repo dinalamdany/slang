@@ -25,6 +25,7 @@ COMP2OBJS = parser.cmo scanner.cmo compiler_v2.cmo
 GENCPPOBJS = parser.cmo scanner.cmo gen_cpp.cmo
 TESTEROBJS = parser.cmo scanner.cmo tester.cmo
 PCGOBJS = parser.cmo scanner.cmo semantic_check.cmo pretty_c_gen.cmo
+COMP3OBJS = parser.cmo scanner.cmo semantic_check.cmo pretty_c_gen.cmo gen_cpp.cmo compiler_v3.cmo
 
 scanner_tester.cmo : scanner_tester.ml
 	ocamlc -c $< -o $@
@@ -42,6 +43,10 @@ gen_cpp.cmo : gen_cpp.ml
 	ocamlc -c $< -o $@
 gen_cpp: $(GENCPPOBJS)
 	ocamlc -o $@ $(GENCPPOBJS)
+compiler_v3.cmo : compiler_v3.ml
+	ocamlc -c $< -o $@
+compiler_v3: $(COMP3OBJS)
+	ocamlc -o $@ $(COMP3OBJS)
 compiler_v2.cmo : compiler_v2.ml
 	ocamlc -c $< -o $@
 compiler_v2: $(COMP2OBJS)
