@@ -2,13 +2,13 @@ default: all
 
 .PHONY : compile
 compile:
-	ocamllex scanner.mll
-	ocamlc -c scanner.ml
 	ocamlc -c type.mli
+	ocamlc -c ast.mli
 	ocamlyacc parser.mly
 	ocamlc -c parser.mli
 	ocamlc -c parser.ml
-	ocamlc -c ast.mli
+	ocamllex scanner.mll
+	ocamlc -c scanner.ml
 	ocamlc -c sast.mli
 	ocamlc -c semantic_check.ml
 	ocamlc -c pretty_c.mli
