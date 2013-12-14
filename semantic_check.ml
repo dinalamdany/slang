@@ -161,7 +161,6 @@ let rec check_expr env e = match e with
         Some(ArrVal(x)) -> if index < List.length x then el_type else
             raise(Error("Index out of bounds" ^ string_of_int index))
         | _ -> raise(Error("Cannot index a non-array expression")))
-    | Noexpr -> raise (Error ("Expression has no type"))
     | ExprAssign(id, e) -> let (_,t1,_) = (find_variable env id) and t2 =
         check_expr env e 
         in (if not (t1 = t2) then (raise (Error("Mismatch in types for assignment")))); check_expr env e
@@ -178,11 +177,24 @@ let rec check_expr env e = match e with
 let get_val_type env = function
     ExprVal(expr) -> check_expr env expr
     | ArrVal(expr_list) -> check_expr env (List.hd expr_list)
-    
+
+let get_var_scope env name =  
+    try (let (_,_,_) = List.find (fun (s,_,_) -> s=name) env.var_scope.variables in Local)
+          with Not_found -> try (let (_,_,_) = List.find(fun (s,_,_) -> s=name) env.global_scope.variables in Global)
+                with Not_found -> raise Not_found
 (*converts expr to sexpr*)
-let rec get_sexpr env e =
-	let type1= check_expr env e in
-	SExpr(e,type1)
+let rec get_sexpr env e = match e with
+      IntLit(i) -> SIntLit(i, Datatype(Int))
+      | BoolLit(b) -> SBoolLit(b,Datatype(Boolean))
+      | FloatLit(f) -> SFloatLit(f,Datatype(Float))
+      | StringLit(s) -> SStringLit(s,Datatype(String))
+      | Variable(id) -> SVariable((id, get_var_scope env id), check_expr env e)
+      | Unop(u,ex) -> SUnop(u, ex, check_expr env e)
+      | Binop(e1,b,e2) -> SBinop(e1,b,e2,check_expr env e) 
+      | ArrElem(id,index) -> SArrElem((id, get_var_scope env id),index, check_expr env e)  
+      | ExprAssign(id,ex) -> SExprAssign((id, get_var_scope env id), ex,check_expr env e) 
+      | Cast(ty,ex) -> SCast(ty,ex,ty)
+      | Call(id, ex_list) -> SCall((id,get_var_scope env id),ex_list, check_expr env e) 
 
 (* Make sure a list contains all items of only a single type; returns (sexpr list, type in list) *)
 (* TODO: don't know if this compiles *)
@@ -216,10 +228,11 @@ let get_datatype_from_val env = function
 (* TODO: complete this like get_sexpr *)
 let get_sdecl env decl = match decl with
 	(* if ident is in env, return typed sdecl *)
-	VarDecl(datatype, ident) -> (SVarDecl(datatype, ident), env)
+	VarDecl(datatype, ident) -> (SVarDecl(datatype, (ident, get_var_scope env
+    ident)), env)
 	| VarAssignDecl(datatype, ident, value) -> 
 		let sv = get_sval env value in
-	(SVarAssignDecl(datatype, ident, sv), env)
+	(SVarAssignDecl(datatype, (ident, get_var_scope env ident), sv), env)
 
 let get_name_type_from_decl decl = match decl with
 	VarDecl(datatype, ident) -> (ident, datatype)
@@ -353,7 +366,7 @@ let initialize_globals (globals, env) decl =
 				VarDecl(datatype,ident) ->
 		        	let (name,ty,_) = get_name_type_from_var env decl in
 		            let new_env = add_to_global_table env name ty None in
-		            (SVarDecl(datatype,ident)::globals, new_env)
+		            (SVarDecl(datatype,(ident,Global))::globals, new_env)
 				| VarAssignDecl(dt, id, value) ->
 					let t1 = get_type_from_datatype(dt) and t2 = get_type_from_datatype(get_datatype_from_val env value) in
 					if(t1=t2) then
@@ -378,7 +391,7 @@ let rec check_stmt env stmt = match stmt with
 		let revst = List.rev st in
 		(SBlock(revst),ls)
 	| Expr(e) -> 
-		let ty = check_expr env e in (SSExpr(SExpr(e,ty)),env)
+		(SSExpr(get_sexpr env e),env)
 	| Return(e) ->
 		let type1=check_expr env e in
 		(if not(type1=Datatype(env.return_type)) then
@@ -444,7 +457,7 @@ let rec check_stmt env stmt = match stmt with
 			raise (Error("Mismatched type assignments"));
 		let sexpr = get_sexpr env expr in
 		let new_env = update_variable env (ident,dt,Some((ExprVal(expr)))) in
-		(SAssign(ident, sexpr), new_env)
+		(SAssign((ident, get_var_scope env ident), sexpr), new_env)
 	| Ast.ArrAssign(ident, expr_list) ->
 		(* make sure 1) array exists and 2) all types in expr list are equal *)
 		let (n,dt,v) = try find_variable env ident with Not_found -> raise (Error("Undeclared array")) in
@@ -458,7 +471,7 @@ let rec check_stmt env stmt = match stmt with
 			let t1=get_type_from_datatype(check_expr env (List.hd expr_list)) and t2=get_type_from_datatype(dt) in
 			if(t1!=t2) then raise (Error("Type Mismatch")) in
 		let new_env = update_variable env (n,dt,(Some(ArrVal(expr_list)))) in
-		(SArrAssign(ident, sexpr_list), new_env)
+		(SArrAssign((ident,get_var_scope env ident), sexpr_list), new_env)
 	| Ast.ArrElemAssign(ident, i, expr2) ->
 		(* Make sure
 			1) array exists (if it exists, then it was already declared and semantically checked)
@@ -476,7 +489,7 @@ let rec check_stmt env stmt = match stmt with
 		(* since arrays are not mutable, we have to replace the entire array *)
 		let new_list = update_list expr_list i expr2 in
 		let new_env = update_variable env (id, dt, Some(ArrVal(new_list))) in
-		(SArrElemAssign(ident, i, get_sexpr env expr2), new_env)
+		(SArrElemAssign((ident,get_var_scope env ident), i, get_sexpr env expr2), new_env)
 	| Terminate -> (STerminate, env)
 
 (* Semantic checking on a function*)
