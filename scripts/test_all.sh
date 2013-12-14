@@ -5,19 +5,22 @@ COMPFILE="temp_test"
 
 for TESTFILE in ../tests/*.sl;
 do
-	echo "testing $TESTFILE"
+ 	echo "	TESTING $TESTFILE"
 	OUTFILENAME="${TESTFILE:0:-3}.output"
 	TESTFILENAME="${TESTFILE:0:-3}.out"
 	"$COMPILER" < "$TESTFILE"
 	g++ output.cpp -o "$COMPFILE"
 	./"$COMPFILE" > "$OUTFILENAME"
-	RESULTS=`./"$COMPFILE"`
-	printf "$RESULTS" > "$OUTFILENAME"
+	#RESULTS=`./"$COMPFILE"`
+	#RESULTS+="\n"
+	#printf "$RESULTS" > "$OUTFILENAME"
 	if (diff "$OUTFILENAME" "$TESTFILENAME") 
 	then
-		echo "$OUTFILENAME matches $TESTFILENAME"
+		#echo "$OUTFILENAME matches $TESTFILENAME"
+		echo "		OK"
 	else
-		echo "$OUTFILENAME does not match $TESTFILENAME"
+		#echo "$OUTFILENAME does not match $TESTFILENAME"
+		echo "		BAD!"
 	fi
 	rm "$OUTFILENAME" output.cpp "$COMPFILE"
 done
