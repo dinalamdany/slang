@@ -19,12 +19,12 @@ and sexpr =
     | SFloatLit of float * datatype
     | SStringLit of string * datatype
     | SVariable of sident * datatype
-    | SUnop of unop * expr * datatype
-    | SBinop of expr * binop * expr * datatype
+    | SUnop of unop * sexpr * datatype
+    | SBinop of sexpr * binop * sexpr * datatype
     | SArrElem of sident * int * datatype
-    | SExprAssign of sident * expr * datatype
-    | SCast of datatype * expr * datatype
-    | SCall of sident * expr list * datatype
+    | SExprAssign of sident * sexpr * datatype
+    | SCast of datatype * sexpr * datatype
+    | SCall of sident * sexpr list * datatype
 
 type sdecl =
 	SVarDecl of datatype * sident (* put these inside decl_list for each timeblock *)

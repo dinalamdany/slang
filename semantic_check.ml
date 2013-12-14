@@ -189,12 +189,13 @@ let rec get_sexpr env e = match e with
       | FloatLit(f) -> SFloatLit(f,Datatype(Float))
       | StringLit(s) -> SStringLit(s,Datatype(String))
       | Variable(id) -> SVariable((id, get_var_scope env id), check_expr env e)
-      | Unop(u,ex) -> SUnop(u, ex, check_expr env e)
-      | Binop(e1,b,e2) -> SBinop(e1,b,e2,check_expr env e) 
+      | Unop(u,ex) -> SUnop(u, get_sexpr env ex, check_expr env e)
+      | Binop(e1,b,e2) -> SBinop(get_sexpr env e1,b,get_sexpr env e2,check_expr env e) 
       | ArrElem(id,index) -> SArrElem((id, get_var_scope env id),index, check_expr env e)  
-      | ExprAssign(id,ex) -> SExprAssign((id, get_var_scope env id), ex,check_expr env e) 
-      | Cast(ty,ex) -> SCast(ty,ex,ty)
-      | Call(id, ex_list) -> SCall((id,get_var_scope env id),ex_list, check_expr env e) 
+      | ExprAssign(id,ex) -> SExprAssign((id, get_var_scope env id), get_sexpr env ex,check_expr env e) 
+      | Cast(ty,ex) -> SCast(ty,get_sexpr env ex,ty)
+      | Call(id, ex_list) -> let s_ex_list = List.map (fun exp -> get_sexpr
+      env exp) ex_list in (SCall((id,get_var_scope env id),s_ex_list, check_expr env e)) 
 
 (* Make sure a list contains all items of only a single type; returns (sexpr list, type in list) *)
 (* TODO: don't know if this compiles *)
