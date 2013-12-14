@@ -179,7 +179,7 @@ and gen_sdecl sdecl lcl_prefix = match sdecl with
 and gen_svalue datatype svalue sident lcl_prefix = match svalue with
   SExprVal(sexpr) -> lcl_prefix ^ gen_plain_sid sident ^
     " = " ^ gen_sexpr sexpr lcl_prefix ^ ";\n"
-| SArrVal(sexpr_list) -> lcl_prefix ^ gen_plain_sid sident ^ ".clear();\n" ^
+| SArrVal(sexpr_list) -> gen_sid sident lcl_prefix ^ ".clear();\n" ^
      (gen_array_sexpr_list sexpr_list sident lcl_prefix) ^ ";\n"
 
 (*semicolon and newline handled in gen_decl since array decl assignment is actually vector push_back*)
@@ -197,8 +197,8 @@ and gen_value datatype value ident prefix = match value with
 
 and gen_array_sexpr_list sexpr_list sident lcl_prefix = match sexpr_list with
  [] -> ""
-| h::[] -> lcl_prefix ^ gen_plain_sid sident ^ ".push_back(" ^ gen_sexpr h lcl_prefix ^");\n"
-| h::t -> lcl_prefix ^ gen_plain_sid sident ^ ".push_back(" ^ gen_sexpr h lcl_prefix
+| h::[] -> gen_sid sident lcl_prefix ^ ".push_back(" ^ gen_sexpr h lcl_prefix ^");\n"
+| h::t -> gen_sid sident lcl_prefix ^ ".push_back(" ^ gen_sexpr h lcl_prefix
   ^ ");\n" ^ (gen_array_sexpr_list t sident lcl_prefix)
 
 and gen_array_expr_list expr_list ident prefix = match expr_list with
