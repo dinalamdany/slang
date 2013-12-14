@@ -4,3 +4,7 @@
 parser.mli
 parser.ml
 scanner.ml
+a.out
+compiler_v3
+gen_cpp
+scripts/output.cpp
