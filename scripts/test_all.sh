@@ -1,9 +1,10 @@
 #!/bin/bash
 #script that calls all other scripts
-
-for SCRIPT in *.sh;
+COMPILER="../compiler_v3"
+"g++ output.cpp"
+for TESTFILE in ../tests/*.sl;
 do
-	if [ "$SCRIPT" != "test_all.sh" ]; then
-		./"$SCRIPT"
-	fi
+	echo "$TESTFILE"
+	"$COMPILER" < "$TESTFILE"
+
 done
