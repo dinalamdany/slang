@@ -1,4 +1,5 @@
 open Ast
+open Sast
 
 type name =
     Time_struct_name of string
@@ -13,7 +14,7 @@ type main = (*two link lists, init objects and always objects stored in struct_o
     Main of struct_obj list * link list * link list
 
 type structure =
-    Time_struct of name * int * link * stmt list
+    Time_struct of name * int * link * sstmt list
 
 type time_block =
     Time_block of link * decl list * structure list (*struct list counts the number of blocks *)

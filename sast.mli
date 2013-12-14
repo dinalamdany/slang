@@ -7,7 +7,7 @@ type scope =
     | Local
 
 type sident =
-    ident * scope
+    SIdent of ident * scope
 
 type sval = 
 	SExprVal of  sexpr

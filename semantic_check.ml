@@ -188,13 +188,13 @@ let rec get_sexpr env e = match e with
       | BoolLit(b) -> SBoolLit(b,Datatype(Boolean))
       | FloatLit(f) -> SFloatLit(f,Datatype(Float))
       | StringLit(s) -> SStringLit(s,Datatype(String))
-      | Variable(id) -> SVariable((id, get_var_scope env id), check_expr env e)
+      | Variable(id) -> SVariable(SIdent(id, get_var_scope env id), check_expr env e)
       | Unop(u,ex) -> SUnop(u, ex, check_expr env e)
       | Binop(e1,b,e2) -> SBinop(e1,b,e2,check_expr env e) 
-      | ArrElem(id,index) -> SArrElem((id, get_var_scope env id),index, check_expr env e)  
-      | ExprAssign(id,ex) -> SExprAssign((id, get_var_scope env id), ex,check_expr env e) 
+      | ArrElem(id,index) -> SArrElem(SIdent(id, get_var_scope env id),index, check_expr env e)  
+      | ExprAssign(id,ex) -> SExprAssign(SIdent(id, get_var_scope env id), ex,check_expr env e) 
       | Cast(ty,ex) -> SCast(ty,ex,ty)
-      | Call(id, ex_list) -> SCall((id,get_var_scope env id),ex_list, check_expr env e) 
+      | Call(id, ex_list) -> SCall(SIdent(id,get_var_scope env id),ex_list, check_expr env e) 
 
 (* Make sure a list contains all items of only a single type; returns (sexpr list, type in list) *)
 (* TODO: don't know if this compiles *)
@@ -228,10 +228,10 @@ let get_datatype_from_val env = function
 (* TODO: complete this like get_sexpr *)
 let get_sdecl env decl = match decl with
 	(* if ident is in env, return typed sdecl *)
-	VarDecl(datatype, ident) -> (SVarDecl(datatype, (ident, Local)), env)
+	VarDecl(datatype, ident) -> (SVarDecl(datatype, SIdent(ident, Local)), env)
 	| VarAssignDecl(datatype, ident, value) -> 
 		let sv = get_sval env value in
-	(SVarAssignDecl(datatype, (ident, Local), sv), env)
+	(SVarAssignDecl(datatype, SIdent(ident, Local), sv), env)
 
 let get_name_type_from_decl decl = match decl with
 	VarDecl(datatype, ident) -> (ident, datatype)
@@ -366,13 +366,13 @@ let initialize_globals (globals, env) decl =
 				VarDecl(datatype,ident) ->
 		        	let (name,ty,_) = get_name_type_from_var env decl in
 		            let new_env = add_to_global_table env name ty None in
-		            (SVarDecl(datatype,(ident,Global))::globals, new_env)
+		            (SVarDecl(datatype,SIdent(ident,Global))::globals, new_env)
 				| VarAssignDecl(dt, id, value) ->
 					let t1 = get_type_from_datatype(dt) and t2 = get_type_from_datatype(get_datatype_from_val env value) in
 					if(t1=t2) then
 						let (n, t, v) = get_name_type_val_from_decl decl in
 						let new_env = add_to_global_table env n t v in
-						(SVarAssignDecl(dt,(id,Global),get_sval env value)::globals, new_env)
+						(SVarAssignDecl(dt,SIdent(id,Global),get_sval env value)::globals, new_env)
 					else raise (Error("Type mismatch"))
 				else
 					raise (Error("Multiple declarations")) in ret
@@ -456,7 +456,7 @@ let rec check_stmt env stmt = match stmt with
 			raise (Error("Mismatched type assignments"));
 		let sexpr = get_sexpr env expr in
 		let new_env = update_variable env (ident,dt,Some((ExprVal(expr)))) in
-		(SAssign((ident, get_var_scope env ident), sexpr), new_env)
+		(SAssign(SIdent(ident, get_var_scope env ident), sexpr), new_env)
 	| Ast.ArrAssign(ident, expr_list) ->
 		(* make sure 1) array exists and 2) all types in expr list are equal *)
 		let (n,dt,v) = try find_variable env ident with Not_found -> raise (Error("Undeclared array")) in
@@ -470,7 +470,7 @@ let rec check_stmt env stmt = match stmt with
 			let t1=get_type_from_datatype(check_expr env (List.hd expr_list)) and t2=get_type_from_datatype(dt) in
 			if(t1!=t2) then raise (Error("Type Mismatch")) in
 		let new_env = update_variable env (n,dt,(Some(ArrVal(expr_list)))) in
-		(SArrAssign((ident,get_var_scope env ident), sexpr_list), new_env)
+		(SArrAssign(SIdent(ident,get_var_scope env ident), sexpr_list), new_env)
 	| Ast.ArrElemAssign(ident, i, expr2) ->
 		(* Make sure
 			1) array exists (if it exists, then it was already declared and semantically checked)
@@ -488,7 +488,7 @@ let rec check_stmt env stmt = match stmt with
 		(* since arrays are not mutable, we have to replace the entire array *)
 		let new_list = update_list expr_list i expr2 in
 		let new_env = update_variable env (id, dt, Some(ArrVal(new_list))) in
-		(SArrElemAssign((ident,get_var_scope env ident), i, get_sexpr env expr2), new_env)
+		(SArrElemAssign(SIdent(ident,get_var_scope env ident), i, get_sexpr env expr2), new_env)
 	| Terminate -> (STerminate, env)
 
 let get_sstmt_list env stmt_list = 

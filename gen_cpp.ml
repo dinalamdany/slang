@@ -102,6 +102,26 @@ let rec gen_expr expr prefix = match expr with
     then "std::cout << "^ gen_expr_list expr_list prefix ^ "std::endl"
     else prefix ^ gen_id ident ^ "(" ^ gen_expr_list expr_list prefix ^ ")"
 
+and gen_sstmt sstmt lcl_prefix = match sstmt with
+  SBlock(sstmt_list) -> "{\n" ^ gen_sstmt_list sstmt_list  lcl_prefix ^ "\n}\n"
+| SSExpr(sexpr) -> gen_sexpr sexpr lcl_prefix ^ ";\n"
+| SReturn(sexpr) -> "return " ^ gen_sexpr sexpr lcl_prefix ^ ";\n"
+| SIf(sexpr, sstmt1, sstmt2) -> "if (" ^ gen_sexpr sexpr lcl_prefix ^
+   ")\n" ^ gen_sstmt sstmt1 lcl_prefix ^ "else " ^ gen_sstmt sstmt2 lcl_prefix
+| SFor(sexpr1, sexpr2, sexpr3, sstmt) ->"for (" ^ gen_sexpr sexpr1 lcl_prefix ^
+   "; "^ gen_sexpr sexpr2 lcl_prefix ^ "; " ^ gen_sexpr sexpr3 lcl_prefix ^ ")\n" ^
+   gen_sstmt sstmt lcl_prefix
+| SWhile(sexpr, sstmt) -> "while (" ^ gen_sexpr sexpr lcl_prefix ^
+   ")\n" ^ gen_sstmt sstmt lcl_prefix ^ ";\n"
+| SDeclaration(sdecl) -> gen_sdecl sdecl lcl_prefix ^ ";\n"
+| SAssign(sident, sexpr) -> gen_sid sident lcl_prefix ^ " = " ^
+   gen_sexpr sexpr lcl_prefix ^ ";\n"
+| SArrAssign(sident, sexpr_list) -> gen_sid sident lcl_prefix ^ ".clear();\n" ^
+     (gen_array_sexpr_list sexpr_list sident lcl_prefix) ^ ";\n"
+| SArrElemAssign(sident, i, sexpr) -> gen_sid sident lcl_prefix ^
+    "[" ^ string_of_int i ^ "] = " ^ gen_sexpr sexpr lcl_prefix ^ ";\n"
+| STerminate -> "exit(0)"
+
 (*semicolon and newline handled in gen_stmt because blocks dont have semicolon*)
 and gen_stmt stmt prefix = match stmt with
   Block(stmt_list) -> "{\n" ^ gen_stmt_list stmt_list prefix ^ "\n}\n"
@@ -161,6 +181,11 @@ and gen_formal_list formal_list prefix = match formal_list with
 | h::[] -> gen_formal h prefix
 | h::t -> gen_formal h prefix ^ ", " ^ gen_formal_list t prefix
 
+and gen_sstmt_list sstmt_list  lcl_prefix = match sstm_list with
+ [] -> ""
+| h::[] -> gen_sstmt h lcl_prefix
+| h::t -> gen_sstmt h lcl_prefix ^ gen_sstmt_list t lcl_prefix
+
 and gen_stmt_list stmt_list prefix = match stmt_list with
  [] -> ""
 | h::[] -> gen_stmt h prefix
@@ -183,7 +208,7 @@ let rec gen_struct = function
     ") {}\n\tunsigned int get_time() {return time;}\n\t" ^ gen_link link ^
     "_link_ *next;\n\tvoid set_next(" ^ gen_link link ^
     "_link_ *n) {next = n;};\n\t" ^ "void foo() {\n\t" ^
-    gen_stmt_list stmt_list (gen_link link) ^ "\n\t" ^
+    gen_sstmt_list sstmt_list (gen_link link) ^ "\n\t" ^
     gen_link link ^ "_time += next->get_time();\n\t" ^
     "event_q.add(" ^ gen_link link ^ "_time, next);\n\t}\n};"
 
@@ -244,8 +269,8 @@ let gen_main = function
 let gen_program = function
   Pretty_c(global_decl_list, global_func_list, time_block_list, main) ->
   header ^
-  gen_decl_list global_decl_list prefix_global_var ^
   gen_func_list global_func_list prefix_global_var ^
+  gen_decl_list global_decl_list prefix_global_var ^
   gen_time_block_list time_block_list ^ "\nint main() {\n\t" ^
   gen_main main ^
   code_event_list_do ^ "return 0;\n}"
