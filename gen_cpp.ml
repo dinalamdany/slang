@@ -182,7 +182,7 @@ let rec gen_struct = function
     gen_name name ^ "() : time(" ^ string_of_int i ^
     ") {}\n\tunsigned int get_time() {return time;}\n\t" ^ gen_link link ^
     "_link_ *next;\n\tvoid set_next(" ^ gen_link link ^
-    "_link_ *n) {next = n;};\n\t" ^ "void foo() {\n" ^
+    "_link_ *n) {next = n;};\n\t" ^ "void foo() {\n\t" ^
     gen_stmt_list stmt_list (gen_link link) ^ "\n\t" ^
     gen_link link ^ "_time += next->get_time();\n\t" ^
     "event_q.add(" ^ gen_link link ^ "_time, next);\n\t}\n};"
