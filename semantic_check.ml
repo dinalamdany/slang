@@ -355,9 +355,13 @@ let empty_environment = {return_type = Void; return_seen = false; location="main
               | Some(value) -> (SVarAssignDecl(datatype, ident, get_sval env value)::globals, new_env)
               | None -> raise (Error("Cannot access unitialized value")) ) *)
 
+let find_global_variable env name = 
+	try List.find (fun (s,_,_) -> s=name) env.global_scope.variables
+	with Not_found -> raise Not_found
+
 let initialize_globals (globals, env) decl = 
 	let (name, ty) = get_name_type_from_decl decl in
-		let ((_,dt,_),found) = try (fun f -> ((f env name),true)) find_variable with 
+		let ((_,dt,_),found) = try (fun f -> ((f env name),true)) find_global_variable with 
 			Not_found ->
 				((name,ty,None),false) in
 		let ret = if(found=false) then
@@ -375,6 +379,10 @@ let initialize_globals (globals, env) decl =
 					else raise (Error("Type mismatch"))
 				else
 					raise (Error("Multiple declarations")) in ret
+
+let find_local_variable env name = 
+	try List.find (fun (s,_,_) -> s=name) env.var_scope.variables
+	with Not_found -> raise Not_found
 
 (*Semantic checking on a stmt*)
 let rec check_stmt env stmt = match stmt with
@@ -423,7 +431,7 @@ let rec check_stmt env stmt = match stmt with
 		(* If variable is found, multiple decls error
 			If variable is not found and var is assigndecl, check for type compat *)
 		let (name, ty) = get_name_type_from_decl decl in
-		let ((_,dt,_),found) = try (fun f -> ((f env name),true)) find_variable with 
+		let ((_,dt,_),found) = try (fun f -> ((f env name),true)) find_local_variable with 
 			Not_found ->
 				((name,ty,None),false) in
 		let ret = if(found=false) then
