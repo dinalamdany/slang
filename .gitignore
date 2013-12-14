@@ -8,3 +8,4 @@ a.out
 compiler_v3
 gen_cpp
 scripts/output.cpp
+output.cpp
