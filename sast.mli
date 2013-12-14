@@ -16,9 +16,6 @@ type sdecl =
 	(* There is no way to work with arrays with the following *)
 	(* | SVarAssignDecl of datatype * ident * sexpr *)
 
-type sfunc_decl =
-	Func_Decl of func_decl * datatype
-
 type sstmt = 
 	SBlock of sstmt list
 	| SSExpr of sexpr
@@ -32,6 +29,16 @@ type sstmt =
 	| SArrAssign of ident * sexpr list
 	| SArrElemAssign of ident * int * sexpr
 	| STerminate 
+
+type sfuncstr = {
+  sreturn: datatype;
+  sfname : ident;
+  sformals : formal list;
+  sbody : sstmt list;
+}
+
+type sfunc_decl =
+	SFunc_Decl of sfuncstr * datatype
 
 type sevent = 
     SEvent of int * sstmt list
