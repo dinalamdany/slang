@@ -23,8 +23,8 @@ let code_event_list = "struct "^ prefix_event_list ^
   "\n\t\tfor (it = event_q.begin(); it != event_q.end(); it++) " ^
   "{\n\t\t\tif ((*it)->get_time() > time_) {\n\t\t\t\t" ^
   "event_q.insert(it, obj_);\n\t\t\t\teol = false;\n\t\t\t\tbreak;" ^
-  "\n\t\t\t}\n\t\t}\n\t\tif (eol) {\n\t\t\tevent_q.push_back(obj_);" ^
-  "\n\t\t}\n\t}\n\tprivate:\n\t\tstd::deque<" ^
+  "\n\t\t\t}\n\t\t}\n\t\tif (eol)\n\t\t\tevent_q.push_back(obj_);" ^
+  "\n\t}\n\tprivate:\n\t\tstd::deque<" ^
   prefix_event ^ "*> event_q;\n};\n" ^ prefix_event_list ^ " event_q;\n\n"
 let code_directives = "#include <iostream>\n#include <string>\n#include <deque>\n#include <vector>\n#include <cstdlib>\n"
 let code_event_list_do = "while(!event_q.empty()) {\n\tevent_q.pop()->foo();\n\t}\n"
