@@ -1,10 +1,10 @@
 #!/bin/bash
 #script that calls all other scripts
-
+COMPILER="../compiler_v3"
+"g++ output.cpp"
 for TESTFILE in ../tests/*.sl;
 do
-	if [ "$TESTFILE" != "test_all.sh" ]; then
-		./"$TESTFILE"
-	fi
 	echo "$TESTFILE"
+	"$COMPILER" < "$TESTFILE"
+
 done
