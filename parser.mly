@@ -122,7 +122,6 @@ stmt:
     | ID ASSIGN expr SEMI { Assign(Ident($1), $3) }
 
  expr_opt:
-    /* nothing */ { Noexpr }
     | ID ASSIGN expr { ExprAssign(Ident($1),$3)}
     | expr {$1}
 
