@@ -1,4 +1,5 @@
 open Ast
+open Sast
 open Printf
 open Pretty_c
 open Type
@@ -32,6 +33,16 @@ let header = code_directives^code_event_base^code_event_list
 
 let gen_id = function
   Ident(id) -> id
+
+let gen_sid_prefix scope lcl_prefix = match scope with
+  Global -> prefix_global_var
+| Local -> lcl_prefix
+
+let gen_sid sident lcl_prefix = match sident with
+  SIdent(sid, scope) -> gen_sid_prefix scope lcl_prefix ^ gen_id sid
+
+let gen_plain_sid sident = match sident with
+  SIdent(sid, scope) -> gen_id sid
 
 let gen_name = function
   Time_struct_name(s) -> s
@@ -85,6 +96,24 @@ let rec gen_plain_datatype = function
 let rec gen_formal formal prefix = match formal with
   Formal(datatype, id) -> gen_datatype datatype ^ " " ^ prefix ^ gen_id id
 
+let rec gen_sexpr sexpr lcl_prefix = match sexpr with
+  SIntLit(i, d) -> string_of_int i
+| SBoolLit(b, d) -> string_of_bool b
+| SFloatLit(f, d) -> string_of_float f
+| SStringLit(s, d) -> "\"" ^ s ^ "\""
+| SVariable(sident, d) -> gen_sid sident lcl_prefix
+| SUnop(unop, sexpr, d) -> gen_unop unop ^ "(" ^ gen_sexpr sexpr lcl_prefix ^ ")"
+| SBinop(sexpr1, binop, sexpr2, d) -> gen_sexpr sexpr1 lcl_prefix ^ gen_binop binop ^
+    gen_sexpr sexpr2 lcl_prefix
+| SArrElem(sident, i, d) -> gen_sid sident lcl_prefix^ "[" ^ string_of_int i ^ "]"
+| SExprAssign(sident, sexpr, d) -> gen_sid sident lcl_prefix^ " = " ^
+    gen_sexpr sexpr lcl_prefix
+| SCast(datatype, sexpr, d) -> "(" ^ gen_datatype datatype^ ") " ^
+    gen_sexpr sexpr lcl_prefix
+| SCall(sident, sexpr_list, d) -> if ((gen_plain_sid sident) = print)
+    then "std::cout << "^ gen_sexpr_list sexpr_list lcl_prefix ^ "std::endl"
+    else gen_sid ident lcl_prefix ^ "(" ^ gen_sexpr_list sexpr_list lcl_prefix ^ ")"
+
 let rec gen_expr expr prefix = match expr with
   IntLit(i) -> string_of_int i
 | BoolLit(b) -> string_of_bool b
@@ -95,7 +124,6 @@ let rec gen_expr expr prefix = match expr with
 | Binop(expr1, binop, expr2) -> gen_expr expr1 prefix ^ gen_binop binop ^
     gen_expr expr2 prefix
 | ArrElem(ident, i) -> prefix ^ gen_id ident ^ "[" ^ string_of_int i ^ "]"
-| Noexpr -> ""
 | ExprAssign(ident, expr) -> prefix ^ gen_id ident ^ " = " ^ gen_expr expr prefix
 | Cast(datatype, expr) -> "(" ^ gen_datatype datatype^ ") " ^ gen_expr expr prefix
 | Call(ident, expr_list) -> if ((gen_id ident) = print)
@@ -142,6 +170,18 @@ and gen_stmt stmt prefix = match stmt with
     "[" ^ string_of_int i ^ "] = " ^ gen_expr expr prefix ^ ";\n"
 | Terminate -> "exit(0)"
 
+(*gen_sdecl only appears within time blocks, VarDecls are ignored*)
+and gen_sdecl sdecl lcl_prefix = match sdecl with
+  SVarDecl(datatype, sid) -> ""
+| SVarAssignDecl(datatype, sident, svalue) -> gen_value datatype svalue sident lcl_prefix
+
+(*gen_svalue only appears within time blocks declartions, assume all local*)
+and gen_svalue datatype svalue sident lcl_prefix = match svalue with
+  SExprVal(expr) -> lcl_prefix ^ gen_plain_sid sident ^
+    " = " ^ gen_sexpr sexpr lcl_prefix ^ ";\n"
+| SArrVal(expr_list) -> lcl_prefix ^ gen_plain_sid sident ^ ".clear();\n" ^
+     (gen_array_sexpr_list sexpr_list sident lcl_prefix) ^ ";\n"
+
 (*semicolon and newline handled in gen_decl since array decl assignment is actually vector push_back*)
 and gen_decl decl prefix = match decl with
   VarDecl(datatype, id) -> gen_datatype datatype ^ " " ^ prefix ^ gen_id id  ^ ";\n"
@@ -154,6 +194,12 @@ and gen_value datatype value ident prefix = match value with
     gen_datatype datatype ^ prefix ^ gen_id ident ^"( " ^ prefix_array ^ gen_id ident ^ ", " ^
     prefix_array ^ gen_id ident ^ "+sizeof(" ^ prefix_array ^ gen_id ident ^
     ")/sizeof(" ^ prefix_array ^ gen_id ident ^ "[0]) );\n"
+
+and gen_array_sexpr_list sexpr_list sident lcl_prefix = match sexpr_list with
+ [] -> ""
+| h::[] -> lcl_prefix ^ gen_plain_sid sident ^ ".push_back(" ^ gen_sexpr h lcl_prefix ^");\n"
+| h::t -> lcl_prefix ^ gen_plain_sid sident ^ ".push_back(" ^ gen_sexpr h lcl_prefix
+  ^ ");\n" ^ (gen_array_sexpr_list t sident lcl_prefix)
 
 and gen_array_expr_list expr_list ident prefix = match expr_list with
  [] -> ""
@@ -190,6 +236,11 @@ and gen_stmt_list stmt_list prefix = match stmt_list with
  [] -> ""
 | h::[] -> gen_stmt h prefix
 | h::t -> gen_stmt h prefix ^ gen_stmt_list t prefix
+
+and gen_sexpr_list sexpr_list lcl_prefix = match sexpr_list with
+ [] -> ""
+| h::[] -> gen_sexpr h lcl_prefix
+| h::t -> gen_sexpr h lcl_prefix ^ ", " ^ gen_sexpr_list t lcl_prefix
 
 and gen_expr_list expr_list prefix = match expr_list with
  [] -> ""
