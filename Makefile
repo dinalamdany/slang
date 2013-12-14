@@ -13,6 +13,8 @@ compile:
 	ocamlc -c semantic_check.ml
 	ocamlc -c pretty_c.mli
 	ocamlc -c pretty_c_gen.ml
+	ocamlc -c gen_cpp.ml
+	ocamlc -c compiler_v3.ml
 
 COMPILEROBJS = parser.cmo scanner.cmo semantic_check.cmo pretty_c_gen.cmo gen_cpp.cmo compiler_v3.cmo
 
