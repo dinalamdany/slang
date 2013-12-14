@@ -538,6 +538,7 @@ let check_event (typed_events, env) event =
 let check_program program =
 	let (functions,(globals,threads)) = program in
 	let env = empty_environment in
+	let env.fun_scope = env.func_scope :: {print,String, [s],[]} in 
 	let (typed_functions, new_env) = initialize_functions env functions in
 	let (typed_globals, new_env2) = List.fold_left(fun (new_globals,env)
              globals -> initialize_globals (new_globals, env) globals) ([], env) globals in
