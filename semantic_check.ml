@@ -165,6 +165,8 @@ let rec check_expr env e = match e with
         check_expr env e 
         in (if not (t1 = t2) then (raise (Error("Mismatch in types for assignment")))); check_expr env e
     | Cast(ty, e) -> ty
+	| Call(Ident("print"),e) -> let _ = List.map(fun exp -> check_expr env exp) e in
+				Datatype(Void)
     | Call(id, e) -> try (let (fname, fret, fargs, fbody)  = find_function env.fun_scope id in
                 let el_tys = List.map (fun exp -> check_expr env exp) e in
                 let fn_tys = List.map (fun farg-> let (_,ty,_) = get_name_type_from_formal env farg in ty) fargs in
@@ -195,6 +197,8 @@ let rec get_sexpr env e = match e with
       | ExprAssign(id,ex) -> SExprAssign(SIdent(id, get_var_scope env id),
       get_sexpr env ex,check_expr env e) 
       | Cast(ty,ex) -> SCast(ty,get_sexpr env ex,ty)
+	  | Call(Ident("print"),ex_list) -> let s_ex_list = List.map(fun exp -> get_sexpr env exp) ex_list 
+	  in SCall(SIdent(Ident("print"),Global),s_ex_list,check_expr env e)
       | Call(id, ex_list) -> let s_ex_list = List.map(fun exp -> get_sexpr env
       exp) ex_list in SCall(SIdent(id,get_var_scope env id),s_ex_list, check_expr env e) 
 
@@ -333,7 +337,7 @@ let check_final_env env =
 
 (* Default Table and Environment Initializations *)
 let empty_table_initialization = {parent=None; variables =[];}
-let empty_function_table_initialization = {functions=[(Ident("print"), Void, [Formal(Datatype(String), Ident("s"))],[])]}
+let empty_function_table_initialization = {functions=[(Ident("print_string"), Void, [Formal(Datatype(String), Ident("s"))],[]);(Ident("print_int"),Void,[Formal(Datatype(Int),Ident("s"))],[])]}
 let empty_environment = {return_type = Void; return_seen = false; location="main"; global_scope = empty_table_initialization; var_scope = empty_table_initialization; fun_scope = empty_function_table_initialization}
 
 (*Add functions to the environment *)
