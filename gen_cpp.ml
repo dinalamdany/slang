@@ -4,6 +4,7 @@ open Pretty_c
 open Type
 
 let print = "print"
+let prefix_array = "a_"
 let prefix_global_var = "u_"
 let prefix_event = "event_"
 let prefix_event_list = "event_q_"
@@ -23,7 +24,7 @@ let code_event_list = "struct "^ prefix_event_list ^
   "event_q.insert(it, obj_);\n\t\t\t\teol = false;\n\t\t\t\tbreak;" ^
   "\n\t\t\t}\n\t\t}\n\t\tif (eol) {\n\t\t\tevent_q.push_back(obj_);" ^
   "\n\t\t}\n\t}\n\tprivate:\n\t\tstd::deque<" ^
-  prefix_event ^ "*> event_q;\n};\n" ^ prefix_event_list ^ " event_q;"
+  prefix_event ^ "*> event_q;\n};\n" ^ prefix_event_list ^ " event_q;\n\n"
 let code_directives = "#include <iostream>\n#include <string>\n#include <deque>\n#include <vector>\n#include <cstdlib>\n"
 let code_event_list_do = "while(!event_q.empty()) {\n\tevent_q.pop()->foo();\n\t}\n"
 let header = code_directives^code_event_base^code_event_list
@@ -66,9 +67,20 @@ let gen_var_type = function
 | Boolean -> "bool"
 | Void -> "void"
 
+let gen_plain_var_type = function
+  Int -> "int"
+| Float -> "float"
+| String -> "char *"
+| Boolean -> "bool"
+| Void -> "void"
+
 let rec gen_datatype = function
   Datatype(var_type) -> gen_var_type var_type
 | Arraytype(datatype) -> "std::vector<" ^ gen_datatype datatype ^ ">"
+
+let rec gen_plain_datatype = function
+  Datatype(var_type) -> gen_plain_var_type var_type
+| Arraytype(datatype) -> gen_plain_datatype datatype
 
 let rec gen_formal formal prefix = match formal with
   Formal(datatype, id) -> gen_datatype datatype ^ " " ^ prefix ^ gen_id id
@@ -113,12 +125,15 @@ and gen_stmt stmt prefix = match stmt with
 (*semicolon and newline handled in gen_decl since array decl assignment is actually vector push_back*)
 and gen_decl decl prefix = match decl with
   VarDecl(datatype, id) -> gen_datatype datatype ^ " " ^ prefix ^ gen_id id  ^ ";\n"
-| VarAssignDecl(datatype, ident, value) ->  gen_datatype datatype ^ " " ^ prefix ^
-    gen_id ident ^ (gen_value value ident prefix)
+| VarAssignDecl(datatype, ident, value) -> gen_value datatype value ident prefix
 
-and gen_value value ident prefix = match value with
-  ExprVal(expr) -> " = " ^ gen_expr expr prefix ^ ";\n"
-| ArrVal(expr_list) -> ";\n" ^ (gen_array_expr_list expr_list ident prefix)
+and gen_value datatype value ident prefix = match value with
+  ExprVal(expr) -> gen_datatype datatype ^ " " ^ prefix ^ gen_id ident ^ " = " ^ gen_expr expr prefix ^ ";\n"
+| ArrVal(expr_list) -> "const " ^ gen_plain_datatype datatype ^ " " ^
+    prefix_array ^ gen_id ident ^ "[] = {"^ gen_expr_list expr_list prefix ^ "};\n" ^
+    gen_datatype datatype ^ prefix ^ gen_id ident ^"( " ^ prefix_array ^ gen_id ident ^ ", " ^
+    prefix_array ^ gen_id ident ^ "+sizeof(" ^ prefix_array ^ gen_id ident ^
+    ")/sizeof(" ^ prefix_array ^ gen_id ident ^ "[0]) );\n"
 
 and gen_array_expr_list expr_list ident prefix = match expr_list with
  [] -> ""
@@ -153,8 +168,8 @@ and gen_stmt_list stmt_list prefix = match stmt_list with
 
 and gen_expr_list expr_list prefix = match expr_list with
  [] -> ""
-| h::[] -> prefix ^ gen_expr h prefix
-| h::t -> prefix ^ gen_expr h prefix ^ ", " ^ gen_expr_list t prefix
+| h::[] -> gen_expr h prefix
+| h::t -> gen_expr h prefix ^ ", " ^ gen_expr_list t prefix
 
 let gen_time_block_header link =
   "unsigned int " ^ link ^ "_time = 0;\nstruct " ^ link ^
@@ -168,7 +183,7 @@ let rec gen_struct = function
     ") {}\n\tunsigned int get_time() {return time;}\n\t" ^ gen_link link ^
     "_link_ *next;\n\tvoid set_next(" ^ gen_link link ^
     "_link_ *n) {next = n;};\n\t" ^ "void foo() {\n" ^
-    gen_stmt_list stmt_list (gen_link link) ^
+    gen_stmt_list stmt_list (gen_link link) ^ "\n\t" ^
     gen_link link ^ "_time += next->get_time();\n\t" ^
     "event_q.add(" ^ gen_link link ^ "_time, next);\n\t}\n};"
 
@@ -177,8 +192,10 @@ and gen_struct_list struct_list = match struct_list with
 | h::[] -> gen_struct h ^ "\n"
 | h::t -> gen_struct h ^ "\n" ^ gen_struct_list t
 
-let rec gen_time_block (link, decl_list, struct_list) =
-  (gen_decl_list decl_list link) ^ gen_time_block_header link ^
+let rec gen_time_block = function
+  Time_block(link, decl_list, struct_list) ->
+  gen_decl_list decl_list (gen_link link) ^
+  gen_time_block_header (gen_link link) ^
   gen_struct_list struct_list 
 
 and gen_time_block_list = function
@@ -188,19 +205,19 @@ and gen_time_block_list = function
 
 let gen_struct_obj = function
   Time_struct_obj(name, link) -> gen_name name ^ " " ^ gen_name name ^ "obj;\n\t" ^
-    gen_link link ^ "_list.push_back(&" ^ gen_name name ^ "obj;)\n\t"
+    gen_link link ^ "_list.push_back(&" ^ gen_name name ^ "obj);\n\t"
 
 let gen_init_linker = function
   Link(s) -> "for (int i = 0; i < " ^ s ^ "_list.size(); i++)\n\t" ^
     "{\n\t\tif (i != " ^ s ^ "_list.size()-1)\n\t\t\t" ^ 
     s ^ "_list[i]->set_next(" ^ s ^ "_list[i+1]);\n\t\telse\n\t\t\t" ^
-    s ^ "_list[i]->set_next(NULL);\n\t}"
+    s ^ "_list[i]->set_next(NULL);\n\t}\n"
 
 let gen_always_linker = function
   Link(s) -> "for (int i = 0; i < " ^ s ^ "_list.size(); i++)\n\t" ^
     "{\n\t\tif (i != " ^ s ^ "_list.size()-1)\n\t\t\t" ^ 
     s ^ "_list[i]->set_next(" ^ s ^ "_list[i+1]);\n\t\telse\n\t\t\t" ^
-    s ^ "_list[i]->set_next(" ^ s ^ "_list[0]);\n\t}"
+    s ^ "_list[i]->set_next(" ^ s ^ "_list[0]);\n\t}\n"
 
 let rec gen_init_linker_list = function
  [] -> ""
@@ -218,12 +235,14 @@ let rec gen_struct_obj_list = function
 | h::t -> gen_struct_obj h ^ gen_struct_obj_list t
 
 (*all arguments are lists*)
-let gen_main (time_block_obj_l, init_link_l, always_link_l) =
+let gen_main = function
+  Main(time_block_obj_l, init_link_l, always_link_l) ->
   gen_struct_obj_list time_block_obj_l ^ 
   gen_init_linker_list init_link_l ^
   gen_always_linker_list always_link_l
 
-let gen_program (global_decl_list, global_func_list, time_block_list, main) =
+let gen_program = function
+  Pretty_c(global_decl_list, global_func_list, time_block_list, main) ->
   header ^
   gen_decl_list global_decl_list prefix_global_var ^
   gen_func_list global_func_list prefix_global_var ^

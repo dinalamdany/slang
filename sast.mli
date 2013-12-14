@@ -2,19 +2,34 @@ open Ast
 open Type
 
 (* added to work with arrays *)
+type scope = 
+    Global
+    | Local
+
+type sident =
+    ident * scope
+
 type sval = 
 	SExprVal of  sexpr
 	| SArrVal of sexpr list
 
 and sexpr = 
-	SExpr of expr * datatype
+    SIntLit of int * datatype 
+    | SBoolLit of bool * datatype
+    | SFloatLit of float * datatype
+    | SStringLit of string * datatype
+    | SVariable of sident * datatype
+    | SUnop of unop * expr * datatype
+    | SBinop of expr * binop * expr * datatype
+    | SArrElem of sident * int * datatype
+    | SExprAssign of sident * expr * datatype
+    | SCast of datatype * expr * datatype
+    | SCall of sident * expr list * datatype
 
 type sdecl =
-	SVarDecl of datatype * ident
+	SVarDecl of datatype * sident (* put these inside decl_list for each timeblock *)
 	(* changed sexpr to svalue *)
-	| SVarAssignDecl of datatype * ident * sval
-	(* There is no way to work with arrays with the following *)
-	(* | SVarAssignDecl of datatype * ident * sexpr *)
+	| SVarAssignDecl of datatype * sident * sval (* v_assignment and put v_decl in timeblock decl_list*)
 
 type sstmt = 
 	SBlock of sstmt list
@@ -24,10 +39,9 @@ type sstmt =
 	| SFor of sexpr * sexpr * sexpr * sstmt
 	| SWhile of sexpr * sstmt
 	| SDeclaration of sdecl
-	| SPropertyAssign of ident * ident * sexpr 
-	| SAssign of ident * sexpr
-	| SArrAssign of ident * sexpr list
-	| SArrElemAssign of ident * int * sexpr
+	| SAssign of sident * sexpr
+	| SArrAssign of sident * sexpr list
+	| SArrElemAssign of sident * int * sexpr
 	| STerminate 
 
 type sfuncstr = {
