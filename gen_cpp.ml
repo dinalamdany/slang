@@ -177,7 +177,7 @@ and gen_sdecl sdecl lcl_prefix = match sdecl with
 
 (*gen_svalue only appears within time blocks declartions, assume all local*)
 and gen_svalue datatype svalue sident lcl_prefix = match svalue with
-  SExprVal(sexpr) -> lcl_prefix ^ gen_plain_sid sident ^ gp
+  SExprVal(sexpr) -> lcl_prefix ^ gen_plain_sid sident ^
     " = " ^ gen_sexpr sexpr lcl_prefix ^ ";\n"
 | SArrVal(sexpr_list) -> lcl_prefix ^ gen_plain_sid sident ^ ".clear();\n" ^
      (gen_array_sexpr_list sexpr_list sident lcl_prefix) ^ ";\n"
@@ -259,7 +259,7 @@ let rec gen_struct = function
     ") {}\n\tunsigned int get_time() {return time;}\n\t" ^ gen_link link ^
     "_link_ *next;\n\tvoid set_next(" ^ gen_link link ^
     "_link_ *n) {next = n;};\n\t" ^ "void foo() {\n\t" ^
-    gen_sstmt_list sstmt_list (gen_link link) ^ "\n\t" ^
+    gen_sstmt_list sstmt_list (gen_link link) ^ "\n\tif(next != NULL)\n\t\t" ^
     gen_link link ^ "_time += next->get_time();\n\t" ^
     "event_q.add(" ^ gen_link link ^ "_time, next);\n\t}\n};"
 
@@ -310,12 +310,22 @@ let rec gen_struct_obj_list = function
 | h::[] -> gen_struct_obj h
 | h::t -> gen_struct_obj h ^ gen_struct_obj_list t
 
+let rec gen_event_q_add_list = function
+[] -> ""
+| h::[] -> gen_event_q_add h
+| h::t -> gen_event_q_add h ^ gen_event_q_add_list t
+
+and gen_event_q_add = function
+  Time_struct_obj(name, link) -> "event_q.add("^ gen_name name ^
+    "obj.get_time(), &" ^ gen_name name ^ "obj);\n\t" 
+
 (*all arguments are lists*)
 let gen_main = function
   Main(time_block_obj_l, init_link_l, always_link_l) ->
   gen_struct_obj_list time_block_obj_l ^ 
   gen_init_linker_list init_link_l ^
-  gen_always_linker_list always_link_l
+  gen_always_linker_list always_link_l ^
+  gen_event_q_add_list time_block_obj_l
 
 let gen_program = function
   Pretty_c(global_decl_list, global_func_list, time_block_list, main) ->
