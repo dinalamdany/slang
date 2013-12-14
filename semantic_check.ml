@@ -17,7 +17,7 @@ type symbol_table = {
 
 (*a function table containing function definitions*)
 type function_table = {
-	functions: (ident * var_type * formal list * stmt list) list
+	functions: (ident * var_type * formal list * sstmt list) list
 }
 
 (*our environment*)
@@ -188,14 +188,15 @@ let rec get_sexpr env e = match e with
       | BoolLit(b) -> SBoolLit(b,Datatype(Boolean))
       | FloatLit(f) -> SFloatLit(f,Datatype(Float))
       | StringLit(s) -> SStringLit(s,Datatype(String))
-      | Variable(id) -> SVariable((id, get_var_scope env id), check_expr env e)
+      | Variable(id) -> SVariable(SIdent(id, get_var_scope env id), check_expr env e)
       | Unop(u,ex) -> SUnop(u, get_sexpr env ex, check_expr env e)
-      | Binop(e1,b,e2) -> SBinop(get_sexpr env e1,b,get_sexpr env e2,check_expr env e) 
-      | ArrElem(id,index) -> SArrElem((id, get_var_scope env id),index, check_expr env e)  
-      | ExprAssign(id,ex) -> SExprAssign((id, get_var_scope env id), get_sexpr env ex,check_expr env e) 
+      | Binop(e1,b,e2) -> SBinop(get_sexpr env e1,b, get_sexpr env e2,check_expr env e) 
+      | ArrElem(id,index) -> SArrElem(SIdent(id, get_var_scope env id),index, check_expr env e)  
+      | ExprAssign(id,ex) -> SExprAssign(SIdent(id, get_var_scope env id),
+      get_sexpr env ex,check_expr env e) 
       | Cast(ty,ex) -> SCast(ty,get_sexpr env ex,ty)
-      | Call(id, ex_list) -> let s_ex_list = List.map (fun exp -> get_sexpr
-      env exp) ex_list in (SCall((id,get_var_scope env id),s_ex_list, check_expr env e)) 
+      | Call(id, ex_list) -> let s_ex_list = List.map(fun exp -> get_sexpr env
+      exp) ex_list in SCall(SIdent(id,get_var_scope env id),s_ex_list, check_expr env e) 
 
 (* Make sure a list contains all items of only a single type; returns (sexpr list, type in list) *)
 (* TODO: don't know if this compiles *)
@@ -229,10 +230,10 @@ let get_datatype_from_val env = function
 (* TODO: complete this like get_sexpr *)
 let get_sdecl env decl = match decl with
 	(* if ident is in env, return typed sdecl *)
-	VarDecl(datatype, ident) -> (SVarDecl(datatype, (ident, Local)), env)
+    VarDecl(datatype, ident) -> (SVarDecl(datatype, SIdent(ident, Local)), env)
 	| VarAssignDecl(datatype, ident, value) -> 
 		let sv = get_sval env value in
-	(SVarAssignDecl(datatype, (ident, Local), sv), env)
+	(SVarAssignDecl(datatype, SIdent(ident, Local), sv), env)
 
 let get_name_type_from_decl decl = match decl with
 	VarDecl(datatype, ident) -> (ident, datatype)
@@ -295,7 +296,7 @@ let check_assignments type1 type2 = match (type1, type2) with
 	|(_,_) -> false
 
 (* add a function to the environment*)
-let add_function env func_declaration =
+(* let add_function env func_declaration =
 	let f_table = env.fun_scope in
 	let old_functions = f_table.functions in
 	let func_name=func_declaration.fname in
@@ -305,7 +306,7 @@ let add_function env func_declaration =
 	let new_functions = (func_name, func_type, func_formals, func_body)::old_functions in
 	let new_fun_scope = {functions = new_functions} in
 	let new_env = {env with fun_scope = new_fun_scope} in
-	new_env
+	new_env *)
 
 (* add avalue to the symbol table*)
 (* TODO: needs correction for arrays *)
@@ -332,13 +333,14 @@ let check_final_env env =
 
 (* Default Table and Environment Initializations *)
 let empty_table_initialization = {parent=None; variables =[];}
-let empty_function_table_initialization = {functions=[]}
+let empty_function_table_initialization = {functions=[(Ident("print"), Void, [Formal(Datatype(String), Ident("s"))],[])]}
 let empty_environment = {return_type = Void; return_seen = false; location="main"; global_scope = empty_table_initialization; var_scope = empty_table_initialization; fun_scope = empty_function_table_initialization}
 
 (*Add functions to the environment *)
-let initialize_functions env function_declaration = 
+(* let initialize_functions env function_declaration = 
 	let new_env = add_function env function_declaration in
-	new_env
+	new_env *)
+
 
 (* Add global variables to the environment *)
 (* Old version; doesn't check for multiple declarations *)
@@ -366,13 +368,13 @@ let initialize_globals (globals, env) decl =
 				VarDecl(datatype,ident) ->
 		        	let (name,ty,_) = get_name_type_from_var env decl in
 		            let new_env = add_to_global_table env name ty None in
-		            (SVarDecl(datatype,(ident,Global))::globals, new_env)
+		            (SVarDecl(datatype,SIdent(ident,Global))::globals, new_env)
 				| VarAssignDecl(dt, id, value) ->
 					let t1 = get_type_from_datatype(dt) and t2 = get_type_from_datatype(get_datatype_from_val env value) in
 					if(t1=t2) then
 						let (n, t, v) = get_name_type_val_from_decl decl in
 						let new_env = add_to_global_table env n t v in
-						(SVarAssignDecl(dt,(id,Global),get_sval env value)::globals, new_env)
+						(SVarAssignDecl(dt,SIdent(id,Global),get_sval env value)::globals, new_env)
 					else raise (Error("Type mismatch"))
 				else
 					raise (Error("Multiple declarations")) in ret
@@ -456,7 +458,7 @@ let rec check_stmt env stmt = match stmt with
 			raise (Error("Mismatched type assignments"));
 		let sexpr = get_sexpr env expr in
 		let new_env = update_variable env (ident,dt,Some((ExprVal(expr)))) in
-		(SAssign((ident, get_var_scope env ident), sexpr), new_env)
+		(SAssign(SIdent(ident, get_var_scope env ident), sexpr), new_env)
 	| Ast.ArrAssign(ident, expr_list) ->
 		(* make sure 1) array exists and 2) all types in expr list are equal *)
 		let (n,dt,v) = try find_variable env ident with Not_found -> raise (Error("Undeclared array")) in
@@ -470,7 +472,7 @@ let rec check_stmt env stmt = match stmt with
 			let t1=get_type_from_datatype(check_expr env (List.hd expr_list)) and t2=get_type_from_datatype(dt) in
 			if(t1!=t2) then raise (Error("Type Mismatch")) in
 		let new_env = update_variable env (n,dt,(Some(ArrVal(expr_list)))) in
-		(SArrAssign((ident,get_var_scope env ident), sexpr_list), new_env)
+		(SArrAssign(SIdent(ident,get_var_scope env ident), sexpr_list), new_env)
 	| Ast.ArrElemAssign(ident, i, expr2) ->
 		(* Make sure
 			1) array exists (if it exists, then it was already declared and semantically checked)
@@ -488,18 +490,29 @@ let rec check_stmt env stmt = match stmt with
 		(* since arrays are not mutable, we have to replace the entire array *)
 		let new_list = update_list expr_list i expr2 in
 		let new_env = update_variable env (id, dt, Some(ArrVal(new_list))) in
-		(SArrElemAssign((ident,get_var_scope env ident), i, get_sexpr env expr2), new_env)
+		(SArrElemAssign(SIdent(ident,get_var_scope env ident), i, get_sexpr env expr2), new_env)
 	| Terminate -> (STerminate, env)
+
+let get_sstmt_list env stmt_list = 
+	 List.fold_left (fun (sstmt_list,env) stmt -> 
+	 	let (sstmt, new_env) = check_stmt env stmt in 
+		(sstmt::sstmt_list, new_env)) ([],env) stmt_list
 
 (* Semantic checking on a function*)
 let check_func env func_declaration =
 	let new_locals = List.fold_left(fun a vs -> (get_name_type_from_formal env vs)::a)[] func_declaration.formals in
 	let new_var_scope = {parent=Some(env.var_scope); variables = new_locals;} in
 	let new_env = {return_type = get_type_from_datatype func_declaration.return; return_seen=false; location="in_func"; global_scope = env.global_scope; var_scope = new_var_scope; fun_scope = env.fun_scope} in
-	let final_env  =List.fold_left(fun env stmt -> snd (check_stmt env stmt)) new_env func_declaration.body in
+	(* let final_env  =List.fold_left(fun env stmt -> snd (check_stmt env stmt)) new_env func_declaration.body in *)
+	let (typed_statements, final_env) = get_sstmt_list new_env func_declaration.body in
 	let _=check_final_env final_env in
-	let sfuncdecl = ({return = func_declaration.return; fname = func_declaration.fname; formals = func_declaration.formals; body = func_declaration.body}) in
-	Func_Decl(sfuncdecl,func_declaration.return)
+	let sfuncdecl = ({sreturn = func_declaration.return; sfname = func_declaration.fname; sformals = func_declaration.formals; sbody = typed_statements}) in
+	(SFunc_Decl(sfuncdecl,func_declaration.return),final_env) 
+
+let initialize_functions env function_list = 
+	let (typed_functions,new_env) = List.fold_left
+		(fun (sfuncdecl_list,env) func-> let (sfuncdecl, new_env) = check_func env func in (sfuncdecl::sfuncdecl_list, new_env)) ([],env) function_list in
+		(typed_functions,new_env)
 
 (*Semantic checking on events *)
 let check_event (typed_events, env) event = 
@@ -516,11 +529,23 @@ let check_event (typed_events, env) event =
     in SAlways(typed_events)
 
 (*Semantic checking on a program*)
-let check_program program =
+(* let check_program program =
 	let (functions,(globals,threads)) = program in
 	    let env = List.fold_left(fun env function_declaration -> initialize_functions env function_declaration) empty_environment functions in
 			let typed_functions = List.map(fun function_declaration -> check_func env function_declaration) functions in
              let (typed_globals, env) = List.fold_left(fun (new_globals,env)
              globals -> initialize_globals (new_globals, env) globals) ([], env) globals in
 	           let typed_threads = List.map(fun thread -> check_thread env thread) threads in
-                    Prog(typed_functions, (typed_globals, typed_threads))
+                    Prog(typed_functions, (typed_globals, typed_threads)) *)
+let check_program program =
+	let (functions,(globals,threads)) = program in
+	let env = empty_environment in
+	let (typed_functions, new_env) = initialize_functions env functions in
+	let (typed_globals, new_env2) = List.fold_left(fun (new_globals,env)
+             globals -> initialize_globals (new_globals, env) globals) ([], env) globals in
+	let typed_threads = List.map(fun thread -> check_thread env thread) threads in
+	Prog(typed_functions, (typed_globals, typed_threads))
+
+	  (*   let env = List.fold_left(fun env function_declaration -> initialize_functions env function_declaration) empty_environment functions in
+			let typed_functions = List.map(fun function_declaration -> check_func env function_declaration) functions in *)
+             

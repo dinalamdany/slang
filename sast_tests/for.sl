@@ -5,8 +5,11 @@ main(){
     }
 
 	init{
-		for(;;){ 
+        int a;
+        int i;
+		for(i = 0;i<5;i++){ 
             5;
+            int a;
         }
 	}
 }

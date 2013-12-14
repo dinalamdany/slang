@@ -11,11 +11,3 @@ let _ =
   let output = open_out "output.cpp" in
   output_string output code
 
-(*
-  let output = open_out "output.cpp" in
-  output_string output code
-
-let lexbuf = Lexing.from_channel stdin in\n
-let program = Parser.program Scanner.token lexbuf in\n
-let sast = Semantic_check.check_program program in\n
-gen_pretty_c sast;;'*)

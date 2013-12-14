@@ -7,7 +7,7 @@ type scope =
     | Local
 
 type sident =
-    ident * scope
+    SIdent of ident * scope
 
 type sval = 
 	SExprVal of  sexpr
@@ -31,9 +31,6 @@ type sdecl =
 	(* changed sexpr to svalue *)
 	| SVarAssignDecl of datatype * sident * sval (* v_assignment and put v_decl in timeblock decl_list*)
 
-type sfunc_decl =
-	Func_Decl of func_decl * datatype
-
 type sstmt = 
 	SBlock of sstmt list
 	| SSExpr of sexpr
@@ -46,6 +43,16 @@ type sstmt =
 	| SArrAssign of sident * sexpr list
 	| SArrElemAssign of sident * int * sexpr
 	| STerminate 
+
+type sfuncstr = {
+  sreturn: datatype;
+  sfname : ident;
+  sformals : formal list;
+  sbody : sstmt list;
+}
+
+type sfunc_decl =
+	SFunc_Decl of sfuncstr * datatype
 
 type sevent = 
     SEvent of int * sstmt list

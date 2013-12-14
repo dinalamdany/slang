@@ -1,4 +1,5 @@
 open Ast
+open Sast
 open Printf
 open Pretty_c
 open Type
@@ -32,6 +33,16 @@ let header = code_directives^code_event_base^code_event_list
 
 let gen_id = function
   Ident(id) -> id
+
+let gen_sid_prefix scope lcl_prefix = match scope with
+  Global -> prefix_global_var
+| Local -> lcl_prefix
+
+let gen_sid sident lcl_prefix = match sident with
+  SIdent(sid, scope) -> gen_sid_prefix scope lcl_prefix ^ gen_id sid
+
+let gen_plain_sid sident = match sident with
+  SIdent(sid, scope) -> gen_id sid
 
 let gen_name = function
   Time_struct_name(s) -> s
@@ -85,6 +96,24 @@ let rec gen_plain_datatype = function
 let rec gen_formal formal prefix = match formal with
   Formal(datatype, id) -> gen_datatype datatype ^ " " ^ prefix ^ gen_id id
 
+let rec gen_sexpr sexpr lcl_prefix = match sexpr with
+  SIntLit(i, d) -> string_of_int i
+| SBoolLit(b, d) -> string_of_bool b
+| SFloatLit(f, d) -> string_of_float f
+| SStringLit(s, d) -> "\"" ^ s ^ "\""
+| SVariable(sident, d) -> gen_sid sident lcl_prefix
+| SUnop(unop, sexpr, d) -> gen_unop unop ^ "(" ^ gen_sexpr sexpr lcl_prefix ^ ")"
+| SBinop(sexpr1, binop, sexpr2, d) -> gen_sexpr sexpr1 lcl_prefix ^ gen_binop binop ^
+    gen_sexpr sexpr2 lcl_prefix
+| SArrElem(sident, i, d) -> gen_sid sident lcl_prefix^ "[" ^ string_of_int i ^ "]"
+| SExprAssign(sident, sexpr, d) -> gen_sid sident lcl_prefix^ " = " ^
+    gen_sexpr sexpr lcl_prefix
+| SCast(datatype, sexpr, d) -> "(" ^ gen_datatype datatype^ ") " ^
+    gen_sexpr sexpr lcl_prefix
+| SCall(sident, sexpr_list, d) -> if ((gen_plain_sid sident) = print)
+    then "std::cout << "^ gen_sexpr_list sexpr_list lcl_prefix ^ "std::endl"
+    else gen_sid ident lcl_prefix ^ "(" ^ gen_sexpr_list sexpr_list lcl_prefix ^ ")"
+
 let rec gen_expr expr prefix = match expr with
   IntLit(i) -> string_of_int i
 | BoolLit(b) -> string_of_bool b
@@ -95,12 +124,31 @@ let rec gen_expr expr prefix = match expr with
 | Binop(expr1, binop, expr2) -> gen_expr expr1 prefix ^ gen_binop binop ^
     gen_expr expr2 prefix
 | ArrElem(ident, i) -> prefix ^ gen_id ident ^ "[" ^ string_of_int i ^ "]"
-| Noexpr -> ""
 | ExprAssign(ident, expr) -> prefix ^ gen_id ident ^ " = " ^ gen_expr expr prefix
 | Cast(datatype, expr) -> "(" ^ gen_datatype datatype^ ") " ^ gen_expr expr prefix
 | Call(ident, expr_list) -> if ((gen_id ident) = print)
     then "std::cout << "^ gen_expr_list expr_list prefix ^ "std::endl"
     else prefix ^ gen_id ident ^ "(" ^ gen_expr_list expr_list prefix ^ ")"
+
+and gen_sstmt sstmt lcl_prefix = match sstmt with
+  SBlock(sstmt_list) -> "{\n" ^ gen_sstmt_list sstmt_list  lcl_prefix ^ "\n}\n"
+| SSExpr(sexpr) -> gen_sexpr sexpr lcl_prefix ^ ";\n"
+| SReturn(sexpr) -> "return " ^ gen_sexpr sexpr lcl_prefix ^ ";\n"
+| SIf(sexpr, sstmt1, sstmt2) -> "if (" ^ gen_sexpr sexpr lcl_prefix ^
+   ")\n" ^ gen_sstmt sstmt1 lcl_prefix ^ "else " ^ gen_sstmt sstmt2 lcl_prefix
+| SFor(sexpr1, sexpr2, sexpr3, sstmt) ->"for (" ^ gen_sexpr sexpr1 lcl_prefix ^
+   "; "^ gen_sexpr sexpr2 lcl_prefix ^ "; " ^ gen_sexpr sexpr3 lcl_prefix ^ ")\n" ^
+   gen_sstmt sstmt lcl_prefix
+| SWhile(sexpr, sstmt) -> "while (" ^ gen_sexpr sexpr lcl_prefix ^
+   ")\n" ^ gen_sstmt sstmt lcl_prefix ^ ";\n"
+| SDeclaration(sdecl) -> gen_sdecl sdecl lcl_prefix ^ ";\n"
+| SAssign(sident, sexpr) -> gen_sid sident lcl_prefix ^ " = " ^
+   gen_sexpr sexpr lcl_prefix ^ ";\n"
+| SArrAssign(sident, sexpr_list) -> gen_sid sident lcl_prefix ^ ".clear();\n" ^
+     (gen_array_sexpr_list sexpr_list sident lcl_prefix) ^ ";\n"
+| SArrElemAssign(sident, i, sexpr) -> gen_sid sident lcl_prefix ^
+    "[" ^ string_of_int i ^ "] = " ^ gen_sexpr sexpr lcl_prefix ^ ";\n"
+| STerminate -> "exit(0)"
 
 (*semicolon and newline handled in gen_stmt because blocks dont have semicolon*)
 and gen_stmt stmt prefix = match stmt with
@@ -122,6 +170,18 @@ and gen_stmt stmt prefix = match stmt with
     "[" ^ string_of_int i ^ "] = " ^ gen_expr expr prefix ^ ";\n"
 | Terminate -> "exit(0)"
 
+(*gen_sdecl only appears within time blocks, VarDecls are ignored*)
+and gen_sdecl sdecl lcl_prefix = match sdecl with
+  SVarDecl(datatype, sid) -> ""
+| SVarAssignDecl(datatype, sident, svalue) -> gen_value datatype svalue sident lcl_prefix
+
+(*gen_svalue only appears within time blocks declartions, assume all local*)
+and gen_svalue datatype svalue sident lcl_prefix = match svalue with
+  SExprVal(expr) -> lcl_prefix ^ gen_plain_sid sident ^
+    " = " ^ gen_sexpr sexpr lcl_prefix ^ ";\n"
+| SArrVal(expr_list) -> lcl_prefix ^ gen_plain_sid sident ^ ".clear();\n" ^
+     (gen_array_sexpr_list sexpr_list sident lcl_prefix) ^ ";\n"
+
 (*semicolon and newline handled in gen_decl since array decl assignment is actually vector push_back*)
 and gen_decl decl prefix = match decl with
   VarDecl(datatype, id) -> gen_datatype datatype ^ " " ^ prefix ^ gen_id id  ^ ";\n"
@@ -134,6 +194,12 @@ and gen_value datatype value ident prefix = match value with
     gen_datatype datatype ^ prefix ^ gen_id ident ^"( " ^ prefix_array ^ gen_id ident ^ ", " ^
     prefix_array ^ gen_id ident ^ "+sizeof(" ^ prefix_array ^ gen_id ident ^
     ")/sizeof(" ^ prefix_array ^ gen_id ident ^ "[0]) );\n"
+
+and gen_array_sexpr_list sexpr_list sident lcl_prefix = match sexpr_list with
+ [] -> ""
+| h::[] -> lcl_prefix ^ gen_plain_sid sident ^ ".push_back(" ^ gen_sexpr h lcl_prefix ^");\n"
+| h::t -> lcl_prefix ^ gen_plain_sid sident ^ ".push_back(" ^ gen_sexpr h lcl_prefix
+  ^ ");\n" ^ (gen_array_sexpr_list t sident lcl_prefix)
 
 and gen_array_expr_list expr_list ident prefix = match expr_list with
  [] -> ""
@@ -161,10 +227,20 @@ and gen_formal_list formal_list prefix = match formal_list with
 | h::[] -> gen_formal h prefix
 | h::t -> gen_formal h prefix ^ ", " ^ gen_formal_list t prefix
 
+and gen_sstmt_list sstmt_list  lcl_prefix = match sstm_list with
+ [] -> ""
+| h::[] -> gen_sstmt h lcl_prefix
+| h::t -> gen_sstmt h lcl_prefix ^ gen_sstmt_list t lcl_prefix
+
 and gen_stmt_list stmt_list prefix = match stmt_list with
  [] -> ""
 | h::[] -> gen_stmt h prefix
 | h::t -> gen_stmt h prefix ^ gen_stmt_list t prefix
+
+and gen_sexpr_list sexpr_list lcl_prefix = match sexpr_list with
+ [] -> ""
+| h::[] -> gen_sexpr h lcl_prefix
+| h::t -> gen_sexpr h lcl_prefix ^ ", " ^ gen_sexpr_list t lcl_prefix
 
 and gen_expr_list expr_list prefix = match expr_list with
  [] -> ""
@@ -182,8 +258,8 @@ let rec gen_struct = function
     gen_name name ^ "() : time(" ^ string_of_int i ^
     ") {}\n\tunsigned int get_time() {return time;}\n\t" ^ gen_link link ^
     "_link_ *next;\n\tvoid set_next(" ^ gen_link link ^
-    "_link_ *n) {next = n;};\n\t" ^ "void foo() {\n" ^
-    gen_stmt_list stmt_list (gen_link link) ^ "\n\t" ^
+    "_link_ *n) {next = n;};\n\t" ^ "void foo() {\n\t" ^
+    gen_sstmt_list sstmt_list (gen_link link) ^ "\n\t" ^
     gen_link link ^ "_time += next->get_time();\n\t" ^
     "event_q.add(" ^ gen_link link ^ "_time, next);\n\t}\n};"
 
@@ -244,8 +320,8 @@ let gen_main = function
 let gen_program = function
   Pretty_c(global_decl_list, global_func_list, time_block_list, main) ->
   header ^
-  gen_decl_list global_decl_list prefix_global_var ^
   gen_func_list global_func_list prefix_global_var ^
+  gen_decl_list global_decl_list prefix_global_var ^
   gen_time_block_list time_block_list ^ "\nint main() {\n\t" ^
   gen_main main ^
   code_event_list_do ^ "return 0;\n}"
