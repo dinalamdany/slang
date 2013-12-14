@@ -111,7 +111,7 @@ let rec gen_sexpr sexpr lcl_prefix = match sexpr with
 | SCast(datatype, sexpr, d) -> "(" ^ gen_datatype datatype^ ") " ^
     gen_sexpr sexpr lcl_prefix
 | SCall(sident, sexpr_list, d) -> if ((gen_plain_sid sident) = print)
-    then "std::cout << "^ gen_sexpr_list sexpr_list lcl_prefix ^ "std::endl"
+    then "std::cout << "^ gen_sexpr_list sexpr_list lcl_prefix ^ " << std::endl"
     else gen_sid sident lcl_prefix ^ "(" ^ gen_sexpr_list sexpr_list lcl_prefix ^ ")"
 
 and gen_expr expr prefix = match expr with
@@ -127,7 +127,7 @@ and gen_expr expr prefix = match expr with
 | ExprAssign(ident, expr) -> prefix ^ gen_id ident ^ " = " ^ gen_expr expr prefix
 | Cast(datatype, expr) -> "(" ^ gen_datatype datatype^ ") " ^ gen_expr expr prefix
 | Call(ident, expr_list) -> if ((gen_id ident) = print)
-    then "std::cout << "^ gen_expr_list expr_list prefix ^ "std::endl"
+    then "std::cout << "^ gen_expr_list expr_list prefix ^ " << std::endl"
     else prefix ^ gen_id ident ^ "(" ^ gen_expr_list expr_list prefix ^ ")"
 
 and gen_sstmt sstmt lcl_prefix = match sstmt with

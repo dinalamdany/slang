@@ -1,9 +1,10 @@
 #!/bin/bash
 #script that calls all other scripts
 
-for SCRIPT in *.sh;
+for TESTFILE in ../tests/*.sl;
 do
-	if [ "$SCRIPT" != "test_all.sh" ]; then
-		./"$SCRIPT"
+	if [ "$TESTFILE" != "test_all.sh" ]; then
+		./"$TESTFILE"
 	fi
+	echo "$TESTFILE"
 done
