@@ -37,10 +37,7 @@ struct event_q_ {
 };
 event_q_ event_q;
 
-const float a_b[] = {3.14, 2.6};
-std::vector<float>u_b( a_b, a_b+sizeof(a_b)/sizeof(a_b[0]) );
-const char * a_a[] = {"tony", "bob"};
-std::vector<std::string>u_a( a_a, a_a+sizeof(a_a)/sizeof(a_a[0]) );
+int u_a;
 unsigned int init_0_time = 0;
 struct init_0_link_ : public event_ {
 	virtual void set_next(init_0_link_ *n){};
@@ -53,6 +50,7 @@ struct init_0_block_0 : public init_0_link_ {
 	init_0_link_ *next;
 	void set_next(init_0_link_ *n) {next = n;};
 	void foo() {
+init_0a = 6;
 
 	init_0_time += next->get_time();
 	event_q.add(init_0_time, next);

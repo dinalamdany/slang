@@ -1,8 +1,9 @@
 /* Test declarating variables */
 
 main(){
-	int a;
+    int b;
 	init{
-		int b;
+        int a;
+        a = 6;
 	}
 }
