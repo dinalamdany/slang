@@ -113,7 +113,6 @@ let gen_structure curr_name_f link = function
 
 (* Receives sthread, creates Link for init or always,
   sends this link as parameter for gen_structure function *)
-(*  TODO: v_Decls for timeblocks are currently empty lists... Whats the actual value? *)
 let gen_time_block = function 
   SInit(sthread) -> m_lists.v_decls <- []; (* Reset v_decl list *)
     let curr_link_str = init_count () in let curr_name_f = inc1 (curr_link_str ^ "_block_") in (*Counters*)
@@ -122,11 +121,11 @@ let gen_time_block = function
           List.map gen_tb_vdecls sthread;
           Time_block(link, m_lists.v_decls, List.map partial_gen_struct (List.rev sthread))
 | SAlways(sthread) -> m_lists.v_decls <- [];
-  let curr_link_str = always_count () in let curr_name_f = inc1 (curr_link_str ^ "_block_") in (*Counters*)
-    let link = Link(curr_link_str) in m_lists.l2 <- link :: m_lists.l2; (*adding to main list*)
-      let partial_gen_struct = gen_structure curr_name_f link in
-        List.map gen_tb_vdecls sthread;
-        Time_block(link, m_lists.v_decls, List.map partial_gen_struct (List.rev sthread))                     
+    let curr_link_str = always_count () in let curr_name_f = inc1 (curr_link_str ^ "_block_") in (*Counters*)
+      let link = Link(curr_link_str) in m_lists.l2 <- link :: m_lists.l2; (*adding to main list*)
+        let partial_gen_struct = gen_structure curr_name_f link in
+          List.map gen_tb_vdecls sthread;
+          Time_block(link, m_lists.v_decls, List.map partial_gen_struct (List.rev sthread))                     
 
 let gen_func = function
   SFunc_Decl(sfuncstr, datatype) -> {return=sfuncstr.sreturn; fname=sfuncstr.sfname; 

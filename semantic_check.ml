@@ -205,7 +205,7 @@ let rec get_sexpr env e = match e with
 	  | Call(Ident("print"),ex_list) -> let s_ex_list = List.map(fun exp -> get_sexpr env exp) ex_list 
 	  in SCall(SIdent(Ident("print"),Global),s_ex_list,check_expr env e)
       | Call(id, ex_list) -> let s_ex_list = List.map(fun exp -> get_sexpr env
-      exp) ex_list in SCall(SIdent(id,Function),s_ex_list, check_expr env e) 
+      exp) ex_list in SCall(SIdent(id,Global),s_ex_list, check_expr env e) 
 
 (* Make sure a list contains all items of only a single type; returns (sexpr list, type in list) *)
 (* TODO: don't know if this compiles *)
