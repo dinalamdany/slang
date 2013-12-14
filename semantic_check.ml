@@ -228,11 +228,10 @@ let get_datatype_from_val env = function
 (* TODO: complete this like get_sexpr *)
 let get_sdecl env decl = match decl with
 	(* if ident is in env, return typed sdecl *)
-	VarDecl(datatype, ident) -> (SVarDecl(datatype, (ident, get_var_scope env
-    ident)), env)
+	VarDecl(datatype, ident) -> (SVarDecl(datatype, (ident, Local)), env)
 	| VarAssignDecl(datatype, ident, value) -> 
 		let sv = get_sval env value in
-	(SVarAssignDecl(datatype, (ident, get_var_scope env ident), sv), env)
+	(SVarAssignDecl(datatype, (ident, Local), sv), env)
 
 let get_name_type_from_decl decl = match decl with
 	VarDecl(datatype, ident) -> (ident, datatype)
@@ -370,10 +369,9 @@ let initialize_globals (globals, env) decl =
 				| VarAssignDecl(dt, id, value) ->
 					let t1 = get_type_from_datatype(dt) and t2 = get_type_from_datatype(get_datatype_from_val env value) in
 					if(t1=t2) then
-						let (sdecl,_) = get_sdecl env decl in
 						let (n, t, v) = get_name_type_val_from_decl decl in
 						let new_env = add_to_global_table env n t v in
-						((sdecl)::globals, new_env)
+						(SVarAssignDecl(dt,(id,Global),get_sval env value)::globals, new_env)
 					else raise (Error("Type mismatch"))
 				else
 					raise (Error("Multiple declarations")) in ret
