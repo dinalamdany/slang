@@ -6,7 +6,6 @@ compile:
 	ocamlc -c type.mli
 	ocamlyacc parser.mly
 	ocamlc -c ast.mli
-	ocamlc -c pretty_c.mli
 	ocamlc -c parser.mli
 	ocamlc -c scanner.ml
 	ocamlc -c parser.ml

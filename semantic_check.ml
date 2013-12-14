@@ -169,6 +169,8 @@ let rec check_expr env e = match e with
         check_expr env e 
         in (if not (t1 = t2) then (raise (Error("Mismatch in types for assignment")))); check_expr env e
     | Cast(ty, e) -> ty
+	| Call(Ident("print"),e) -> let _ = List.map(fun exp -> check_expr env exp) e in
+				Datatype(Void)
     | Call(id, e) -> try (let (fname, fret, fargs, fbody)  = find_function env.fun_scope id in
                 let el_tys = List.map (fun exp -> check_expr env exp) e in
                 let fn_tys = List.map (fun farg-> let (_,ty,_) = get_name_type_from_formal env farg in ty) fargs in
@@ -182,10 +184,11 @@ let get_val_type env = function
     ExprVal(expr) -> check_expr env expr
     | ArrVal(expr_list) -> check_expr env (List.hd expr_list)
 
+
 let get_var_scope env name =  
     try (let (_,_,_) = List.find (fun (s,_,_) -> s=name) env.var_scope.variables in Local)
           with Not_found -> try (let (_,_,_) = List.find(fun (s,_,_) -> s=name) env.global_scope.variables in Global)
-                with Not_found -> raise Not_found
+                with Not_found -> raise(Error("get_var_scope is failing"))
 (*converts expr to sexpr*)
 let rec get_sexpr env e = match e with
       IntLit(i) -> SIntLit(i, Datatype(Int))
@@ -199,8 +202,10 @@ let rec get_sexpr env e = match e with
       | ExprAssign(id,ex) -> SExprAssign(SIdent(id, get_var_scope env id),
       get_sexpr env ex,check_expr env e) 
       | Cast(ty,ex) -> SCast(ty,get_sexpr env ex,ty)
+	  | Call(Ident("print"),ex_list) -> let s_ex_list = List.map(fun exp -> get_sexpr env exp) ex_list 
+	  in SCall(SIdent(Ident("print"),Global),s_ex_list,check_expr env e)
       | Call(id, ex_list) -> let s_ex_list = List.map(fun exp -> get_sexpr env
-      exp) ex_list in SCall(SIdent(id,get_var_scope env id),s_ex_list, check_expr env e) 
+      exp) ex_list in SCall(SIdent(id,Function),s_ex_list, check_expr env e) 
 
 (* Make sure a list contains all items of only a single type; returns (sexpr list, type in list) *)
 (* TODO: don't know if this compiles *)
@@ -325,7 +330,7 @@ let check_final_env env =
 
 (* Default Table and Environment Initializations *)
 let empty_table_initialization = {parent=None; variables =[];}
-let empty_function_table_initialization = {functions=[(Ident("print"), Void, [Formal(Datatype(String), Ident("s"))],[])]}
+let empty_function_table_initialization = {functions=[(Ident("print_string"), Void, [Formal(Datatype(String), Ident("s"))],[]);(Ident("print_int"),Void,[Formal(Datatype(Int),Ident("s"))],[])]}
 let empty_environment = {return_type = Void; return_seen = false; location="main"; global_scope = empty_table_initialization; var_scope = empty_table_initialization; fun_scope = empty_function_table_initialization}
 
 (*Add functions to the environment *)
@@ -505,7 +510,6 @@ let add_function env sfunc_decl =
 			let final_env = {env with fun_scope = new_fun_scope} in
 			final_env
 
-
 (* 	let func_name=func_declaration.fname in
 	let func_type=get_type_from_datatype func_declaration.return in
 	let func_formals=func_declaration.formals in
@@ -525,12 +529,12 @@ let check_func env func_declaration =
 	let (typed_statements, final_env) = get_sstmt_list new_env func_declaration.body in
 	let _=check_final_env final_env in
 	let sfuncdecl = ({sreturn = func_declaration.return; sfname = func_declaration.fname; sformals = func_declaration.formals; sbody = typed_statements}) in
-	(SFunc_Decl(sfuncdecl,func_declaration.return),final_env) 
+	(SFunc_Decl(sfuncdecl,func_declaration.return), env) 
 
 let initialize_functions env function_list = 
 	let (typed_functions,last_env) = List.fold_left
-		(fun (sfuncdecl_list,env) func-> let (sfuncdecl, new_env) = check_func env func in
-											let final_env = add_function new_env sfuncdecl in
+		(fun (sfuncdecl_list,env) func-> 	let (sfuncdecl, _) = check_func env func in	
+											let final_env = add_function env sfuncdecl in										
 											(sfuncdecl::sfuncdecl_list, final_env)) ([],env) function_list in
 		(typed_functions,last_env)
 
@@ -564,6 +568,7 @@ let check_program program =
 	let (typed_globals, new_env2) = List.fold_left(fun (new_globals,env)
              globals -> initialize_globals (new_globals, env) globals) ([], new_env) globals in
 	let typed_threads = List.map(fun thread -> check_thread new_env2 thread) threads in
+
 	Prog(typed_functions, (typed_globals, typed_threads))
 
 	  (*   let env = List.fold_left(fun env function_declaration -> initialize_functions env function_declaration) empty_environment functions in

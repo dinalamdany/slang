@@ -5,6 +5,7 @@ open Type
 type scope = 
     Global
     | Local
+    | Function
 
 type sident =
     SIdent of ident * scope
