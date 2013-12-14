@@ -129,6 +129,10 @@ let find_variable env name =
 	try List.find (fun (s,_,_) -> s=name) env.var_scope.variables
 	with Not_found -> try List.find(fun (s,_,_) -> s=name) env.global_scope.variables
 	with Not_found -> raise Not_found
+(* 
+let find_local_variable env name =
+	try List.find (fun (s,_,_) -> s=name) env.var_scope.variables
+	with Not_found -> raise Not_found *)
 
 (*Semantic checking on expressions*)
 let rec check_expr env e = match e with
@@ -295,18 +299,6 @@ let check_assignments type1 type2 = match (type1, type2) with
 (* 	|(Object, Object) -> true *)
 	|(_,_) -> false
 
-(* add a function to the environment*)
-(* let add_function env func_declaration =
-	let f_table = env.fun_scope in
-	let old_functions = f_table.functions in
-	let func_name=func_declaration.fname in
-	let func_type=get_type_from_datatype func_declaration.return in
-	let func_formals=func_declaration.formals in
-	let func_body=func_declaration.body in
-	let new_functions = (func_name, func_type, func_formals, func_body)::old_functions in
-	let new_fun_scope = {functions = new_functions} in
-	let new_env = {env with fun_scope = new_fun_scope} in
-	new_env *)
 
 (* add avalue to the symbol table*)
 (* TODO: needs correction for arrays *)
@@ -498,6 +490,32 @@ let get_sstmt_list env stmt_list =
 	 	let (sstmt, new_env) = check_stmt env stmt in 
 		(sstmt::sstmt_list, new_env)) ([],env) stmt_list
 
+(* add a function to the environment*)
+let add_function env sfunc_decl =
+	let f_table = env.fun_scope in
+	let old_functions = f_table.functions in
+	match sfunc_decl with
+		SFunc_Decl(sfuncstr, datatype) ->
+			let func_name = sfuncstr.sfname in
+			let func_type = get_type_from_datatype sfuncstr.sreturn in
+			let func_formals = sfuncstr.sformals in
+			let func_body = sfuncstr.sbody in
+			let new_functions = (func_name, func_type, func_formals, func_body)::old_functions in
+			let new_fun_scope = {functions = new_functions} in
+			let final_env = {env with fun_scope = new_fun_scope} in
+			final_env
+
+
+(* 	let func_name=func_declaration.fname in
+	let func_type=get_type_from_datatype func_declaration.return in
+	let func_formals=func_declaration.formals in
+	let (func_body, new_env) = get_sstmt_list env func_declaration.body in
+	let new_functions = (func_name, func_type, func_formals, func_body)::old_functions in
+	let new_fun_scope = {functions = new_functions} in
+	let final_env = {new_env with fun_scope = new_fun_scope} in
+	final_env *)
+
+
 (* Semantic checking on a function*)
 let check_func env func_declaration =
 	let new_locals = List.fold_left(fun a vs -> (get_name_type_from_formal env vs)::a)[] func_declaration.formals in
@@ -510,9 +528,11 @@ let check_func env func_declaration =
 	(SFunc_Decl(sfuncdecl,func_declaration.return),final_env) 
 
 let initialize_functions env function_list = 
-	let (typed_functions,new_env) = List.fold_left
-		(fun (sfuncdecl_list,env) func-> let (sfuncdecl, new_env) = check_func env func in (sfuncdecl::sfuncdecl_list, new_env)) ([],env) function_list in
-		(typed_functions,new_env)
+	let (typed_functions,last_env) = List.fold_left
+		(fun (sfuncdecl_list,env) func-> let (sfuncdecl, new_env) = check_func env func in
+											let final_env = add_function new_env sfuncdecl in
+											(sfuncdecl::sfuncdecl_list, final_env)) ([],env) function_list in
+		(typed_functions,last_env)
 
 (*Semantic checking on events *)
 let check_event (typed_events, env) event = 
@@ -542,8 +562,8 @@ let check_program program =
 	let env = empty_environment in
 	let (typed_functions, new_env) = initialize_functions env functions in
 	let (typed_globals, new_env2) = List.fold_left(fun (new_globals,env)
-             globals -> initialize_globals (new_globals, env) globals) ([], env) globals in
-	let typed_threads = List.map(fun thread -> check_thread env thread) threads in
+             globals -> initialize_globals (new_globals, env) globals) ([], new_env) globals in
+	let typed_threads = List.map(fun thread -> check_thread new_env2 thread) threads in
 	Prog(typed_functions, (typed_globals, typed_threads))
 
 	  (*   let env = List.fold_left(fun env function_declaration -> initialize_functions env function_declaration) empty_environment functions in
