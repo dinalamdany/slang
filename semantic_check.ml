@@ -112,7 +112,7 @@ let update_variable env (name, datatype, value) =
 		| 2 -> 
 			(* update global vars *)
 			let new_vars = List.map (fun (n, t, v) -> if(n=name) then (name, datatype, value) else (n, t, v)) env.global_scope.variables in
-			let new_sym_table = {parent = None; variables = new_vars;} in
+			let new_sym_table = {parent = env.var_scope.parent; variables = new_vars;} in
 			let new_env = {env with global_scope = new_sym_table} in
 			new_env
         | _ -> raise(Error("Undefined scope"))
