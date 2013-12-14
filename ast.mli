@@ -19,7 +19,6 @@ type expr =
   | Unop of unop * expr
   | Binop of expr * binop * expr
   | ArrElem of ident * int
-  | Noexpr
   | ExprAssign of ident * expr
   | Cast of datatype * expr
   | Call of ident * expr list
