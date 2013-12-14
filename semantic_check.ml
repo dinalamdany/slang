@@ -331,7 +331,7 @@ let check_final_env env =
 
 (* Default Table and Environment Initializations *)
 let empty_table_initialization = {parent=None; variables =[];}
-let empty_function_table_initialization = {functions=[]}
+let empty_function_table_initialization = {functions=[(Ident("print"), Void, [Formal(Datatype(String), Ident("s"))],[])]}
 let empty_environment = {return_type = Void; return_seen = false; location="main"; global_scope = empty_table_initialization; var_scope = empty_table_initialization; fun_scope = empty_function_table_initialization}
 
 (*Add functions to the environment *)
@@ -538,7 +538,6 @@ let check_event (typed_events, env) event =
 let check_program program =
 	let (functions,(globals,threads)) = program in
 	let env = empty_environment in
-	let env.fun_scope = env.func_scope :: {print,String, [s],[]} in 
 	let (typed_functions, new_env) = initialize_functions env functions in
 	let (typed_globals, new_env2) = List.fold_left(fun (new_globals,env)
              globals -> initialize_globals (new_globals, env) globals) ([], env) globals in
