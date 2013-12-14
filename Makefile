@@ -3,65 +3,35 @@ default: all
 .PHONY : compile
 compile:
 	ocamllex scanner.mll
+	ocamlc -c scanner.ml
 	ocamlc -c type.mli
 	ocamlyacc parser.mly
-	ocamlc -c ast.mli
 	ocamlc -c parser.mli
-	ocamlc -c scanner.ml
 	ocamlc -c parser.ml
+	ocamlc -c ast.mli
 	ocamlc -c sast.mli
-	ocamlc -c pretty_c.mli
 	ocamlc -c semantic_check.ml
+	ocamlc -c pretty_c.mli
 	ocamlc -c pretty_c_gen.ml
 
-#OBJECTS
-#I'm narcissistic
-TONYOBJS = parser.cmo scanner.cmo codegenloop.cmo
-CODEGENOBJS = parser.cmo scanner.cmo codegen.cmo
-SLANGOBJS = parser.cmo scanner.cmo scanner_tester.cmo parser_tester.cmo slang.cmo
-COMP1OBJS = parser.cmo scanner.cmo compiler_v1.cmo
-COMP2OBJS = parser.cmo scanner.cmo compiler_v2.cmo
-GENCPPOBJS = parser.cmo scanner.cmo gen_cpp.cmo
-TESTEROBJS = parser.cmo scanner.cmo tester.cmo
-PCGOBJS = parser.cmo scanner.cmo semantic_check.cmo pretty_c_gen.cmo
-COMP3OBJS = parser.cmo scanner.cmo semantic_check.cmo pretty_c_gen.cmo gen_cpp.cmo compiler_v3.cmo
+COMPILEROBJS = parser.cmo scanner.cmo semantic_check.cmo pretty_c_gen.cmo gen_cpp.cmo compiler_v3.cmo
 
-scanner_tester.cmo : scanner_tester.ml
-	ocamlc -c $< -o $@
-parser_tester.cmo : parser_tester.ml
-	ocamlc -c $< -o $@
-codegenloop.cmo : codegenloop.ml
-	ocamlc -c $< -o $@
-codegenloop : $(TONYOBJS)
-	ocamlc -o $@ $(TONYOBJS)
 slang.cmo : slang.ml
 	ocamlc -c $< -o $@
-slang : $(SLANGOBJS)
-	ocamlc -o $@ $(SLANGOBJS)
+slang : $(COMPILEROBJS)
+	ocamlc -o $@ $(COMPILEROBJS)
 gen_cpp.cmo : gen_cpp.ml
 	ocamlc -c $< -o $@
-gen_cpp: $(GENCPPOBJS)
-	ocamlc -o $@ $(GENCPPOBJS)
+gen_cpp: $(COMPILEROBJS)
+	ocamlc -o $@ $(COMPILEROBJS)
 compiler_v3.cmo : compiler_v3.ml
 	ocamlc -c $< -o $@
-compiler_v3: $(COMP3OBJS)
-	ocamlc -o $@ $(COMP3OBJS)
-compiler_v2.cmo : compiler_v2.ml
-	ocamlc -c $< -o $@
-compiler_v2: $(COMP2OBJS)
-	ocamlc -o $@ $(COMP2OBJS)
-compiler_v1.cmo : compiler_v1.ml
-	ocamlc -c $< -o $@
-compiler_v1: $(COMP1OBJS)
-	ocamlc -o $@ $(COMP1OBJS)
-tester.cmo : tester.ml
-	ocamlc -c tester.ml -o $@
-tester : $(TESTEROBJS)
-	ocamlc -o $@ $(TESTEROBJS)
+compiler_v3: $(COMPILEROBJS)
+	ocamlc -o $@ $(COMPILEROBJS)
 pretty_c_gen.cmo : pretty_c_gen.ml
 	ocamlc -c $< -o $@
-pretty_c_gen: $(PCGOBJS)
-	ocamlc -o $@ $(PCGOBJS)
+pretty_c_gen: $(COMPILEROBJS)
+	ocamlc -o $@ $(COMPILEROBJS)
 semantic_check.cmo : semantic_check.ml
 	ocamlc -c $< -o $@
 
