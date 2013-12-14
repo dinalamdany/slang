@@ -1,6 +1,7 @@
 main(){
     init{
-        for(int i = 0; i < 5; i++){
+	int i;
+        for(i = 0; i < 5; i++){
             print(1);
         }
     }

@@ -22,7 +22,7 @@ type function_table = {
 
 (*our environment*)
 type translation_environment = {
-	return_type: var_type;	(*function's return type*)
+	return_type: datatype;	(*function's return type*)
 	return_seen: bool;		(*does the function have a return statement*)
 	location: string;		(*init, always, main, or function name, used for global or local checking*)
 	global_scope: symbol_table;	(*symbol table for global vairables*)
@@ -54,11 +54,11 @@ let basic_logic t1 t2 = match(t1,t2) with
 
 let equal_logic t1 t2 = match(t1,t2) with
     (Boolean,Boolean) -> (Boolean,true)
-    | (Int,Int) -> (Int,true)
-    | (Float,Float) -> (Float,true)
-    | (Int,Float) -> (Float,true)
-    | (Float,Int) -> (Float,true)
-    | (String,String) -> (String,true)
+    | (Int,Int) -> (Boolean,true)
+    | (Float,Float) -> (Boolean,true)
+    | (Int,Float) -> (Boolean,true)
+    | (Float,Int) -> (Boolean,true)
+    | (String,String) -> (Boolean,true)
     | (_,_) -> (Int,false) 
 
 (*extracts the type from a datatype declaration*)
@@ -189,6 +189,7 @@ let get_var_scope env name =
     try (let (_,_,_) = List.find (fun (s,_,_) -> s=name) env.var_scope.variables in Local)
           with Not_found -> try (let (_,_,_) = List.find(fun (s,_,_) -> s=name) env.global_scope.variables in Global)
                 with Not_found -> raise(Error("get_var_scope is failing"))
+                
 (*converts expr to sexpr*)
 let rec get_sexpr env e = match e with
       IntLit(i) -> SIntLit(i, Datatype(Int))
@@ -324,14 +325,14 @@ let match_var_type env v t =
 
 (* Checks that a function returned if it was supposed to*)
 let check_final_env env =
-	(if(false = env.return_seen && env.return_type <> Void) then
+	(if(false = env.return_seen && env.return_type <> Datatype(Void)) then
 		raise (Error("Missing Return Statement")));
 	true
 
 (* Default Table and Environment Initializations *)
 let empty_table_initialization = {parent=None; variables =[];}
 let empty_function_table_initialization = {functions=[(Ident("print_string"), Void, [Formal(Datatype(String), Ident("s"))],[]);(Ident("print_int"),Void,[Formal(Datatype(Int),Ident("s"))],[])]}
-let empty_environment = {return_type = Void; return_seen = false; location="main"; global_scope = empty_table_initialization; var_scope = empty_table_initialization; fun_scope = empty_function_table_initialization}
+let empty_environment = {return_type = Datatype(Void); return_seen = false; location="main"; global_scope = empty_table_initialization; var_scope = empty_table_initialization; fun_scope = empty_function_table_initialization}
 
 (*Add functions to the environment *)
 (* let initialize_functions env function_declaration = 
@@ -400,7 +401,7 @@ let rec check_stmt env stmt = match stmt with
 		(SSExpr(get_sexpr env e),env)
 	| Return(e) ->
 		let type1=check_expr env e in
-		(if not(type1=Datatype(env.return_type)) then
+		(if not((type1=env.return_type)) then
 			raise (Error("Incompatible Return Type")));
 		let new_env = {env with return_seen=true} in
 		(SReturn(get_sexpr env e),new_env)
@@ -532,11 +533,13 @@ let add_function env sfunc_decl =
 let check_func env func_declaration =
 	let new_locals = List.fold_left(fun a vs -> (get_name_type_from_formal env vs)::a)[] func_declaration.formals in
 	let new_var_scope = {parent=Some(env.var_scope); variables = new_locals;} in
-	let new_env = {return_type = get_type_from_datatype func_declaration.return; return_seen=false; location="in_func"; global_scope = env.global_scope; var_scope = new_var_scope; fun_scope = env.fun_scope} in
+	let new_env = {return_type = func_declaration.return; return_seen=false; location="in_func"; global_scope = env.global_scope; var_scope = new_var_scope; fun_scope = env.fun_scope} in
 	(* let final_env  =List.fold_left(fun env stmt -> snd (check_stmt env stmt)) new_env func_declaration.body in *)
 	let (typed_statements, final_env) = get_sstmt_list new_env func_declaration.body in
 	let _=check_final_env final_env in
-	let sfuncdecl = ({sreturn = func_declaration.return; sfname = func_declaration.fname; sformals = func_declaration.formals; sbody = typed_statements}) in
+	let sfuncdecl = ({sreturn = func_declaration.return; sfname =
+        func_declaration.fname; sformals = func_declaration.formals; sbody =
+            typed_statements}) in
 	(SFunc_Decl(sfuncdecl,func_declaration.return), env) 
 
 let initialize_functions env function_list = 

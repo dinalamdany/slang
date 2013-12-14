@@ -45,8 +45,9 @@ var_type:
 	|STRING		{String}
 
 ret_type:
-    var_type {$1}
-    | VOID {Void}
+    var_type {Datatype($1)}
+    | VOID {Datatype(Void)}
+    | var_type LBRAC RBRAC { Arraytype(Datatype($1)) }
 
 timeblock_list:
     /* nothing */ {[]}
@@ -58,7 +59,7 @@ timeblock:
 
 fdecl:
     FUNC ret_type ID LPAREN formals_opt RPAREN LBRACE stmt_list RBRACE
-    { { return = Datatype($2);
+    { { return = $2;
     fname = Ident($3);
     formals = $5;
     body = List.rev $8 }} 
@@ -76,7 +77,7 @@ param:
     | var_type ID LBRAC RBRAC {Formal(Arraytype(Datatype($1)),Ident($2))}
 
 event:
-    DELAY INT_LITERAL stmt_list {Event($2,$3)}
+    DELAY INT_LITERAL stmt_list {Event($2,List.rev $3)}
 
 events:
     stmt_list {[ Event(0,List.rev $1)]} 
@@ -148,6 +149,7 @@ expr:
   | MINUS expr %prec UMINUS { Unop(Neg, $2) }
   | expr INC {Unop(Inc, $1)}
   | expr DEC {Unop(Dec, $1)}
+  | NOT expr {Unop(Not, $2)}
   | expr AND expr {Binop($1, And, $3)}
   | expr OR expr {Binop($1, Or, $3)}
   | ID LPAREN expr_list RPAREN {Call(Ident($1), $3)}

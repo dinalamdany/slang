@@ -131,11 +131,11 @@ and gen_expr expr prefix = match expr with
     else prefix ^ gen_id ident ^ "(" ^ gen_expr_list expr_list prefix ^ ")"
 
 and gen_sstmt sstmt lcl_prefix = match sstmt with
-  SBlock(sstmt_list) -> "{\n" ^ gen_sstmt_list sstmt_list  lcl_prefix ^ "\n}\n"
+  SBlock(sstmt_list) -> "{\n\t" ^ gen_sstmt_list sstmt_list  lcl_prefix ^ "\n\t}\n\t"
 | SSExpr(sexpr) -> gen_sexpr sexpr lcl_prefix ^ ";\n\t"
 | SReturn(sexpr) -> "return " ^ gen_sexpr sexpr lcl_prefix ^ ";\n\t"
 | SIf(sexpr, sstmt1, sstmt2) -> "if (" ^ gen_sexpr sexpr lcl_prefix ^
-   ")\n" ^ gen_sstmt sstmt1 lcl_prefix ^ "else " ^ gen_sstmt sstmt2 lcl_prefix
+   ")\n\t" ^ gen_sstmt sstmt1 lcl_prefix ^ "\n\telse " ^ gen_sstmt sstmt2 lcl_prefix
 | SFor(sexpr1, sexpr2, sexpr3, sstmt) ->"for (" ^ gen_sexpr sexpr1 lcl_prefix ^
    "; "^ gen_sexpr sexpr2 lcl_prefix ^ "; " ^ gen_sexpr sexpr3 lcl_prefix ^ ")\n" ^
    gen_sstmt sstmt lcl_prefix
@@ -148,27 +148,27 @@ and gen_sstmt sstmt lcl_prefix = match sstmt with
      (gen_array_sexpr_list sexpr_list sident lcl_prefix) ^ ";\n\t"
 | SArrElemAssign(sident, i, sexpr) -> gen_sid sident lcl_prefix ^
     "[" ^ string_of_int i ^ "] = " ^ gen_sexpr sexpr lcl_prefix ^ ";\n\t"
-| STerminate -> "exit(0)"
+| STerminate -> "exit(0);\n\t"
 
 (*semicolon and newline handled in gen_stmt because blocks dont have semicolon*)
 and gen_stmt stmt prefix = match stmt with
-  Block(stmt_list) -> "{\n" ^ gen_stmt_list stmt_list prefix ^ "\n}\n"
-| Expr(expr) -> gen_expr expr prefix ^ ";\n"
-| Return(expr) -> "return " ^ gen_expr expr prefix ^ ";\n"
-| If(expr, stmt1, stmt2) -> "if (" ^ gen_expr expr prefix ^ ")\n" ^ 
-    gen_stmt stmt1 prefix ^ "else " ^ gen_stmt stmt2 prefix
+  Block(stmt_list) -> "{\n\t" ^ gen_stmt_list stmt_list prefix ^ "\n\t}\n\t"
+| Expr(expr) -> gen_expr expr prefix ^ ";\n\t"
+| Return(expr) -> "return " ^ gen_expr expr prefix ^ ";\n\t"
+| If(expr, stmt1, stmt2) -> "if (" ^ gen_expr expr prefix ^ ")\n\t" ^ 
+    gen_stmt stmt1 prefix ^ "\n\telse " ^ gen_stmt stmt2 prefix
 | For(expr1, expr2, expr3, stmt) -> "for (" ^ gen_expr expr1 prefix ^ "; " ^ 
     gen_expr expr2 prefix ^ "; " ^ gen_expr expr3 prefix ^ ")\n" ^
     gen_stmt stmt prefix
 | While(expr, stmt) -> "while (" ^ gen_expr expr prefix ^ ")\n" ^
-    gen_stmt stmt prefix ^ ";\n"
-| Declaration(decl) -> gen_decl decl prefix ^ ";\n"
-| Assign(ident, expr) -> prefix ^ gen_id ident ^ " = " ^ gen_expr expr prefix ^ ";\n"
-| ArrAssign(ident, expr_list) -> prefix ^ gen_id ident ^ ".clear();\n" ^
-     (gen_array_expr_list expr_list ident prefix) ^ ";\n"
+    gen_stmt stmt prefix ^ ";\n\t"
+| Declaration(decl) -> gen_decl decl prefix ^ ";\n\t"
+| Assign(ident, expr) -> prefix ^ gen_id ident ^ " = " ^ gen_expr expr prefix ^ ";\n\t"
+| ArrAssign(ident, expr_list) -> prefix ^ gen_id ident ^ ".clear();\n\t" ^
+     (gen_array_expr_list expr_list ident prefix) ^ ";\n\t"
 | ArrElemAssign(ident, i, expr) -> prefix ^ gen_id ident ^
-    "[" ^ string_of_int i ^ "] = " ^ gen_expr expr prefix ^ ";\n"
-| Terminate -> "exit(0)"
+    "[" ^ string_of_int i ^ "] = " ^ gen_expr expr prefix ^ ";\n\t"
+| Terminate -> "exit(0);\n\t"
 
 (*gen_sdecl only appears within time blocks, VarDecls are ignored*)
 and gen_sdecl sdecl lcl_prefix = match sdecl with
@@ -287,13 +287,15 @@ let gen_init_linker = function
   Link(s) -> "for (int i = 0; i < " ^ s ^ "_list.size(); i++)\n\t" ^
     "{\n\t\tif (i != " ^ s ^ "_list.size()-1)\n\t\t\t" ^ 
     s ^ "_list[i]->set_next(" ^ s ^ "_list[i+1]);\n\t\telse\n\t\t\t" ^
-    s ^ "_list[i]->set_next(NULL);\n\t}\n\t"
+    s ^ "_list[i]->set_next(NULL);\n\t}\n\t" ^
+    "event_q.add(" ^ s ^ "_block_0obj.get_time(), &" ^ s ^ "_block_0obj);\n\t"
 
 let gen_always_linker = function
   Link(s) -> "for (int i = 0; i < " ^ s ^ "_list.size(); i++)\n\t" ^
     "{\n\t\tif (i != " ^ s ^ "_list.size()-1)\n\t\t\t" ^ 
     s ^ "_list[i]->set_next(" ^ s ^ "_list[i+1]);\n\t\telse\n\t\t\t" ^
-    s ^ "_list[i]->set_next(" ^ s ^ "_list[0]);\n\t}\n\t"
+    s ^ "_list[i]->set_next(" ^ s ^ "_list[0]);\n\t}\n\t" ^
+    "event_q.add(" ^ s ^ "_block_0obj.get_time(), &"^ s ^"_block_0obj);\n\t"
 
 let rec gen_init_linker_list = function
  [] -> ""
@@ -324,8 +326,7 @@ let gen_main = function
   Main(time_block_obj_l, init_link_l, always_link_l) ->
   gen_struct_obj_list time_block_obj_l ^ 
   gen_init_linker_list init_link_l ^
-  gen_always_linker_list always_link_l ^
-  gen_event_q_add_list time_block_obj_l
+  gen_always_linker_list always_link_l
 
 let gen_program = function
   Pretty_c(global_decl_list, global_func_list, time_block_list, main) ->
