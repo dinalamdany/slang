@@ -77,7 +77,7 @@ param:
     | var_type ID LBRAC RBRAC {Formal(Arraytype(Datatype($1)),Ident($2))}
 
 event:
-    DELAY INT_LITERAL stmt_list {Event($2,$3)}
+    DELAY INT_LITERAL stmt_list {Event($2,List.rev $3)}
 
 events:
     stmt_list {[ Event(0,List.rev $1)]} 

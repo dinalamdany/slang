@@ -539,7 +539,7 @@ let check_func env func_declaration =
 	let _=check_final_env final_env in
 	let sfuncdecl = ({sreturn = func_declaration.return; sfname =
         func_declaration.fname; sformals = func_declaration.formals; sbody =
-            List.rev typed_statements}) in
+            typed_statements}) in
 	(SFunc_Decl(sfuncdecl,func_declaration.return), env) 
 
 let initialize_functions env function_list = 
@@ -554,14 +554,14 @@ let check_event (typed_events, env) event =
 	let (time,statements) = get_time_stmts_from_event event in
 	let (typed_statements, final_env) = List.fold_left (fun (sstmt_list, env) stmt -> let (sstmt,new_env) = check_stmt env stmt in 
     (sstmt::sstmt_list,new_env)) ([],env) statements
-	in (SEvent(time, List.rev typed_statements)::typed_events, final_env) 
+	in (SEvent(time, typed_statements)::typed_events, final_env) 
 
 (* Semantic checking on threads*)
  let check_thread env thread_declaration = match thread_declaration with
     Init(events) -> let (typed_events,_) = List.fold_left check_event ([],env) events 
-        in SInit(List.rev typed_events)
+        in SInit(typed_events)
     | Always(events) -> let (typed_events,_) = List.fold_left check_event ([],env) events
-    in SAlways(List.rev typed_events)
+    in SAlways(typed_events)
 
 (*Semantic checking on a program*)
 (* let check_program program =
@@ -580,7 +580,7 @@ let check_program program =
              globals -> initialize_globals (new_globals, env) globals) ([], new_env) globals in
 	let typed_threads = List.map(fun thread -> check_thread new_env2 thread) threads in
 
-	Prog(typed_functions, (typed_globals, List.rev typed_threads))
+	Prog(typed_functions, (typed_globals, typed_threads))
 
 	  (*   let env = List.fold_left(fun env function_declaration -> initialize_functions env function_declaration) empty_environment functions in
 			let typed_functions = List.map(fun function_declaration -> check_func env function_declaration) functions in *)
