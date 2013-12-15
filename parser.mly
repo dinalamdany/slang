@@ -149,6 +149,7 @@ expr:
   | MINUS expr %prec UMINUS { Unop(Neg, $2) }
   | expr INC {Unop(Inc, $1)}
   | expr DEC {Unop(Dec, $1)}
+  | NOT expr {Unop(Not, $2)}
   | expr AND expr {Binop($1, And, $3)}
   | expr OR expr {Binop($1, Or, $3)}
   | ID LPAREN expr_list RPAREN {Call(Ident($1), $3)}
