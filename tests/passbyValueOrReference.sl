@@ -11,11 +11,12 @@ main(){
 	init{
 		int a = 5;
 		foo(a);
-        print(a);
-
+        	print(a);
 		int array[] = [1,2,3];
 		foo2(array);
-	    print(array);
+	    	print(array[0]);
+		print(array[1]);
+		print(array[2]);
     }
 }
 
