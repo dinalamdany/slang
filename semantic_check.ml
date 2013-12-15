@@ -54,11 +54,11 @@ let basic_logic t1 t2 = match(t1,t2) with
 
 let equal_logic t1 t2 = match(t1,t2) with
     (Boolean,Boolean) -> (Boolean,true)
-    | (Int,Int) -> (Int,true)
-    | (Float,Float) -> (Float,true)
-    | (Int,Float) -> (Float,true)
-    | (Float,Int) -> (Float,true)
-    | (String,String) -> (String,true)
+    | (Int,Int) -> (Boolean,true)
+    | (Float,Float) -> (Boolean,true)
+    | (Int,Float) -> (Boolean,true)
+    | (Float,Int) -> (Boolean,true)
+    | (String,String) -> (Boolean,true)
     | (_,_) -> (Int,false) 
 
 (*extracts the type from a datatype declaration*)
