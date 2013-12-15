@@ -23,8 +23,8 @@ let code_event_list = "struct "^ prefix_event_list ^
   "\n\t\tfor (it = event_q.begin(); it != event_q.end(); it++) " ^
   "{\n\t\t\tif ((*it)->get_time() > time_) {\n\t\t\t\t" ^
   "event_q.insert(it, obj_);\n\t\t\t\teol = false;\n\t\t\t\tbreak;" ^
-  "\n\t\t\t}\n\t\t}\n\t\tif (eol) {\n\t\t\tevent_q.push_back(obj_);" ^
-  "\n\t\t}\n\t}\n\tprivate:\n\t\tstd::deque<" ^
+  "\n\t\t\t}\n\t\t}\n\t\tif (eol)\n\t\t\tevent_q.push_back(obj_);" ^
+  "\n\t}\n\tprivate:\n\t\tstd::deque<" ^
   prefix_event ^ "*> event_q;\n};\n" ^ prefix_event_list ^ " event_q;\n\n"
 let code_directives = "#include <iostream>\n#include <string>\n#include <deque>\n#include <vector>\n#include <cstdlib>\n"
 let code_event_list_do = "while(!event_q.empty()) {\n\tevent_q.pop()->foo();\n\t}\n"
@@ -111,7 +111,7 @@ let rec gen_sexpr sexpr lcl_prefix = match sexpr with
 | SCast(datatype, sexpr, d) -> "(" ^ gen_datatype datatype^ ") " ^
     gen_sexpr sexpr lcl_prefix
 | SCall(sident, sexpr_list, d) -> if ((gen_plain_sid sident) = print)
-    then "std::cout << "^ gen_sexpr_list sexpr_list lcl_prefix ^ " << std::endl"
+    then "std::cout << ("^ gen_sexpr_list sexpr_list lcl_prefix ^ ") << std::endl"
     else gen_sid sident lcl_prefix ^ "(" ^ gen_sexpr_list sexpr_list lcl_prefix ^ ")"
 
 and gen_expr expr prefix = match expr with
@@ -127,15 +127,15 @@ and gen_expr expr prefix = match expr with
 | ExprAssign(ident, expr) -> prefix ^ gen_id ident ^ " = " ^ gen_expr expr prefix
 | Cast(datatype, expr) -> "(" ^ gen_datatype datatype^ ") " ^ gen_expr expr prefix
 | Call(ident, expr_list) -> if ((gen_id ident) = print)
-    then "std::cout << "^ gen_expr_list expr_list prefix ^ " << std::endl"
+    then "std::cout << ("^ gen_expr_list expr_list prefix ^ ") << std::endl"
     else prefix ^ gen_id ident ^ "(" ^ gen_expr_list expr_list prefix ^ ")"
 
 and gen_sstmt sstmt lcl_prefix = match sstmt with
-  SBlock(sstmt_list) -> "{\n" ^ gen_sstmt_list sstmt_list  lcl_prefix ^ "\n}\n"
+  SBlock(sstmt_list) -> "{\n\t" ^ gen_sstmt_list sstmt_list  lcl_prefix ^ "\n\t}\n\t"
 | SSExpr(sexpr) -> gen_sexpr sexpr lcl_prefix ^ ";\n\t"
 | SReturn(sexpr) -> "return " ^ gen_sexpr sexpr lcl_prefix ^ ";\n\t"
 | SIf(sexpr, sstmt1, sstmt2) -> "if (" ^ gen_sexpr sexpr lcl_prefix ^
-   ")\n" ^ gen_sstmt sstmt1 lcl_prefix ^ "else " ^ gen_sstmt sstmt2 lcl_prefix
+   ")\n\t" ^ gen_sstmt sstmt1 lcl_prefix ^ "\n\telse " ^ gen_sstmt sstmt2 lcl_prefix
 | SFor(sexpr1, sexpr2, sexpr3, sstmt) ->"for (" ^ gen_sexpr sexpr1 lcl_prefix ^
    "; "^ gen_sexpr sexpr2 lcl_prefix ^ "; " ^ gen_sexpr sexpr3 lcl_prefix ^ ")\n" ^
    gen_sstmt sstmt lcl_prefix
@@ -148,27 +148,27 @@ and gen_sstmt sstmt lcl_prefix = match sstmt with
      (gen_array_sexpr_list sexpr_list sident lcl_prefix) ^ ";\n\t"
 | SArrElemAssign(sident, i, sexpr) -> gen_sid sident lcl_prefix ^
     "[" ^ string_of_int i ^ "] = " ^ gen_sexpr sexpr lcl_prefix ^ ";\n\t"
-| STerminate -> "exit(0)"
+| STerminate -> "exit(0);\n\t"
 
 (*semicolon and newline handled in gen_stmt because blocks dont have semicolon*)
 and gen_stmt stmt prefix = match stmt with
-  Block(stmt_list) -> "{\n" ^ gen_stmt_list stmt_list prefix ^ "\n}\n"
-| Expr(expr) -> gen_expr expr prefix ^ ";\n"
-| Return(expr) -> "return " ^ gen_expr expr prefix ^ ";\n"
-| If(expr, stmt1, stmt2) -> "if (" ^ gen_expr expr prefix ^ ")\n" ^ 
-    gen_stmt stmt1 prefix ^ "else " ^ gen_stmt stmt2 prefix
+  Block(stmt_list) -> "{\n\t" ^ gen_stmt_list stmt_list prefix ^ "\n\t}\n\t"
+| Expr(expr) -> gen_expr expr prefix ^ ";\n\t"
+| Return(expr) -> "return " ^ gen_expr expr prefix ^ ";\n\t"
+| If(expr, stmt1, stmt2) -> "if (" ^ gen_expr expr prefix ^ ")\n\t" ^ 
+    gen_stmt stmt1 prefix ^ "\n\telse " ^ gen_stmt stmt2 prefix
 | For(expr1, expr2, expr3, stmt) -> "for (" ^ gen_expr expr1 prefix ^ "; " ^ 
     gen_expr expr2 prefix ^ "; " ^ gen_expr expr3 prefix ^ ")\n" ^
     gen_stmt stmt prefix
 | While(expr, stmt) -> "while (" ^ gen_expr expr prefix ^ ")\n" ^
-    gen_stmt stmt prefix ^ ";\n"
-| Declaration(decl) -> gen_decl decl prefix ^ ";\n"
-| Assign(ident, expr) -> prefix ^ gen_id ident ^ " = " ^ gen_expr expr prefix ^ ";\n"
-| ArrAssign(ident, expr_list) -> prefix ^ gen_id ident ^ ".clear();\n" ^
-     (gen_array_expr_list expr_list ident prefix) ^ ";\n"
+    gen_stmt stmt prefix ^ ";\n\t"
+| Declaration(decl) -> gen_decl decl prefix ^ ";\n\t"
+| Assign(ident, expr) -> prefix ^ gen_id ident ^ " = " ^ gen_expr expr prefix ^ ";\n\t"
+| ArrAssign(ident, expr_list) -> prefix ^ gen_id ident ^ ".clear();\n\t" ^
+     (gen_array_expr_list expr_list ident prefix) ^ ";\n\t"
 | ArrElemAssign(ident, i, expr) -> prefix ^ gen_id ident ^
-    "[" ^ string_of_int i ^ "] = " ^ gen_expr expr prefix ^ ";\n"
-| Terminate -> "exit(0)"
+    "[" ^ string_of_int i ^ "] = " ^ gen_expr expr prefix ^ ";\n\t"
+| Terminate -> "exit(0);\n\t"
 
 (*gen_sdecl only appears within time blocks, VarDecls are ignored*)
 and gen_sdecl sdecl lcl_prefix = match sdecl with
@@ -179,7 +179,7 @@ and gen_sdecl sdecl lcl_prefix = match sdecl with
 and gen_svalue datatype svalue sident lcl_prefix = match svalue with
   SExprVal(sexpr) -> lcl_prefix ^ gen_plain_sid sident ^
     " = " ^ gen_sexpr sexpr lcl_prefix ^ ";\n"
-| SArrVal(sexpr_list) -> lcl_prefix ^ gen_plain_sid sident ^ ".clear();\n" ^
+| SArrVal(sexpr_list) -> gen_sid sident lcl_prefix ^ ".clear();\n" ^
      (gen_array_sexpr_list sexpr_list sident lcl_prefix) ^ ";\n"
 
 (*semicolon and newline handled in gen_decl since array decl assignment is actually vector push_back*)
@@ -197,8 +197,8 @@ and gen_value datatype value ident prefix = match value with
 
 and gen_array_sexpr_list sexpr_list sident lcl_prefix = match sexpr_list with
  [] -> ""
-| h::[] -> lcl_prefix ^ gen_plain_sid sident ^ ".push_back(" ^ gen_sexpr h lcl_prefix ^");\n"
-| h::t -> lcl_prefix ^ gen_plain_sid sident ^ ".push_back(" ^ gen_sexpr h lcl_prefix
+| h::[] -> gen_sid sident lcl_prefix ^ ".push_back(" ^ gen_sexpr h lcl_prefix ^");\n"
+| h::t -> gen_sid sident lcl_prefix ^ ".push_back(" ^ gen_sexpr h lcl_prefix
   ^ ");\n" ^ (gen_array_sexpr_list t sident lcl_prefix)
 
 and gen_array_expr_list expr_list ident prefix = match expr_list with
