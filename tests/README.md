@@ -9,6 +9,7 @@ Each test file should compile and produce a c++ program.  Each test file needs a
 
 ###Tester
 The test script, test_all.sh, is located in slang/scripts
+
 Usage: ./test_all.sh
 
 Output:  The test script should give either an OK, or a BAD result.  BAD results follow differences between the expected output and the actual output of the program.
