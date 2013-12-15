@@ -287,13 +287,15 @@ let gen_init_linker = function
   Link(s) -> "for (int i = 0; i < " ^ s ^ "_list.size(); i++)\n\t" ^
     "{\n\t\tif (i != " ^ s ^ "_list.size()-1)\n\t\t\t" ^ 
     s ^ "_list[i]->set_next(" ^ s ^ "_list[i+1]);\n\t\telse\n\t\t\t" ^
-    s ^ "_list[i]->set_next(NULL);\n\t}\n\t"
+    s ^ "_list[i]->set_next(NULL);\n\t}\n\t" ^
+    "event_q.add(" ^ s ^ "_block_0obj.get_time(), &" ^ s ^ "_block_0obj);\n\t"
 
 let gen_always_linker = function
   Link(s) -> "for (int i = 0; i < " ^ s ^ "_list.size(); i++)\n\t" ^
     "{\n\t\tif (i != " ^ s ^ "_list.size()-1)\n\t\t\t" ^ 
     s ^ "_list[i]->set_next(" ^ s ^ "_list[i+1]);\n\t\telse\n\t\t\t" ^
-    s ^ "_list[i]->set_next(" ^ s ^ "_list[0]);\n\t}\n\t"
+    s ^ "_list[i]->set_next(" ^ s ^ "_list[0]);\n\t}\n\t" ^
+    "event_q.add(" ^ s ^ "_block_0obj.get_time(), &"^ s ^"_block_0obj);\n\t"
 
 let rec gen_init_linker_list = function
  [] -> ""
@@ -324,8 +326,7 @@ let gen_main = function
   Main(time_block_obj_l, init_link_l, always_link_l) ->
   gen_struct_obj_list time_block_obj_l ^ 
   gen_init_linker_list init_link_l ^
-  gen_always_linker_list always_link_l ^
-  gen_event_q_add_list time_block_obj_l
+  gen_always_linker_list always_link_l
 
 let gen_program = function
   Pretty_c(global_decl_list, global_func_list, time_block_list, main) ->
