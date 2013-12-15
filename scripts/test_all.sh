@@ -6,8 +6,9 @@ COMPFILE="temp_test"
 for TESTFILE in ../tests/*.sl;
 do
  	echo "	TESTING $TESTFILE"
-	OUTFILENAME="${TESTFILE:0:-3}.output"
-	TESTFILENAME="${TESTFILE:0:-3}.out"
+	LEN=$((${#TESTFILE}-3))
+	OUTFILENAME="${TESTFILE:0:$LEN}.output"
+	TESTFILENAME="${TESTFILE:0:$LEN}.out"
 	"$COMPILER" < "$TESTFILE"
 	g++ output.cpp -o "$COMPFILE"
 	./"$COMPFILE" > "$OUTFILENAME"
