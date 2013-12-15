@@ -45,8 +45,9 @@ var_type:
 	|STRING		{String}
 
 ret_type:
-    var_type {$1}
-    | VOID {Void}
+    var_type {Datatype($1)}
+    | VOID {Datatype(Void)}
+    | var_type LBRAC RBRAC { Arraytype(Datatype($1)) }
 
 timeblock_list:
     /* nothing */ {[]}
@@ -58,7 +59,7 @@ timeblock:
 
 fdecl:
     FUNC ret_type ID LPAREN formals_opt RPAREN LBRACE stmt_list RBRACE
-    { { return = Datatype($2);
+    { { return = $2;
     fname = Ident($3);
     formals = $5;
     body = List.rev $8 }} 
