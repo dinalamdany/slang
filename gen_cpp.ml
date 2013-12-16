@@ -123,7 +123,7 @@ and gen_expr expr prefix = match expr with
 | Unop(unop, expr) -> gen_unop unop ^ "(" ^ gen_expr expr prefix ^ ")"
 | Binop(expr1, binop, expr2) -> gen_expr expr1 prefix ^ gen_binop binop ^
     gen_expr expr2 prefix
-| ArrElem(ident, i) -> prefix ^ gen_id ident ^ "[" ^ string_of_int i ^ "]"
+| ArrElem(ident, i) -> prefix ^ gen_id ident ^ "[" ^ gen_expr i prefix^ "]"
 | ExprAssign(ident, expr) -> prefix ^ gen_id ident ^ " = " ^ gen_expr expr prefix
 | Cast(datatype, expr) -> "(" ^ gen_datatype datatype^ ") " ^ gen_expr expr prefix
 | Call(ident, expr_list) -> if ((gen_id ident) = print)
@@ -167,7 +167,7 @@ and gen_stmt stmt prefix = match stmt with
 | ArrAssign(ident, expr_list) -> prefix ^ gen_id ident ^ ".clear();\n\t" ^
      (gen_array_expr_list expr_list ident prefix) ^ ";\n\t"
 | ArrElemAssign(ident, i, expr) -> prefix ^ gen_id ident ^
-    "[" ^ string_of_int i ^ "] = " ^ gen_expr expr prefix ^ ";\n\t"
+    "[" ^ gen_expr i prefix ^ "] = " ^ gen_expr expr prefix ^ ";\n\t"
 | Terminate -> "exit(0);\n\t"
 
 (*gen_sdecl only appears within time blocks, VarDecls are ignored*)
