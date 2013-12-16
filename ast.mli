@@ -18,7 +18,7 @@ type expr =
   | Variable of ident 
   | Unop of unop * expr
   | Binop of expr * binop * expr
-  | ArrElem of ident * int
+  | ArrElem of ident * expr
   | ExprAssign of ident * expr
   | Cast of datatype * expr
   | Call of ident * expr list
@@ -41,7 +41,7 @@ type stmt =
   | Declaration of decl 
   | Assign of ident * expr
   | ArrAssign of ident * expr list
-  | ArrElemAssign of ident * int * expr
+  | ArrElemAssign of ident * expr * expr
   | Terminate
 
 type event = 

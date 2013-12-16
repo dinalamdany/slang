@@ -134,6 +134,12 @@ let find_local_variable env name =
 	try List.find (fun (s,_,_) -> s=name) env.var_scope.variables
 	with Not_found -> raise Not_found *)
 
+let get_int_from_var env v = 
+    let (_,ty,value) = try find_variable env v with Not_found -> raise(Error("Cannot
+    index a non-initialized variable")) in match value with
+        Some(ExprVal(IntLit(x))) -> x
+        | _ -> raise(Error("Non-integer variable value"))
+
 (*Semantic checking on expressions*)
 let rec check_expr env e = match e with
     IntLit(i) ->Datatype(Int)
@@ -156,14 +162,18 @@ let rec check_expr env e = match e with
     	let (t, valid) = get_binop_return_value b t1 t2 in
     	if valid then t else raise(Error("Incompatible types with binary
         operator"));
-    | ArrElem(id, index) -> let (_,ty,v ) = try find_variable env id with
+    | ArrElem(id, i) -> let (_,ty,v ) = try find_variable env id with
     Not_found -> raise(Error("Uninitialized array")) in let
     el_type = (match ty with 
             Arraytype(Datatype(x)) -> Datatype(x)
             | _ -> raise(Error("Cannot index a non-array expression")))
-    in (match v with 
-        Some(ArrVal(x)) -> if index < List.length x then el_type else
-            raise(Error("Index out of bounds" ^ string_of_int index))
+     in let ind = (match i with 
+        IntLit(x) -> x
+        | Variable(v) -> get_int_from_var env v
+        | _ -> raise(Error("Cannot index non-integer value")))
+        in (match v with 
+        Some(ArrVal(x)) -> if ind < List.length x then el_type else
+            raise(Error("Index out of bounds" ^ string_of_int ind))
         | _ -> raise(Error("Cannot index a non-array expression")))
     | ExprAssign(id, e) -> let (_,t1,_) = (find_variable env id) and t2 =
         check_expr env e 
@@ -199,7 +209,12 @@ let rec get_sexpr env e = match e with
       | Variable(id) -> SVariable(SIdent(id, get_var_scope env id), check_expr env e)
       | Unop(u,ex) -> SUnop(u, get_sexpr env ex, check_expr env e)
       | Binop(e1,b,e2) -> SBinop(get_sexpr env e1,b, get_sexpr env e2,check_expr env e) 
-      | ArrElem(id,index) -> SArrElem(SIdent(id, get_var_scope env id),index, check_expr env e)  
+      | ArrElem(id,index) -> 
+              (match index with 
+                IntLit(ind) -> SArrElem(SIdent(id, get_var_scope env id), ind, check_expr env e)  
+                | Variable(v) -> let ind = get_int_from_var env v in
+                SArrElem(SIdent(id,get_var_scope env id),ind,check_expr env e)
+                | _ -> raise(Error("Cannot index a non-integer expression")))
       | ExprAssign(id,ex) -> SExprAssign(SIdent(id, get_var_scope env id),
       get_sexpr env ex,check_expr env e) 
       | Cast(ty,ex) -> SCast(ty,get_sexpr env ex,ty)
@@ -479,7 +494,7 @@ let rec check_stmt env stmt = match stmt with
 			if(t1!=t2) then raise (Error("Type Mismatch")) in
 		let new_env = update_variable env (n,dt,(Some(ArrVal(expr_list)))) in
 		(SArrAssign(SIdent(ident,get_var_scope env ident), sexpr_list), new_env)
-	| Ast.ArrElemAssign(ident, i, expr2) ->
+	| Ast.ArrElemAssign(ident, index, expr2) ->
 		(* Make sure
 			1) array exists (if it exists, then it was already declared and semantically checked)
 			2) expr matches type of array 
@@ -487,16 +502,20 @@ let rec check_stmt env stmt = match stmt with
 		let (id, dt, v) = try find_variable env ident with Not_found -> raise (Error("Undeclared array")) in
 		let t1 = get_type_from_datatype(dt) and t2 = get_type_from_datatype(check_expr env expr2) in
 		let _ = if(t1=t2) then true else raise (Error("Type Mismatch")) in
-		let expr_list = match v with
+		let expr_list = (match v with
 				Some(ArrVal(el)) -> (* get_sexpr_list env  *)el
 				| None -> raise (Error("No expression on right hand side"))
-				| _ -> raise (Error("???")) in
-		let _ = if(i>(List.length expr_list)-1 || i<0)
-			then raise (Error("Index out of bounds: "^ (string_of_int i) )) in
-		(* since arrays are not mutable, we have to replace the entire array *)
-		let new_list = update_list expr_list i expr2 in
+				| _ -> raise (Error("???"))) in
+        let ind = (match index with
+              IntLit(i) -> i
+              | Variable(v) -> get_int_from_var env v
+              | _ -> raise(Error("Cannot index a non-integer expression"))) in 
+		let _ = if(ind>(List.length expr_list)-1 || ind<0)
+			then raise (Error("Index out of bounds: "^ (string_of_int ind) )) in
+		(* since arrays are not mutable, we have to replace the entire arry *)
+		let new_list = update_list expr_list ind expr2 in
 		let new_env = update_variable env (id, dt, Some(ArrVal(new_list))) in
-		(SArrElemAssign(SIdent(ident,get_var_scope env ident), i, get_sexpr env expr2), new_env)
+		(SArrElemAssign(SIdent(ident,get_var_scope env ident), ind, get_sexpr env expr2), new_env)
 	| Terminate -> (STerminate, env)
 
 let get_sstmt_list env stmt_list = 
