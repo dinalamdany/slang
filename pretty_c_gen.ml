@@ -129,7 +129,7 @@ let gen_time_block = function
 
 let gen_func = function
   SFunc_Decl(sfuncstr, datatype) -> {return=sfuncstr.sreturn; fname=sfuncstr.sfname; 
-                                    formals=sfuncstr.sformals; body= List.map gen_stmt sfuncstr.sbody}
+                                    formals=sfuncstr.sformals; body= List.map gen_stmt (List.rev sfuncstr.sbody)}
 
 (* Main function to generate a pretty_c *)
 let gen_pretty_c = function 
