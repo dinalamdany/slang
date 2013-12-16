@@ -23,7 +23,7 @@ func int fib(int n){
 main(){
 	init{
 		#1
-		int fib = fib(5);
+		int fib = fib(7);
 		print(fib);
 	}
 }

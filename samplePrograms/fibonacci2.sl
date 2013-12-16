@@ -6,8 +6,8 @@ main(){
 	
 	init
 	{
-		#0 print(0);print(1); /* Print initial values */
-		#10 Terminate; /* Calculate fib(10 + 2) (10 + initial values) */
+		#7 print(result); /* print result of fib */
+		Terminate;
 	}
 	/* Loop to calculate numbers */
 	always
@@ -16,7 +16,5 @@ main(){
 		result  = prev + prevPrev;
 		prevPrev = prev;
 		prev = result;
-
-		print(result);
 	}
 }
