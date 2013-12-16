@@ -147,9 +147,10 @@ let rec check_expr env e = match e with
     | FloatLit(f) -> Datatype(Float)
     | StringLit(s) -> Datatype(String)
     | Variable(v) -> 
-    	let (_,s_type,_) = try find_variable env v with 
+    	let (_,s_type,value) = try find_variable env v with 
     		Not_found ->
-            	raise (Error("Undeclared Identifier " )) in s_type
+            	raise (Error("Undeclared Identifier " )) in if value != None
+                then s_type else raise(Error("Uninitialized variable"))
     | Unop(u, e) -> 
     	let t = check_expr env e in 
         (match u with
