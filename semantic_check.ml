@@ -150,7 +150,7 @@ let rec check_expr env e = match e with
     	let (_,s_type,value) = try find_variable env v with 
     		Not_found ->
             	raise (Error("Undeclared Identifier " )) in if value != None
-                then s_type else raise(Error("Uninitialized variable"))
+                then s_type else raise(Error("Uninitialized variableZZZ"))
     | Unop(u, e) -> 
     	let t = check_expr env e in 
         (match u with
@@ -163,7 +163,25 @@ let rec check_expr env e = match e with
     	let (t, valid) = get_binop_return_value b t1 t2 in
     	if valid then t else raise(Error("Incompatible types with binary
         operator"));
-    | ArrElem(id, i) -> let (_,ty,v ) = try find_variable env id with
+
+    | ArrElem(id, expr) -> 
+    	(* return SArrElem(id, expr, datatype) where:
+    		id is name of array variable
+    		expr has datatype Int
+    		datatype is type of array *)
+		let (_, ty, v) = try find_variable env id with
+			Not_found -> raise(Error("Uninitialized array")) in
+		let el_type = (match ty with 
+			Arraytype(Datatype(x)) -> Datatype(x)
+            | _ -> raise(Error("Cannot index a non-array expression"))) in
+		let expr_type = check_expr env expr in 
+		let ty = match expr_type with
+			Datatype(ty) -> ty in
+		let _ = if not(ty=Int) then raise(Error("index must be an integer")) in
+		(el_type)
+
+
+(*     | ArrElem(id, i) -> let (_,ty,v ) = try find_variable env id with
     Not_found -> raise(Error("Uninitialized array")) in let
     el_type = (match ty with 
             Arraytype(Datatype(x)) -> Datatype(x)
@@ -175,7 +193,7 @@ let rec check_expr env e = match e with
         in (match v with 
         Some(ArrVal(x)) -> if ind < List.length x then el_type else
             raise(Error("Index out of bounds" ^ string_of_int ind))
-        | _ -> raise(Error("Cannot index a non-array expression")))
+        | _ -> raise(Error("Cannot index a non-array expression"))) *)
     | ExprAssign(id, e) -> let (_,t1,_) = (find_variable env id) and t2 =
         check_expr env e 
         in (if not (t1 = t2) then (raise (Error("Mismatch in types for assignment")))); check_expr env e
@@ -209,20 +227,15 @@ let rec get_sexpr env e = match e with
       | StringLit(s) -> SStringLit(s,Datatype(String))
       | Variable(id) -> SVariable(SIdent(id, get_var_scope env id), check_expr env e)
       | Unop(u,ex) -> SUnop(u, get_sexpr env ex, check_expr env e)
-      | Binop(e1,b,e2) -> SBinop(get_sexpr env e1,b, get_sexpr env e2,check_expr env e) 
-      | ArrElem(id,index) -> 
+      | Binop(e1,b,e2) -> SBinop(get_sexpr env e1,b, get_sexpr env e2,check_expr env e)
+      | ArrElem(id, expr) -> SArrElem(SIdent(id, get_var_scope env id), get_sexpr env expr, check_expr env expr)
+(*       | ArrElem(id,index) -> 
               (match index with 
-                IntLit(ind) -> SArrElem(SIdent(id, get_var_scope env id), get_sexpr env index, check_expr env e)  
-                | Variable(v) -> 
-                	let ind = get_int_from_var env v in
-  					let (_,_,value) = find_variable env v in
-  					let ev = match value with
-  						Some(x) -> x
-  						| None -> raise (Error("no value")) in
-  					let sexpr = match ev with
-  						ExprVal(se) -> get_sexpr env se in
-                SArrElem(SIdent(id,get_var_scope env id), sexpr ,check_expr env e)
-                | _ -> raise(Error("Cannot index a non-integer expression")))
+                IntLit(ind) -> SArrElem(SIdent(id, get_var_scope env id), ind, check_expr env e)  
+                | Variable(v) -> let ind = get_int_from_var env v in
+                SArrElem(SIdent(id,get_var_scope env id),ind,check_expr env e)
+                | _ -> raise(Error("Cannot index a non-integer expression"))) *)
+
       | ExprAssign(id,ex) -> SExprAssign(SIdent(id, get_var_scope env id),
       get_sexpr env ex,check_expr env e) 
       | Cast(ty,ex) -> SCast(ty,get_sexpr env ex,ty)
@@ -502,7 +515,28 @@ let rec check_stmt env stmt = match stmt with
 			if(t1!=t2) then raise (Error("Type Mismatch")) in
 		let new_env = update_variable env (n,dt,(Some(ArrVal(expr_list)))) in
 		(SArrAssign(SIdent(ident,get_var_scope env ident), sexpr_list), new_env)
-	| Ast.ArrElemAssign(ident, index, expr2) ->
+	| Ast.ArrElemAssign(ident, expr1, expr2) ->
+		(* Make sure
+			1) array exists (if it exists, then it was already declared and semantically checked)
+			2) expr matches type of array 
+			3) index is not out of bounds *)
+		let (id, dt, v) = try find_variable env ident with Not_found -> raise (Error("Undeclared array")) in
+		let t1 = get_type_from_datatype(dt) and t2 = get_type_from_datatype(check_expr env expr2) in
+		let _ = if(t1=t2) then true else raise (Error("Type Mismatch")) in
+		let expr_list = (match v with
+				Some(ArrVal(el)) -> (* get_sexpr_list env  *)el
+				| None -> raise (Error("No expression on right hand side"))
+				| _ -> raise (Error("???"))) in
+        let t = get_type_from_datatype(check_expr env expr1) in
+        let _ = if not(t=Int) then raise(Error("Array index must be an integer")) in
+(* 		let _ = if(ind>(List.length expr_list)-1 || ind<0)
+			then raise (Error("Index out of bounds: "^ (string_of_int ind) )) in *)
+		
+		(* Need an integer index to update the list, but I'm not guaranteed to have one *)
+(* 		let new_list = update_list expr_list ind expr2 in
+		let new_env = update_variable env (id, dt, Some(ArrVal(new_list))) in *)
+		(SArrElemAssign(SIdent(ident,get_var_scope env ident), get_sexpr env expr1, get_sexpr env expr2), env)
+(* 	| Ast.ArrElemAssign(ident, index, expr2) ->
 		(* Make sure
 			1) array exists (if it exists, then it was already declared and semantically checked)
 			2) expr matches type of array 
@@ -523,7 +557,7 @@ let rec check_stmt env stmt = match stmt with
 		(* since arrays are not mutable, we have to replace the entire arry *)
 		let new_list = update_list expr_list ind expr2 in
 		let new_env = update_variable env (id, dt, Some(ArrVal(new_list))) in
-		(SArrElemAssign(SIdent(ident,get_var_scope env ident), get_sexpr new_env index, get_sexpr env expr2), new_env)
+		(SArrElemAssign(SIdent(ident,get_var_scope env ident), ind, get_sexpr env expr2), new_env) *)
 	| Terminate -> (STerminate, env)
 
 let get_sstmt_list env stmt_list = 
