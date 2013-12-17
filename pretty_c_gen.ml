@@ -41,7 +41,7 @@ let rec gen_expr = function
 | SVariable(sident, datatype) -> Variable(gen_ident sident)
 | SUnop(unop, sexpr, datatype)-> Unop(unop, gen_expr sexpr)
 | SBinop(sexpr, binop, sexpr2, datatype) -> Binop(gen_expr sexpr, binop, gen_expr sexpr2)
-| SArrElem(sident, i, datatype) -> ArrElem(gen_ident sident, IntLit(i))
+| SArrElem(sident, i, datatype) -> ArrElem(gen_ident sident, gen_expr i)
 | SExprAssign(sident, sexpr, datatype) -> ExprAssign(gen_ident sident, gen_expr sexpr)
 | SCast(datatype, sexpr, datatype2) -> Cast(datatype, gen_expr sexpr)
 | SCall(sident, sexpr_list, datatype) -> Call(gen_ident sident, List.map gen_expr sexpr_list)
@@ -64,7 +64,7 @@ SBlock(sstmt_list) -> Block(List.map gen_stmt sstmt_list)
 | SDeclaration(sdecl) -> Declaration(gen_decl sdecl)
 | SAssign(sident, sexpr) -> Assign(gen_ident sident, gen_expr sexpr)
 | SArrAssign(sident, sexpr_list) -> ArrAssign(gen_ident sident, List.map gen_expr sexpr_list)
-| SArrElemAssign(sident, i, sexpr) -> ArrElemAssign(gen_ident sident, IntLit(i), gen_expr sexpr)
+| SArrElemAssign(sident, i, sexpr) -> ArrElemAssign(gen_ident sident, gen_expr i, gen_expr sexpr)
 | STerminate -> Terminate
 
 (* Section for special v_decl filtering *)
@@ -77,7 +77,7 @@ let rec gen_tb_expr = function
 | SVariable(sident, datatype) -> Variable(gen_ident sident)
 | SUnop(unop, sexpr, datatype)-> Unop(unop, gen_expr sexpr)
 | SBinop(sexpr, binop, sexpr2, datatype) -> Binop(gen_tb_expr sexpr, binop, gen_tb_expr sexpr2)
-| SArrElem(sident, i, datatype) -> ArrElem(gen_ident sident, IntLit(i))
+| SArrElem(sident, i, datatype) -> ArrElem(gen_ident sident, gen_expr i)
 | SExprAssign(sident, sexpr, datatype) -> ExprAssign(gen_ident sident, gen_tb_expr sexpr)
 | SCast(datatype, sexpr, datatype2) -> Cast(datatype, gen_tb_expr sexpr)
 | SCall(sident, sexpr_list, datatype) -> Call(gen_ident sident, List.map gen_tb_expr sexpr_list)
@@ -98,7 +98,7 @@ SBlock(sstmt_list) -> Block(List.map gen_tb_stmt sstmt_list)
 | SDeclaration(sdecl) -> Declaration(gen_tb_decl sdecl)
 | SAssign(sident, sexpr) -> Assign(gen_ident sident, gen_tb_expr sexpr)
 | SArrAssign(sident, sexpr_list) -> ArrAssign(gen_ident sident, List.map gen_tb_expr sexpr_list)
-| SArrElemAssign(sident, i, sexpr) -> ArrElemAssign(gen_ident sident, IntLit(i), gen_tb_expr sexpr)
+| SArrElemAssign(sident, i, sexpr) -> ArrElemAssign(gen_ident sident, gen_expr i, gen_tb_expr sexpr)
 | STerminate -> Terminate
 
 let gen_tb_vdecls = function
@@ -138,4 +138,4 @@ let gen_pretty_c = function
     let decl_list = List.map gen_decl sdecl_list in (* Declarations *)
     let time_block_list = List.map gen_time_block (List.rev sthread_list) in (* Time Blocks *)
     let main = Main(List.rev m_lists.so, List.rev m_lists.l1, List.rev m_lists.l2) in (* Main *)
-      Pretty_c(decl_list, func_list, time_block_list, main) (* Pretty_c *)
+      Pretty_c(List.rev decl_list, List.rev func_list, time_block_list, main) (* Pretty_c *)
