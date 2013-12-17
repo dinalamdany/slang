@@ -138,4 +138,4 @@ let gen_pretty_c = function
     let decl_list = List.map gen_decl sdecl_list in (* Declarations *)
     let time_block_list = List.map gen_time_block (List.rev sthread_list) in (* Time Blocks *)
     let main = Main(List.rev m_lists.so, List.rev m_lists.l1, List.rev m_lists.l2) in (* Main *)
-      Pretty_c(decl_list, func_list, time_block_list, main) (* Pretty_c *)
+      Pretty_c(List.rev decl_list, List.rev func_list, time_block_list, main) (* Pretty_c *)
