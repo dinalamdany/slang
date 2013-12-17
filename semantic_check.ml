@@ -433,6 +433,7 @@ let rec check_stmt env stmt = match stmt with
 		let revst = List.rev st in
 		(SBlock(revst),ls)
 	| Expr(e) -> 
+		let _ = check_expr env e in
 		(SSExpr(get_sexpr env e),env)
 	| Return(e) ->
 		let type1=check_expr env e in
