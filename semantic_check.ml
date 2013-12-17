@@ -212,9 +212,16 @@ let rec get_sexpr env e = match e with
       | Binop(e1,b,e2) -> SBinop(get_sexpr env e1,b, get_sexpr env e2,check_expr env e) 
       | ArrElem(id,index) -> 
               (match index with 
-                IntLit(ind) -> SArrElem(SIdent(id, get_var_scope env id), ind, check_expr env e)  
-                | Variable(v) -> let ind = get_int_from_var env v in
-                SArrElem(SIdent(id,get_var_scope env id),ind,check_expr env e)
+                IntLit(ind) -> SArrElem(SIdent(id, get_var_scope env id), get_sexpr env index, check_expr env e)  
+                | Variable(v) -> 
+                	let ind = get_int_from_var env v in
+  					let (_,_,value) = find_variable env v in
+  					let ev = match value with
+  						Some(x) -> x
+  						| None -> raise (Error("no value")) in
+  					let sexpr = match ev with
+  						ExprVal(se) -> get_sexpr env se in
+                SArrElem(SIdent(id,get_var_scope env id), sexpr ,check_expr env e)
                 | _ -> raise(Error("Cannot index a non-integer expression")))
       | ExprAssign(id,ex) -> SExprAssign(SIdent(id, get_var_scope env id),
       get_sexpr env ex,check_expr env e) 
@@ -516,7 +523,7 @@ let rec check_stmt env stmt = match stmt with
 		(* since arrays are not mutable, we have to replace the entire arry *)
 		let new_list = update_list expr_list ind expr2 in
 		let new_env = update_variable env (id, dt, Some(ArrVal(new_list))) in
-		(SArrElemAssign(SIdent(ident,get_var_scope env ident), ind, get_sexpr env expr2), new_env)
+		(SArrElemAssign(SIdent(ident,get_var_scope env ident), get_sexpr new_env index, get_sexpr env expr2), new_env)
 	| Terminate -> (STerminate, env)
 
 let get_sstmt_list env stmt_list = 

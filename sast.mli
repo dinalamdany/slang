@@ -21,7 +21,8 @@ and sexpr =
     | SVariable of sident * datatype
     | SUnop of unop * sexpr * datatype
     | SBinop of sexpr * binop * sexpr * datatype
-    | SArrElem of sident * int * datatype
+    (* changed int to sexpr in SArrElem *)
+    | SArrElem of sident * sexpr * datatype
     | SExprAssign of sident * sexpr * datatype
     | SCast of datatype * sexpr * datatype
     | SCall of sident * sexpr list * datatype
@@ -41,7 +42,8 @@ type sstmt =
 	| SDeclaration of sdecl
 	| SAssign of sident * sexpr
 	| SArrAssign of sident * sexpr list
-	| SArrElemAssign of sident * int * sexpr
+	(* changed int to sexpr *)
+	| SArrElemAssign of sident * sexpr * sexpr
 	| STerminate 
 
 type sfuncstr = {
