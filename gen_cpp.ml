@@ -105,7 +105,7 @@ let rec gen_sexpr sexpr lcl_prefix = match sexpr with
 | SUnop(unop, sexpr, d) -> gen_unop unop ^ "(" ^ gen_sexpr sexpr lcl_prefix ^ ")"
 | SBinop(sexpr1, binop, sexpr2, d) -> gen_sexpr sexpr1 lcl_prefix ^ gen_binop binop ^
     gen_sexpr sexpr2 lcl_prefix
-| SArrElem(sident, i, d) -> gen_sid sident lcl_prefix^ "[" ^ string_of_int i ^ "]"
+| SArrElem(sident, i, d) -> gen_sid sident lcl_prefix^ "[" ^ gen_sexpr i lcl_prefix ^ "]"
 | SExprAssign(sident, sexpr, d) -> gen_sid sident lcl_prefix^ " = " ^
     gen_sexpr sexpr lcl_prefix
 | SCast(datatype, sexpr, d) -> "(" ^ gen_datatype datatype^ ") " ^
@@ -147,7 +147,7 @@ and gen_sstmt sstmt lcl_prefix = match sstmt with
 | SArrAssign(sident, sexpr_list) -> gen_sid sident lcl_prefix ^ ".clear();\n\t" ^
      (gen_array_sexpr_list sexpr_list sident lcl_prefix) ^ ";\n\t"
 | SArrElemAssign(sident, i, sexpr) -> gen_sid sident lcl_prefix ^
-    "[" ^ string_of_int i ^ "] = " ^ gen_sexpr sexpr lcl_prefix ^ ";\n\t"
+    "[" ^ gen_sexpr i lcl_prefix ^ "] = " ^ gen_sexpr sexpr lcl_prefix ^ ";\n\t"
 | STerminate -> "exit(0);\n\t"
 
 (*semicolon and newline handled in gen_stmt because blocks dont have semicolon*)
