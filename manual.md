@@ -78,22 +78,6 @@ A boolean value defined using the keywords true or false.
 ### String 
 A string is a sequence of characters. String literals are placed between double quotes.
 
-### Objects
-In Slang, an object is an encapsulation of a set of user defined properties. An object can be declared and not defined as:
-```
-object person;
-```
-Alternatively, an object can be defined as:
-
-```
-object person = object(string name="Bob", int age=25, string nicknames[] = ["Bobby", "Lil' B"]);
-```
-
-The user also has the option to not initialize the values of the properties (such as name and age) but is required to list out all of the properties of the Object on definition.
-
-```
-object person = object(string name, int age, string nicknames[]);
-```
 
 ## Operators 
 Some operators (such as +) are overloaded. They must be used on expressions of the same type, as Slang will not automatically promote.
@@ -103,15 +87,14 @@ Some operators (such as +) are overloaded. They must be used on expressions of t
 * - subtraction and unary negation. 
 * \* multiplication.
 * / division
-* % modulo
 
-\*, /, and % operators have precedence over + and -
+\*, /, and operators have precedence over + and -
 
 ### Assignment  
 = Assigns value of right hand side to the left hand side. Assignment has right to left precedence.
 
 ### Comparison 
-* == equal to. Compares values of two items. In order for two Objects to be equal, they must be the same object.
+* == equal to. Compares values of two items.
 * != not equal to
 * > greater than
 * < less than
@@ -130,7 +113,7 @@ Operators within the same row share the same precedence. Higher rows indicate hi
 | ----------- |:-------------:|
 | --, ++, -   | right         |
 | !           | right         |
-| *, -, %     | left          |
+| *, -,       | left          |
 | +, -        | left          |
 | &,  &#124;  | left          |
 | <, >, <=, >=| left          |
@@ -173,9 +156,9 @@ Functions are defined only by identifying the block of code with func, giving th
 
 Example:
 ```
-func void Stuff(Object person){
-             line.add(person);
-             # 10 line.remove(person);
+func int AddFive(int number){
+             int temp = number + 5;
+             return temp;
 }
 ```
 
@@ -237,22 +220,14 @@ A for loop can be:
     }
 
 ```
-for (int i = 0; i < 10; i++) {
+int i;
+for (i = 0; i < 10; i++) {
 
 	block
 
 }
 ```
-
-* or an empty for;; {
-    block
-}, which is infinite
-
-```
-for(;;) {
-	block
-}
-```
+The int i must be declared outside the for loop starting assignment.
 
 A while loop is:
 ```
@@ -265,7 +240,7 @@ A while loop is:
 Typecasting can be used to change the type of value to another type. 
 
 ### Casting to numbers
-Casting a float to an integer truncates the fraction part, while casting an integer to an integer. Casting a bool to an int or a float would result in either 1 or 0. Casting a string to a float or integer is allowed if the string contains numerical values that would be found in an integer or float.
+Casting a float to an integer truncates the fraction part, while casting an integer to an integer. Casting a bool to an int or a float would result in either 1 or 0.
 ```
 float a = 42.3;
 
@@ -274,26 +249,18 @@ a = float(b); /*a now holds value 42.0*/
 
 a = float(true); /*a now holds value 1.0*/
 b = int(false); /*b now holds value 0*/
-
-a = float("52.34"); /*a now holds value 52.34*/
-b = int("23"); /*b now holds value 23*/
 ```
-### Casting to Strings and Booleans
-Casting an integer or float to a string converts the number into a string, while casting a bool into a string creates either "true" or "false." Converting any number above 0 or non-empty string to a bool leads to true, while 0 and a string whose value is "false" or is empty leads to false.
+### Casting to Booleans
+Converting any number above 0 or a string to a bool leads to true, while 0 leads to false.
 ```
-float c = 20.3;
 bool d = false;
 
-string number = string(c); /*string now holds value "20.3"*/
-string boolean = string(d); /*string now holds value "false"*/
-
 d = bool(20); /*d is now true*/
-d = bool("false"); /*d is now false, same as if d = bool(boolean)*/
+d = bool("false"); /*d is now true, same as if d = bool(boolean)*/
 d = bool("Mike"); /*d is now true*/
-d = bool(""); /*d is now false*/
+d = bool(""); /*d is now true*/
 ```
 
-Objects cannot be cast to or from other data types.
 
 ## Terminate
 When the Terminate keyword statement is found within the program, the program ends.
@@ -324,7 +291,7 @@ main() {
 The return keyword accepts an expression, function call, or nothing, and exists out of the smallest containing function or calling block. 
 
 ## Pass by Value and Pass by Reference
-Slang passes arguments by value. The argument sent to a function is in fact a copy of the original argument sent to the function. In this way the function can not modify the argument originally sent to it. The only exceptions to this are arrays, objects, and functions, which are passed by reference.
+Slang passes arguments by value. The argument sent to a function is in fact a copy of the original argument sent to the function. In this way the function can not modify the argument originally sent to it. The only exceptions to this are arrays, and functions, which are passed by reference.
 
 ## Overloading
 
