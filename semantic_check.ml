@@ -3,8 +3,6 @@ open Sast
 open Type
 
 exception Error of string
-(*NOTE: WILL END UP HAVING RECURSIVE ARRAYS AND THAT IS TERRIBLE --> add in a
- * check*)
 
 (*a symbol table consisting of the parent as the variables*)
 type symbol_table = {
@@ -62,13 +60,10 @@ let equal_logic t1 t2 = match(t1,t2) with
     | (_,_) -> (Int,false) 
 
 (*extracts the type from a datatype declaration*)
-(* TODO: make sure this compiles. It looks good though. *)
 let rec get_type_from_datatype = function
 	Datatype(t)->t
-	(*  *)
 	| Arraytype(ty) -> get_type_from_datatype ty
 
-(* TODO *)
 let get_binop_return_value op typ1 typ2 = 
 	let t1 = get_type_from_datatype typ1 and t2 = get_type_from_datatype typ2 in
 	let (t, valid) = 
@@ -88,8 +83,6 @@ let get_binop_return_value op typ1 typ2 =
 			| Or -> basic_logic t1 t2
 		in (Datatype(t), valid) 
 
-(*** The following section has getters/retrievers/converters ***)
-(* ********************************************************** *)
 (*extracts the type and name from a Formal declaration*)
 let get_name_type_from_formal env = function
     Formal(datatype,ident) -> (ident,datatype,None)
@@ -129,10 +122,6 @@ let find_variable env name =
 	try List.find (fun (s,_,_) -> s=name) env.var_scope.variables
 	with Not_found -> try List.find(fun (s,_,_) -> s=name) env.global_scope.variables
 	with Not_found -> raise Not_found
-(* 
-let find_local_variable env name =
-	try List.find (fun (s,_,_) -> s=name) env.var_scope.variables
-	with Not_found -> raise Not_found *)
 
 let get_int_from_var env v = 
     let (_,ty,value) = try find_variable env v with Not_found -> raise(Error("Cannot
@@ -174,25 +163,14 @@ let rec check_expr env e = match e with
 			Arraytype(Datatype(x)) -> Datatype(x)
             | _ -> raise(Error("Cannot index a non-array expression"))) in
 		let expr_type = check_expr env expr in 
-		let ty = match expr_type with
-			Datatype(ty) -> ty in
+		let sty = match expr_type with
+			Datatype(ty) -> Some(ty) 
+			| Arraytype(dt) -> None in
+		let ty = match sty with
+			Some(ty) -> ty
+			| None -> raise(Error("Can't invoke array element as index")) in
 		let _ = if not(ty=Int) then raise(Error("index must be an integer")) in
 		(el_type)
-
-
-(*     | ArrElem(id, i) -> let (_,ty,v ) = try find_variable env id with
-    Not_found -> raise(Error("Uninitialized array")) in let
-    el_type = (match ty with 
-            Arraytype(Datatype(x)) -> Datatype(x)
-            | _ -> raise(Error("Cannot index a non-array expression")))
-     in let ind = (match i with 
-        IntLit(x) -> x
-        | Variable(v) -> get_int_from_var env v
-        | _ -> raise(Error("Cannot index non-integer value")))
-        in (match v with 
-        Some(ArrVal(x)) -> if ind < List.length x then el_type else
-            raise(Error("Index out of bounds" ^ string_of_int ind))
-        | _ -> raise(Error("Cannot index a non-array expression"))) *)
     | ExprAssign(id, e) -> let (_,t1,_) = (find_variable env id) and t2 =
         check_expr env e 
         in (if not (t1 = t2) then (raise (Error("Mismatch in types for assignment")))); check_expr env e
@@ -228,13 +206,6 @@ let rec get_sexpr env e = match e with
       | Unop(u,ex) -> SUnop(u, get_sexpr env ex, check_expr env e)
       | Binop(e1,b,e2) -> SBinop(get_sexpr env e1,b, get_sexpr env e2,check_expr env e)
       | ArrElem(id, expr) -> SArrElem(SIdent(id, get_var_scope env id), get_sexpr env expr, check_expr env expr)
-(*       | ArrElem(id,index) -> 
-              (match index with 
-                IntLit(ind) -> SArrElem(SIdent(id, get_var_scope env id), ind, check_expr env e)  
-                | Variable(v) -> let ind = get_int_from_var env v in
-                SArrElem(SIdent(id,get_var_scope env id),ind,check_expr env e)
-                | _ -> raise(Error("Cannot index a non-integer expression"))) *)
-
       | ExprAssign(id,ex) -> SExprAssign(SIdent(id, get_var_scope env id),
       get_sexpr env ex,check_expr env e) 
       | Cast(ty,ex) -> SCast(ty,get_sexpr env ex,ty)
@@ -244,7 +215,6 @@ let rec get_sexpr env e = match e with
       exp) ex_list in SCall(SIdent(id,Global),s_ex_list, check_expr env e) 
 
 (* Make sure a list contains all items of only a single type; returns (sexpr list, type in list) *)
-(* TODO: don't know if this compiles *)
 let get_sexpr_list env expr_list = 
 	let sexpr_list = 
 		List.map (fun expr -> 
@@ -272,7 +242,6 @@ let get_datatype_from_val env = function
 
 (* if variable is not found, then add it to table and return SVarDecl *)
 (* if variable is found, throw an error: multiple declarations *)
-(* TODO: complete this like get_sexpr *)
 let get_sdecl env decl = match decl with
 	(* if ident is in env, return typed sdecl *)
     VarDecl(datatype, ident) -> (SVarDecl(datatype, SIdent(ident, Local)), env)
@@ -288,21 +257,10 @@ let get_name_type_val_from_decl decl = match decl with
 	VarDecl(datatype, ident) -> (ident, datatype, None)
 	| VarAssignDecl(datatype, ident, value) -> (ident, datatype, Some(value))
 
-
-(*deal with arrays here*)
-(* let get_typed_value env = function
-   ExprVal(e) -> Expr(e, check_expr env e)  
-   | ArrVal(expr_list) -> Expr(expr_list, check_expr_list env expr_list) *)
-
-
 (* returns tuple (left hand id, left hand id type, right hand value type) *)
 let get_name_type_from_var env = function
     VarDecl(datatype,ident) -> (ident,datatype,None)
-    | VarAssignDecl(datatype,ident,value) -> 
-    	(* this is probably redundant somewhere , but whatever *)
-(*     	let (sexpr_list, ty) = check_expr_list env expr_list in *)
-		(* not sure how to handle "some" *)
-    	(ident,datatype,Some(value))
+    | VarAssignDecl(datatype,ident,value) -> (ident,datatype,Some(value))
 
 (*extracts the stmt list from the event declaration*)
 let rec get_time_stmts_from_event = function
@@ -313,8 +271,7 @@ let rec get_events_from_thread = function
 	Init(event) ->event
 	|Always(event2) ->event2
 
-    (*function that adds variables to environment's var_scope for use in functions*)
-(* ADDED: val, for arrays *)
+(*function that adds variables to environment's var_scope for use in functions*)
 let add_to_var_table env name t v = 
 	let new_vars = (name,t, v)::env.var_scope.variables in
 	let new_sym_table = {parent = env.var_scope.parent; variables = new_vars;} in
@@ -322,7 +279,6 @@ let add_to_var_table env name t v =
 	new_env
 
 (*function that adds variables to environment's global_scope for use with main*)
-(* ADDED: val, mainly for arrays *)
 let add_to_global_table env name t v = 
 	let new_vars = (name,t,v)::env.global_scope.variables in
 	let new_sym_table = {parent=env.global_scope.parent; variables = new_vars;} in
@@ -337,20 +293,7 @@ let check_assignments type1 type2 = match (type1, type2) with
 	|(Float, Int) -> true
 	|(Boolean, Boolean) -> true
 	|(String, String) -> true
-(* 	|(Object, Object) -> true *)
 	|(_,_) -> false
-
-
-(* add avalue to the symbol table*)
-(* TODO: needs correction for arrays *)
-    (*this function isn't ever used
-let add_var env var_declaration =
-	let sym_table= match (env.location,var_declaration) with
-		(main,VarDecl(t,name)) -> add_to_global_table env name t None
-		|(main,VarAssignDecl(t,name,v)) -> add_to_global_table env name t (Some(v)) 
-		(*|(_,VarDecl(t,name)) -> add_to_var_table env name t None	
-		|(_,VarAssignDecl(t,name,v)) -> add_to_var_table env name t (Some(v)) *)in
-		sym_table *)
 
 (* checks the type of a variable in the symbol table*)
 (* Changed from "check_var_type" *)
@@ -368,28 +311,6 @@ let check_final_env env =
 let empty_table_initialization = {parent=None; variables =[];}
 let empty_function_table_initialization = {functions=[(Ident("print_string"), Void, [Formal(Datatype(String), Ident("s"))],[]);(Ident("print_int"),Void,[Formal(Datatype(Int),Ident("s"))],[])]}
 let empty_environment = {return_type = Datatype(Void); return_seen = false; location="main"; global_scope = empty_table_initialization; var_scope = empty_table_initialization; fun_scope = empty_function_table_initialization}
-
-(*Add functions to the environment *)
-(* let initialize_functions env function_declaration = 
-	let new_env = add_function env function_declaration in
-	new_env *)
-
-
-(* Add global variables to the environment *)
-(* Old version; doesn't check for multiple declarations *)
-(* let initialize_globals (globals,env) variable_declaration = 
-	(* See if ident already exists. If not, continue; else, error *)
-    match variable_declaration with
-        VarDecl(datatype,ident) -> 
-        	let (name,ty,_) = get_name_type_from_var env variable_declaration in
-            let new_env = add_to_global_table env name ty None in
-            (SVarDecl(datatype,ident)::globals, new_env)
-        | VarAssignDecl(datatype,ident, value) ->
-        	let (name, ty, v) = get_name_type_from_var env variable_declaration in
-        	let new_env = add_to_global_table env name ty v in
-            (match v with
-              | Some(value) -> (SVarAssignDecl(datatype, ident, get_sval env value)::globals, new_env)
-              | None -> raise (Error("Cannot access unitialized value")) ) *)
 
 let find_global_variable env name = 
 	try List.find (fun (s,_,_) -> s=name) env.global_scope.variables
@@ -423,8 +344,6 @@ let find_local_variable env name =
 (*Semantic checking on a stmt*)
 let rec check_stmt env stmt = match stmt with
 	| Block(stmt_list) ->
-	(*	let new_var_scope = {parent=Some(env.var_scope);variables=[];} in
-		let new_env = {env with var_scope=new_var_scope} in*)
 		let new_env=env in
 		let getter(env,acc) s =
 			let (st, ne) = check_stmt env s in
@@ -488,9 +407,6 @@ let rec check_stmt env stmt = match stmt with
 					else raise (Error("Type mismatch"))
 				else
 					raise (Error("Multiple declarations")) in ret
-
-	(*| Ast.PropertyAssign are we still using this?*)
-
 	| Ast.Assign(ident, expr) ->
 		(* make sure 1) variable exists, 2) variable and expr have same types *)
 		let (_, dt, _) = try find_variable env ident with Not_found -> raise (Error("Uninitialized variable")) in
@@ -523,41 +439,13 @@ let rec check_stmt env stmt = match stmt with
 		let (id, dt, v) = try find_variable env ident with Not_found -> raise (Error("Undeclared array")) in
 		let t1 = get_type_from_datatype(dt) and t2 = get_type_from_datatype(check_expr env expr2) in
 		let _ = if(t1=t2) then true else raise (Error("Type Mismatch")) in
-		let expr_list = (match v with
+		let _ = (match v with
 				Some(ArrVal(el)) -> (* get_sexpr_list env  *)el
 				| None -> raise (Error("No expression on right hand side"))
 				| _ -> raise (Error("???"))) in
         let t = get_type_from_datatype(check_expr env expr1) in
         let _ = if not(t=Int) then raise(Error("Array index must be an integer")) in
-(* 		let _ = if(ind>(List.length expr_list)-1 || ind<0)
-			then raise (Error("Index out of bounds: "^ (string_of_int ind) )) in *)
-		
-		(* Need an integer index to update the list, but I'm not guaranteed to have one *)
-(* 		let new_list = update_list expr_list ind expr2 in
-		let new_env = update_variable env (id, dt, Some(ArrVal(new_list))) in *)
 		(SArrElemAssign(SIdent(ident,get_var_scope env ident), get_sexpr env expr1, get_sexpr env expr2), env)
-(* 	| Ast.ArrElemAssign(ident, index, expr2) ->
-		(* Make sure
-			1) array exists (if it exists, then it was already declared and semantically checked)
-			2) expr matches type of array 
-			3) index is not out of bounds *)
-		let (id, dt, v) = try find_variable env ident with Not_found -> raise (Error("Undeclared array")) in
-		let t1 = get_type_from_datatype(dt) and t2 = get_type_from_datatype(check_expr env expr2) in
-		let _ = if(t1=t2) then true else raise (Error("Type Mismatch")) in
-		let expr_list = (match v with
-				Some(ArrVal(el)) -> (* get_sexpr_list env  *)el
-				| None -> raise (Error("No expression on right hand side"))
-				| _ -> raise (Error("???"))) in
-        let ind = (match index with
-              IntLit(i) -> i
-              | Variable(v) -> get_int_from_var env v
-              | _ -> raise(Error("Cannot index a non-integer expression"))) in 
-		let _ = if(ind>(List.length expr_list)-1 || ind<0)
-			then raise (Error("Index out of bounds: "^ (string_of_int ind) )) in
-		(* since arrays are not mutable, we have to replace the entire arry *)
-		let new_list = update_list expr_list ind expr2 in
-		let new_env = update_variable env (id, dt, Some(ArrVal(new_list))) in
-		(SArrElemAssign(SIdent(ident,get_var_scope env ident), ind, get_sexpr env expr2), new_env) *)
 	| Terminate -> (STerminate, env)
 
 let get_sstmt_list env stmt_list = 
@@ -579,16 +467,6 @@ let add_function env sfunc_decl =
 			let new_fun_scope = {functions = new_functions} in
 			let final_env = {env with fun_scope = new_fun_scope} in
 			final_env
-
-(* 	let func_name=func_declaration.fname in
-	let func_type=get_type_from_datatype func_declaration.return in
-	let func_formals=func_declaration.formals in
-	let (func_body, new_env) = get_sstmt_list env func_declaration.body in
-	let new_functions = (func_name, func_type, func_formals, func_body)::old_functions in
-	let new_fun_scope = {functions = new_functions} in
-	let final_env = {new_env with fun_scope = new_fun_scope} in
-	final_env *)
-
 
 (* Semantic checking on a function*)
 let check_func env func_declaration =
@@ -625,14 +503,6 @@ let check_event (typed_events, env) event =
     in SAlways(typed_events)
 
 (*Semantic checking on a program*)
-(* let check_program program =
-	let (functions,(globals,threads)) = program in
-	    let env = List.fold_left(fun env function_declaration -> initialize_functions env function_declaration) empty_environment functions in
-			let typed_functions = List.map(fun function_declaration -> check_func env function_declaration) functions in
-             let (typed_globals, env) = List.fold_left(fun (new_globals,env)
-             globals -> initialize_globals (new_globals, env) globals) ([], env) globals in
-	           let typed_threads = List.map(fun thread -> check_thread env thread) threads in
-                    Prog(typed_functions, (typed_globals, typed_threads)) *)
 let check_program program =
 	let (functions,(globals,threads)) = program in
 	let env = empty_environment in
@@ -642,7 +512,4 @@ let check_program program =
 	let typed_threads = List.map(fun thread -> check_thread new_env2 thread) threads in
 
 	Prog(typed_functions, (typed_globals, typed_threads))
-
-	  (*   let env = List.fold_left(fun env function_declaration -> initialize_functions env function_declaration) empty_environment functions in
-			let typed_functions = List.map(fun function_declaration -> check_func env function_declaration) functions in *)
              
