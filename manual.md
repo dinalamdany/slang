@@ -88,7 +88,7 @@ Some operators (such as +) are overloaded. They must be used on expressions of t
 * \* multiplication.
 * / division
 
-\*, /, and operators have precedence over + and -
+\*, /, and % operators have precedence over + and -
 
 ### Assignment  
 = Assigns value of right hand side to the left hand side. Assignment has right to left precedence.
@@ -113,7 +113,7 @@ Operators within the same row share the same precedence. Higher rows indicate hi
 | ----------- |:-------------:|
 | --, ++, -   | right         |
 | !           | right         |
-| *, -,       | left          |
+| *, -, &     | left          |
 | +, -        | left          |
 | &,  &#124;  | left          |
 | <, >, <=, >=| left          |
