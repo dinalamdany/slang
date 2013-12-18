@@ -118,13 +118,13 @@ let gen_time_block = function
     let curr_link_str = init_count () in let curr_name_f = inc1 (curr_link_str ^ "_block_") in (*Counters*)
       let link = Link(curr_link_str) in m_lists.l1 <- link :: m_lists.l1; (*adding to main list*)
         let partial_gen_struct = gen_structure curr_name_f link in
-          List.map gen_tb_vdecls sthread;
+        let _ = List.map gen_tb_vdecls sthread in
           Time_block(link, m_lists.v_decls, List.map partial_gen_struct (List.rev sthread))
 | SAlways(sthread) -> m_lists.v_decls <- []; (* Reset v_decl list *)
     let curr_link_str = always_count () in let curr_name_f = inc1 (curr_link_str ^ "_block_") in (*Counters*)
       let link = Link(curr_link_str) in m_lists.l2 <- link :: m_lists.l2; (*adding to main list*)
         let partial_gen_struct = gen_structure curr_name_f link in
-          List.map gen_tb_vdecls sthread;
+        let _ = List.map gen_tb_vdecls sthread in
           Time_block(link, m_lists.v_decls, List.map partial_gen_struct (List.rev sthread))                     
 
 let gen_func = function
