@@ -13,17 +13,6 @@ main()
 		print("--every 3");
 	}
 
-	/*
-	always{
-			#3 
-			print("always1 at ");
-			print(counter);
-			}
-	always{
-			#4 
-			print("always2 at ");
-			print(counter);
-	}*/
 	always{
 		#1
 		counter++;
