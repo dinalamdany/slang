@@ -177,6 +177,8 @@ let rec check_expr env e = match e with
     | Cast(ty, e) -> ty
 	| Call(Ident("print"),e) -> let _ = List.map(fun exp -> check_expr env exp) e in
 				Datatype(Void)
+	| Call(Ident("print_time"),e) -> let _ = List.map(fun exp -> check_expr env exp) e in
+				Datatype(Void)
     | Call(id, e) -> try (let (fname, fret, fargs, fbody)  = find_function env.fun_scope id in
                 let el_tys = List.map (fun exp -> check_expr env exp) e in
                 let fn_tys = List.map (fun farg-> let (_,ty,_) = get_name_type_from_formal env farg in ty) fargs in
@@ -211,6 +213,8 @@ let rec get_sexpr env e = match e with
       | Cast(ty,ex) -> SCast(ty,get_sexpr env ex,ty)
 	  | Call(Ident("print"),ex_list) -> let s_ex_list = List.map(fun exp -> get_sexpr env exp) ex_list 
 	  in SCall(SIdent(Ident("print"),Global),s_ex_list,check_expr env e)
+	  | Call(Ident("print_time"),ex_list) -> let s_ex_list = List.map(fun exp -> get_sexpr env exp) ex_list
+	  in SCall(SIdent(Ident("print_time"),Global), s_ex_list, check_expr env e)
       | Call(id, ex_list) -> let s_ex_list = List.map(fun exp -> get_sexpr env
       exp) ex_list in SCall(SIdent(id,Global),s_ex_list, check_expr env e) 
 
