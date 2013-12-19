@@ -11,13 +11,13 @@ main()
 
 	/* Clock */
 	always{
-		#1
+		#2
 		clk = !clk;
-		abs_time++;
 	}
 	/* J/K Flip Flop logic */
 	always{
 		#1
+		abs_time++;
 		if(clk){
 			if(j & k){q = !q;}
 			else{

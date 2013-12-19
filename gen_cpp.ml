@@ -10,7 +10,11 @@ let prefix_global_var = "u_"
 let prefix_event = "event_"
 let prefix_event_list = "event_q_"
 let code_event_base = "struct " ^ prefix_event^
-  " {\n\tunsigned int time;\n\tvirtual unsigned int get_time() {};\n\t" ^
+  " {\n\tunsigned int time;\n\tunsigned int inc_time;\n\tstd::string name;\n\t" ^
+  "virtual unsigned int get_time() {};\n\t" ^
+  "virtual unsigned int get_inc_time() {};\n\t" ^
+  "virtual void (set_time)(unsigned int time_) {};\n\t" ^
+  "virtual std::string get_name() {};\n\t" ^
   "virtual void foo() {};\n\tvirtual ~"^ prefix_event ^ "() {};\n};\n"
 let code_event_list = "struct "^ prefix_event_list ^
   " {\n\tbool empty() {return event_q.empty();}\n\t" ^ 
@@ -255,13 +259,20 @@ let gen_time_block_header link =
 let rec gen_struct = function
   Time_struct(name, i, link, sstmt_list) -> "struct " ^ gen_name name ^
     " : public " ^ gen_link link ^ "_link_ {\n\tunsigned int time;\n\t" ^
-    gen_name name ^ "() : time(" ^ string_of_int i ^
-    ") {}\n\tunsigned int get_time() {return time;}\n\t" ^ gen_link link ^
+    "unsigned int inc_time;\n\tstd::string name;\n\t" ^ 
+    gen_name name ^ "() : inc_time(" ^
+    string_of_int i ^ ") "^ ", time(" ^ string_of_int i ^
+    "), name(\"" ^ gen_name name ^ 
+    "\") {}\n\tunsigned int get_time() {return time;}\n\t" ^
+    "unsigned int get_inc_time() {return inc_time;}\n\t" ^ 
+    "void set_time(unsigned int time_) {time = time_;}\n\t" ^
+    "std::string get_name() {return name;}\n\t" ^ gen_link link ^
     "_link_ *next;\n\tvoid set_next(" ^ gen_link link ^
     "_link_ *n) {next = n;};\n\t" ^ "void foo() {\n\t" ^
-    gen_sstmt_list sstmt_list (gen_link link) ^ "\n\tif(next != NULL)\n\t\t" ^
-    gen_link link ^ "_time += next->get_time();\n\t" ^
-    "event_q.add(" ^ gen_link link ^ "_time, next);\n\t}\n};"
+    gen_sstmt_list sstmt_list (gen_link link) ^ "\n\tif(next != NULL) {\n\t\t" ^
+    gen_link link ^ "_time += next->get_inc_time();\n\t\t" ^
+    "next->set_time(" ^ gen_link link ^ "_time);\n\t\t" ^
+    "event_q.add(" ^ gen_link link ^ "_time, next);\n\t\t}\n\t}\n};"
 
 and gen_struct_list struct_list = match struct_list with
  [] -> ""
