@@ -5,6 +5,7 @@ open Pretty_c
 open Type
 
 let print = "print"
+let get_time = "print_time"
 let prefix_array = "a_"
 let prefix_global_var = "u_"
 let prefix_event = "event_"
@@ -36,7 +37,6 @@ let code_event_list = "struct "^ prefix_event_list ^
 let code_directives = "#include <iostream>\n#include <string>\n#include <deque>\n#include <vector>\n#include <cstdlib>\n"
 let code_event_list_do = "while(!event_q.empty()) {\n\tevent_q.pop()->foo();\n\t}\n"
 let header = code_directives^code_event_base^code_event_list
-(*let _ = print_endline header*)
 
 let gen_id = function
   Ident(id) -> id
@@ -119,8 +119,12 @@ let rec gen_sexpr sexpr lcl_prefix = match sexpr with
     gen_sexpr sexpr lcl_prefix
 | SCall(sident, sexpr_list, d) -> if ((gen_plain_sid sident) = print)
     then "std::cout << ("^ gen_sexpr_list sexpr_list lcl_prefix ^ ") << std::endl"
-    else gen_sid sident lcl_prefix ^ "(" ^ gen_sexpr_list sexpr_list lcl_prefix ^ ")"
-
+    else begin
+      if ((gen_plain_sid sident) = get_time) then 
+        "std::cout << \"Time now: \" <<event_q.get_time() << std::endl"
+      else
+        gen_sid sident lcl_prefix ^ "(" ^ gen_sexpr_list sexpr_list lcl_prefix ^ ")"
+    end
 and gen_expr expr prefix = match expr with
   IntLit(i) -> string_of_int i
 | BoolLit(b) -> string_of_bool b
@@ -350,9 +354,3 @@ let gen_program = function
   gen_time_block_list time_block_list ^ "\nint main() {\n\t" ^
   gen_main main ^
   code_event_list_do ^ "return 0;\n}"
-(*
-let _ = 
-  let target_code = gen_program pretty_c_ast in
-  print_endline target_code
-*)
-(*let _ = print_endline (gen_time_block_header "always1")*)
