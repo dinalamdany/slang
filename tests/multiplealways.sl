@@ -1,7 +1,7 @@
 main()
 {
 	init{
-			#10 
+			#13
 			Terminate;
 	}
 
