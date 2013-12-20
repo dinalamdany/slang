@@ -6,10 +6,18 @@ main()
 	}
 
 	always{
-			#2 
-			print(2);
-			}
+		#2 
+		print(2);
+	}
+	
 	always{
-			#3 
-			print(3);}
+		#3 
+		print(3);
+	}
+	
+	always{
+		#4
+		print(4);
+	}
 }
+
