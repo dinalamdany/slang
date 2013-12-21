@@ -1,9 +1,11 @@
 main()
 {
-	/* Reference to global time*/
-	int abs_time = 0;
 	/* Clock */
 	bool clk = false;
+	/* Clock up */
+	bool clk_up = false;
+	bool prev_clk = false;
+
 	/* J/K Flip Flop Variables */
 	bool j = false;
 	bool k = false;
@@ -12,7 +14,17 @@ main()
 	/* Clock */
 	always{
 		#2
-		clk = !clk;
+		clk = !clk; 
+	}
+	/* Section for generating clock up events */
+	always{
+		#1
+		if (clk & !prev_clk)
+			{clk_up = true;}
+		else
+			{clk_up = false;}
+
+		prev_clk = clk;
 	}
 	/* J/K Flip Flop logic */
 	always{
@@ -29,9 +41,11 @@ main()
 	/* Printing */
 	always{
 		#1 		
-		print("AbsTime, Clock:");
-		print(abs_time);
+		print("AbsTime");
+		print(print_time());
+		print("Clock: Clk_up");
 		print(clk);
+		print(clk_up);
 		print("J,K");
 		print(j);
 		print(k);
@@ -40,11 +54,11 @@ main()
 	}
 	/* Changes in input */
 	init{
-		#5 k = true;
-		#10 j = true;
-		#15 k = false;
-		#20 j = false;
-		#25 j = true; k = true;
-		#30 Terminate;
+		#7 k = true;
+		#7 j = true;
+		#7 k = false;
+		#7 j = false;
+		#7 j = true; k = true;
+		#7 Terminate;
 	}
 }
