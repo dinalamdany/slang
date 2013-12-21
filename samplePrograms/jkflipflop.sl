@@ -29,7 +29,6 @@ main()
 	/* J/K Flip Flop logic */
 	always{
 		#1
-		abs_time++;
 		if(clk){
 			if(j & k){q = !q;}
 			else{
@@ -43,7 +42,7 @@ main()
 		#1 		
 		print("AbsTime");
 		print(print_time());
-		print("Clock: Clk_up");
+		print("Clock, Clk_up");
 		print(clk);
 		print(clk_up);
 		print("J,K");
